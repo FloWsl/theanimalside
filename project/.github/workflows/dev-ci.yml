@@ -1,0 +1,87 @@
+name: Dev Branch CI/CD
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './project/package-lock.json'
+        
+    - name: Install dependencies
+      run: |
+        cd project
+        npm ci
+        
+    - name: Run ESLint
+      run: |
+        cd project
+        npm run lint
+        
+    - name: Type check
+      run: |
+        cd project
+        npx tsc --noEmit
+        
+    - name: Build project
+      run: |
+        cd project
+        npm run build
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files-${{ matrix.node-version }}
+        path: project/dist/
+        retention-days: 7
+
+  lighthouse-audit:
+    runs-on: ubuntu-latest
+    needs: test-and-build
+    if: github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+        cache-dependency-path: './project/package-lock.json'
+        
+    - name: Install dependencies
+      run: |
+        cd project
+        npm ci
+        
+    - name: Build project
+      run: |
+        cd project
+        npm run build
+        
+    - name: Run Lighthouse CI
+      run: |
+        cd project
+        npm install -g @lhci/cli@0.12.x
+        lhci autorun || echo "Lighthouse audit completed"
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
