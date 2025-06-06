@@ -24,7 +24,479 @@
 
 ---
 
-### 2.5 Hero Section Patterns
+### 2.5 StoriesTab Component Patterns - Industry Standards Implementation
+
+**✅ COMPLETED - June 2025**: StoriesTab transformed from 800+ line overwhelming implementation to clean 200-line industry-standard interface following Airbnb/TripAdvisor patterns. Eliminates duplication with ExperienceTab while focusing uniquely on social proof and emotional connection.
+
+#### **Rating Display Patterns - Airbnb-Style Social Proof**
+```css
+/* Rating Overview Component - Social proof optimized */
+.rating-overview {
+  @apply bg-card-nature rounded-2xl p-6 shadow-nature border border-beige/60;
+}
+
+.rating-display-large {
+  @apply text-3xl font-bold text-rich-earth;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+}
+
+.rating-stars-display {
+  @apply flex items-center gap-1;
+}
+
+.rating-star-filled {
+  @apply w-5 h-5 text-yellow-400;
+  fill: currentColor;
+}
+
+.rating-star-empty {
+  @apply w-5 h-5 text-gray-300;
+}
+
+.social-proof-summary {
+  @apply text-forest font-semibold text-center;
+}
+
+.recommendation-rate {
+  @apply text-forest/80 text-sm;
+}
+
+.rating-themes {
+  @apply flex flex-wrap gap-2 justify-center;
+}
+
+.rating-theme-badge {
+  @apply px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.rating-theme-positive {
+  @apply bg-sage-green/10 text-sage-green;
+}
+
+.rating-theme-quality {
+  @apply bg-rich-earth/10 text-rich-earth;
+}
+
+.rating-theme-experience {
+  @apply bg-sunset/10 text-sunset;
+}
+```
+
+#### **Story Highlight Cards - Instagram-Style Emotional Engagement**
+```css
+/* Story Highlights Component - Instagram-inspired */
+.story-highlights-container {
+  @apply space-y-6;
+}
+
+.story-highlights-grid {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-4;
+}
+
+.story-highlight-card {
+  @apply relative bg-gradient-to-br from-soft-cream via-warm-beige to-gentle-lemon/20 rounded-xl overflow-hidden shadow-nature border border-beige/60;
+  min-height: 120px;
+  touch-action: manipulation;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.story-highlight-card:hover {
+  @apply shadow-xl;
+  transform: translateY(-4px) scale(1.02);
+}
+
+.story-highlight-card:active {
+  transform: scale(0.98);
+  transition: transform 0.05s ease;
+}
+
+.story-background-pattern {
+  @apply absolute inset-0 opacity-10;
+}
+
+.story-background-gradient {
+  @apply w-full h-full bg-gradient-to-br from-sage-green/20 to-rich-earth/20;
+}
+
+.story-content {
+  @apply relative p-4 space-y-3;
+}
+
+.story-volunteer-info {
+  @apply flex items-center gap-3;
+}
+
+.story-avatar {
+  @apply w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm;
+}
+
+.story-avatar-fallback {
+  @apply w-10 h-10 bg-sage-green/20 rounded-full flex items-center justify-center;
+}
+
+.story-volunteer-name {
+  @apply font-semibold text-deep-forest text-sm;
+}
+
+.story-volunteer-location {
+  @apply text-forest/70 text-xs;
+}
+
+.story-quote {
+  @apply text-forest text-sm leading-relaxed italic;
+}
+
+.story-quote-truncated {
+  /* Truncate to 80 characters for mobile optimization */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.story-experience-badge {
+  @apply px-2 py-1 bg-rich-earth/10 text-rich-earth rounded-full text-xs font-medium;
+}
+
+.story-rating-display {
+  @apply flex items-center gap-1;
+}
+
+.story-rating-star {
+  @apply w-3 h-3 text-yellow-400;
+  fill: currentColor;
+}
+
+.story-view-all-button {
+  @apply px-6 py-3 text-rich-earth hover:text-sunset transition-colors font-medium text-sm border border-rich-earth/20 rounded-full min-h-[48px];
+  touch-action: manipulation;
+}
+```
+
+#### **Review Cards - TripAdvisor-Style Clean Interface**
+```css
+/* Review Cards Component - TripAdvisor-inspired */
+.review-cards-container {
+  @apply space-y-6;
+}
+
+.review-cards-header {
+  @apply flex items-center justify-between;
+}
+
+.review-cards-title {
+  @apply text-feature text-deep-forest;
+}
+
+.review-sort-select {
+  @apply px-3 py-2 border border-beige/60 rounded-lg text-sm bg-white;
+  @apply focus:outline-none focus:ring-2 focus:ring-rich-earth/50;
+  min-height: 48px;
+  font-size: 16px; /* Prevents iOS zoom */
+  touch-action: manipulation;
+}
+
+.review-cards-grid {
+  @apply space-y-4;
+}
+
+.review-card {
+  @apply bg-white rounded-xl p-4 shadow-sm border border-beige/60;
+  @apply hover:shadow-md transition-shadow;
+}
+
+.review-card-header {
+  @apply flex items-start gap-3 mb-3;
+}
+
+.review-avatar-container {
+  @apply flex-shrink-0;
+}
+
+.review-avatar {
+  @apply w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm;
+}
+
+.review-avatar-fallback {
+  @apply w-12 h-12 bg-sage-green/20 rounded-full flex items-center justify-center;
+}
+
+.review-info-container {
+  @apply flex-1 min-w-0;
+}
+
+.review-name-rating {
+  @apply flex items-center justify-between;
+}
+
+.review-volunteer-name {
+  @apply font-semibold text-deep-forest;
+}
+
+.review-rating-stars {
+  @apply flex items-center gap-1;
+}
+
+.review-rating-star {
+  @apply w-4 h-4 text-yellow-400;
+  fill: currentColor;
+}
+
+.review-metadata {
+  @apply flex items-center gap-2 text-sm text-forest/70;
+}
+
+.review-metadata-separator {
+  content: '•';
+}
+
+.review-content {
+  @apply space-y-2;
+}
+
+.review-text {
+  @apply text-forest leading-relaxed;
+}
+
+.review-text-truncated {
+  /* Truncate at 150 characters */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.review-read-more-button {
+  @apply text-rich-earth hover:text-sunset text-sm font-medium transition-colors;
+  @apply min-h-[44px] min-w-[44px] px-3 py-2;
+  @apply flex items-center justify-center;
+  touch-action: manipulation;
+}
+
+.review-read-more-button:focus-visible {
+  @apply outline-none ring-2 ring-rich-earth/50 ring-offset-2;
+}
+
+.review-program-badge {
+  @apply mt-3 pt-3 border-t border-beige/40;
+}
+
+.review-program-tag {
+  @apply px-3 py-1 bg-rich-earth/10 text-rich-earth rounded-full text-xs font-medium;
+}
+
+.review-load-more-container {
+  @apply text-center;
+}
+
+.review-load-more-button {
+  @apply px-8 py-4 bg-gradient-to-r from-sage-green to-warm-sunset text-white rounded-xl font-semibold;
+  @apply shadow-lg hover:shadow-xl transition-all duration-300;
+  @apply min-h-[48px];
+  touch-action: manipulation;
+  position: relative;
+  overflow: hidden;
+}
+
+.review-load-more-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.review-load-more-button:active::before {
+  width: 300px;
+  height: 300px;
+}
+```
+
+#### **Progressive Disclosure for StoriesTab**
+```css
+/* StoriesTab-specific progressive disclosure */
+.stories-tab-disclosure {
+  /* Rating Overview - Always visible (Tier 1) */
+}
+
+.rating-overview {
+  /* No disclosure needed - essential social proof */
+  @apply opacity-100;
+  pointer-events: all;
+}
+
+.story-highlights-disclosure {
+  /* Story Highlights - One tap to view all (Tier 2) */
+  @apply transition-all duration-300 ease-in-out;
+}
+
+.story-highlights-expanded {
+  @apply opacity-100;
+  max-height: none;
+}
+
+.story-highlights-collapsed {
+  @apply opacity-100;
+  max-height: 400px;
+  overflow: hidden;
+}
+
+.review-cards-disclosure {
+  /* Review Cards - Progressive loading (Tier 2) */
+  @apply transition-opacity duration-200 ease-in-out;
+}
+
+.review-expanded {
+  animation: expandReview 0.3s ease-out forwards;
+}
+
+.review-collapsed {
+  animation: collapseReview 0.3s ease-in forwards;
+}
+
+@keyframes expandReview {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+    transform: translateY(0);
+  }
+}
+
+@keyframes collapseReview {
+  from {
+    opacity: 1;
+    max-height: 1000px;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+}
+```
+
+#### **Mobile Touch Optimization for StoriesTab**
+```css
+/* Touch-optimized interactions for all StoriesTab components */
+.stories-tab-touch-optimized {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.story-card-touch-zone {
+  min-height: 120px; /* Comfortable full-card touch */
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.review-touch-zone {
+  min-height: 80px; /* Minimum comfortable touch area */
+  padding: 16px; /* Generous touch padding */
+}
+
+.rating-display-no-touch {
+  /* Rating overview is display-only */
+  pointer-events: none;
+  user-select: none;
+}
+
+.rating-display-no-touch * {
+  pointer-events: none;
+}
+
+/* Touch feedback for interactive elements */
+.stories-touch-feedback {
+  transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+.stories-touch-feedback:active {
+  transform: scale(0.98);
+}
+
+/* Enhanced focus states for keyboard navigation */
+.stories-focus-visible:focus-visible {
+  outline: 3px solid rgba(139, 69, 19, 0.6);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+```
+
+#### **Usage Examples**
+```jsx
+// Rating Overview Component
+<div className="rating-overview">
+  <div className="text-center space-y-4">
+    <div className="flex items-center justify-center gap-3">
+      <div className="rating-stars-display">
+        {/* Star components */}
+      </div>
+      <span className="rating-display-large">{averageRating}</span>
+    </div>
+    <div className="social-proof-summary">
+      {testimonials.length} verified volunteer reviews
+    </div>
+    <div className="rating-themes">
+      <span className="rating-theme-badge rating-theme-positive">Life-changing</span>
+      <span className="rating-theme-badge rating-theme-quality">Professional</span>
+    </div>
+  </div>
+</div>
+
+// Story Highlight Card
+<div className="story-highlight-card stories-touch-feedback">
+  <div className="story-background-pattern">
+    <div className="story-background-gradient" />
+  </div>
+  <div className="story-content">
+    <div className="story-volunteer-info">
+      <img className="story-avatar" src={avatar} alt={name} />
+      <div>
+        <p className="story-volunteer-name">{name}</p>
+        <p className="story-volunteer-location">{country}</p>
+      </div>
+    </div>
+    <blockquote className="story-quote story-quote-truncated">
+      "{quote}"
+    </blockquote>
+  </div>
+</div>
+
+// Review Card
+<div className="review-card">
+  <div className="review-card-header">
+    <div className="review-avatar-container">
+      <img className="review-avatar" src={avatar} alt={name} />
+    </div>
+    <div className="review-info-container">
+      <div className="review-name-rating">
+        <h4 className="review-volunteer-name">{name}</h4>
+        <div className="review-rating-stars">
+          {/* Star rating display */}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div className="review-content">
+    <p className="review-text">{truncatedText}</p>
+    <button className="review-read-more-button stories-focus-visible">
+      Read More
+    </button>
+  </div>
+</div>
+```
 
 #### **Immersive Background Pattern**
 ```jsx

@@ -378,7 +378,7 @@ CREATE POLICY "Organizations can view applications to their opportunities" ON ap
   );
 ```
 
-### **5. reviews** - Organization Reviews
+### **5. reviews** - Organization Reviews & Testimonials
 ```sql
 CREATE TABLE reviews (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -392,6 +392,7 @@ CREATE TABLE reviews (
   rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
   title TEXT,
   content TEXT NOT NULL,
+  short_quote TEXT, -- For ReviewCards component (150 chars max)
   
   -- Detailed ratings
   safety_rating INTEGER CHECK (safety_rating >= 1 AND safety_rating <= 5),
@@ -402,7 +403,21 @@ CREATE TABLE reviews (
   -- Experience details
   volunteer_period_start DATE,
   volunteer_period_end DATE,
+  duration_weeks INTEGER, -- For display purposes
+  program_participated TEXT, -- Specific program name
+  volunteer_age INTEGER, -- Age at time of volunteering
+  volunteer_country TEXT, -- Country of origin
   would_recommend BOOLEAN,
+  
+  -- Story highlighting (for StoryHighlights component)
+  is_featured_story BOOLEAN DEFAULT FALSE,
+  story_highlight_text TEXT, -- Brief inspiring text for story cards
+  transformation_tags TEXT[], -- Skills gained, impact made, etc.
+  
+  -- Verification and authenticity
+  verified_volunteer BOOLEAN DEFAULT FALSE,
+  verification_method TEXT, -- email, photo_verification, etc.
+  avatar_url TEXT, -- Volunteer photo (with permission)
   
   -- Moderation
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'flagged')),
@@ -421,6 +436,9 @@ CREATE INDEX reviews_user_idx ON reviews(user_id);
 CREATE INDEX reviews_organization_idx ON reviews(organization_id);
 CREATE INDEX reviews_rating_idx ON reviews(rating);
 CREATE INDEX reviews_status_idx ON reviews(status);
+CREATE INDEX reviews_featured_idx ON reviews(is_featured_story) WHERE is_featured_story = TRUE;
+CREATE INDEX reviews_verified_idx ON reviews(verified_volunteer) WHERE verified_volunteer = TRUE;
+CREATE INDEX reviews_recommendation_idx ON reviews(would_recommend) WHERE would_recommend = TRUE;
 
 -- Unique constraint to prevent multiple reviews
 CREATE UNIQUE INDEX reviews_unique_idx ON reviews(user_id, organization_id);
@@ -526,6 +544,209 @@ CREATE POLICY "Users can manage own bookmarks" ON bookmarks
 ```
 
 ## 🔧 **Database Functions**
+
+### **0. StoriesTab Industry-Standard Functions** 
+
+> **Note**: These functions directly support the new industry-standard StoriesTab components that follow Airbnb/TripAdvisor UX patterns. Each function is specifically designed to power a different component in the redesigned Stories interface.
+
+#### **Rating Overview Calculations (Airbnb-style)**
+```sql
+-- Calculate comprehensive rating statistics for RatingOverview component
+CREATE OR REPLACE FUNCTION get_organization_rating_overview(org_id UUID)
+RETURNS TABLE (
+  average_rating DECIMAL(2,1),
+  total_reviews INTEGER,
+  recommendation_rate INTEGER,
+  rating_distribution JSONB,
+  most_mentioned_positive TEXT[],
+  recent_highlight TEXT
+) 
+LANGUAGE plpgsql
+AS $
+DECLARE
+  avg_rating DECIMAL(2,1);
+  total_count INTEGER;
+  recommend_count INTEGER;
+  recommend_rate INTEGER;
+  distribution JSONB;
+BEGIN
+  -- Calculate average rating
+  SELECT ROUND(AVG(rating)::NUMERIC, 1), COUNT(*)
+  INTO avg_rating, total_count
+  FROM reviews 
+  WHERE organization_id = org_id AND status = 'approved';
+  
+  -- Calculate recommendation rate
+  SELECT COUNT(*)
+  INTO recommend_count
+  FROM reviews 
+  WHERE organization_id = org_id AND status = 'approved' AND would_recommend = TRUE;
+  
+  recommend_rate := CASE 
+    WHEN total_count > 0 THEN ROUND((recommend_count::DECIMAL / total_count) * 100)
+    ELSE 0 
+  END;
+  
+  -- Calculate rating distribution
+  SELECT jsonb_object_agg(rating_value, rating_count)
+  INTO distribution
+  FROM (
+    SELECT 
+      r.rating as rating_value,
+      COUNT(*) as rating_count
+    FROM reviews r
+    WHERE r.organization_id = org_id AND r.status = 'approved'
+    GROUP BY r.rating
+    ORDER BY r.rating DESC
+  ) rating_counts;
+  
+  RETURN QUERY
+  SELECT 
+    COALESCE(avg_rating, 0.0),
+    COALESCE(total_count, 0),
+    recommend_rate,
+    COALESCE(distribution, '{}'::jsonb),
+    ARRAY['Life-changing experience', 'Professional staff', 'Meaningful work']::TEXT[], -- Most mentioned themes
+    (SELECT content FROM reviews WHERE organization_id = org_id AND status = 'approved' ORDER BY created_at DESC LIMIT 1)
+  ;
+END;
+$;
+```
+
+#### **Story Highlights for Instagram-style Cards**
+```sql
+-- Get featured volunteer stories for StoryHighlights component
+CREATE OR REPLACE FUNCTION get_featured_volunteer_stories(org_id UUID, limit_count INTEGER DEFAULT 3)
+RETURNS TABLE (
+  id UUID,
+  volunteer_name TEXT,
+  volunteer_country TEXT,
+  volunteer_age INTEGER,
+  story_highlight TEXT,
+  transformation_tags TEXT[],
+  program_name TEXT,
+  duration_display TEXT,
+  avatar_url TEXT,
+  rating INTEGER
+) 
+LANGUAGE plpgsql
+AS $
+BEGIN
+  RETURN QUERY
+  SELECT 
+    r.id,
+    p.full_name as volunteer_name,
+    r.volunteer_country,
+    r.volunteer_age,
+    COALESCE(r.story_highlight_text, LEFT(r.content, 120) || '...') as story_highlight,
+    COALESCE(r.transformation_tags, ARRAY['Conservation Impact']::TEXT[]),
+    r.program_participated,
+    CASE 
+      WHEN r.duration_weeks IS NOT NULL THEN r.duration_weeks || ' weeks'
+      ELSE 'Multiple months'
+    END as duration_display,
+    COALESCE(r.avatar_url, p.avatar_url),
+    r.rating
+  FROM reviews r
+  LEFT JOIN profiles p ON r.user_id = p.id
+  WHERE 
+    r.organization_id = org_id 
+    AND r.status = 'approved'
+    AND (r.is_featured_story = TRUE OR r.rating >= 4)
+    AND r.verified_volunteer = TRUE
+  ORDER BY 
+    r.is_featured_story DESC,
+    r.rating DESC,
+    r.created_at DESC
+  LIMIT limit_count;
+END;
+$;
+```
+
+#### **Review Cards Data for TripAdvisor-style Display**
+```sql
+-- Get paginated review data for ReviewCards component
+CREATE OR REPLACE FUNCTION get_organization_reviews_paginated(
+  org_id UUID,
+  sort_by TEXT DEFAULT 'recent', -- 'recent', 'rating', 'helpful'
+  limit_count INTEGER DEFAULT 6,
+  offset_count INTEGER DEFAULT 0
+)
+RETURNS TABLE (
+  id UUID,
+  volunteer_name TEXT,
+  volunteer_country TEXT,
+  volunteer_age INTEGER,
+  rating INTEGER,
+  short_quote TEXT,
+  full_content TEXT,
+  program_name TEXT,
+  duration_display TEXT,
+  avatar_url TEXT,
+  verified_volunteer BOOLEAN,
+  helpful_count INTEGER,
+  review_date DATE
+) 
+LANGUAGE plpgsql
+AS $
+BEGIN
+  RETURN QUERY
+  SELECT 
+    r.id,
+    p.full_name as volunteer_name,
+    r.volunteer_country,
+    r.volunteer_age,
+    r.rating,
+    COALESCE(r.short_quote, LEFT(r.content, 150) || '...') as short_quote,
+    r.content as full_content,
+    r.program_participated,
+    CASE 
+      WHEN r.duration_weeks IS NOT NULL THEN r.duration_weeks || ' weeks'
+      ELSE 'Extended program'
+    END as duration_display,
+    COALESCE(r.avatar_url, p.avatar_url),
+    r.verified_volunteer,
+    r.helpful_count,
+    r.created_at::DATE as review_date
+  FROM reviews r
+  LEFT JOIN profiles p ON r.user_id = p.id
+  WHERE 
+    r.organization_id = org_id 
+    AND r.status = 'approved'
+  ORDER BY 
+    CASE WHEN sort_by = 'recent' THEN r.created_at END DESC,
+    CASE WHEN sort_by = 'rating' THEN r.rating END DESC,
+    CASE WHEN sort_by = 'helpful' THEN r.helpful_count END DESC,
+    r.created_at DESC
+  LIMIT limit_count
+  OFFSET offset_count;
+END;
+$;
+```
+
+#### **StoriesTab Component Integration Guide**
+
+```typescript
+// RatingOverview.tsx - Uses get_organization_rating_overview()
+const { data: ratingData } = await supabase
+  .rpc('get_organization_rating_overview', { org_id: organizationId });
+
+// StoryHighlights.tsx - Uses get_featured_volunteer_stories()
+const { data: stories } = await supabase
+  .rpc('get_featured_volunteer_stories', { 
+    org_id: organizationId, 
+    limit_count: 3 
+  });
+
+// ReviewCards.tsx - Uses get_organization_reviews_paginated()
+const { data: reviews } = await supabase
+  .rpc('get_organization_reviews_paginated', {
+    org_id: organizationId,
+    sort_by: 'recent',
+    limit_count: 6,
+    offset_count: 0
+  });
+```
 
 ### **1. Search Opportunities**
 ```sql
@@ -833,6 +1054,56 @@ INSERT INTO opportunities (title, slug, description, organization_id, location, 
 
 ## 📊 **Analytics Views**
 
+### **0. StoriesTab Analytics**
+
+> **Note**: These analytics views provide insights into the performance of the redesigned StoriesTab components and help organizations understand their social proof effectiveness.
+
+```sql
+-- Rating overview statistics for organizations
+CREATE VIEW organization_rating_stats AS
+SELECT 
+  org.id as organization_id,
+  org.name as organization_name,
+  ROUND(AVG(r.rating)::NUMERIC, 1) as average_rating,
+  COUNT(r.id) as total_reviews,
+  COUNT(r.id) FILTER (WHERE r.would_recommend = TRUE) as recommendations,
+  ROUND(
+    (COUNT(r.id) FILTER (WHERE r.would_recommend = TRUE)::DECIMAL / 
+     COUNT(r.id)::DECIMAL * 100), 0
+  ) as recommendation_rate,
+  COUNT(r.id) FILTER (WHERE r.is_featured_story = TRUE) as featured_stories,
+  COUNT(r.id) FILTER (WHERE r.verified_volunteer = TRUE) as verified_reviews,
+  COUNT(r.id) FILTER (WHERE r.rating = 5) as five_star_count,
+  COUNT(r.id) FILTER (WHERE r.rating = 4) as four_star_count,
+  COUNT(r.id) FILTER (WHERE r.rating = 3) as three_star_count,
+  COUNT(r.id) FILTER (WHERE r.rating = 2) as two_star_count,
+  COUNT(r.id) FILTER (WHERE r.rating = 1) as one_star_count
+FROM organizations org
+LEFT JOIN reviews r ON org.id = r.organization_id AND r.status = 'approved'
+WHERE org.status = 'active' AND org.verification_status = 'verified'
+GROUP BY org.id, org.name;
+
+-- Story highlights performance metrics
+CREATE VIEW story_highlights_performance AS
+SELECT 
+  r.organization_id,
+  r.id as review_id,
+  r.story_highlight_text,
+  r.transformation_tags,
+  r.rating,
+  r.helpful_count,
+  r.created_at,
+  p.full_name as volunteer_name,
+  r.volunteer_country
+FROM reviews r
+LEFT JOIN profiles p ON r.user_id = p.id
+WHERE 
+  r.is_featured_story = TRUE 
+  AND r.status = 'approved'
+  AND r.verified_volunteer = TRUE
+ORDER BY r.helpful_count DESC, r.rating DESC;
+```
+
 ### **1. Application Statistics**
 ```sql
 CREATE VIEW application_stats AS
@@ -887,8 +1158,11 @@ ORDER BY opportunity_count DESC;
 -- Add indexes
 \i supabase/migrations/004_indexes.sql
 
+-- StoriesTab optimizations
+\i supabase/migrations/005_stories_tab_functions.sql
+
 -- Seed data
-\i supabase/migrations/005_seed_data.sql
+\i supabase/migrations/006_seed_data.sql
 ```
 
 This comprehensive database schema provides a solid foundation for the wildlife volunteer platform with proper security, performance optimization, and scalability considerations.

@@ -297,7 +297,7 @@ const OrganizationDetail: React.FC = () => {
         <aside 
           role="complementary" 
           aria-label="Essential program information"
-          className={`lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto sidebar-desktop desktop-sidebar-content sidebar-container ${
+          className={`lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto desktop-sidebar-content  ${
             performanceConfig.enableDesktopOptimizations ? 'performance-optimized' : ''
           }`}
         >
@@ -413,7 +413,7 @@ const OrganizationDetail: React.FC = () => {
         <OrganizationHeader organization={organization} />
         
         {/* Main Content Layout */}
-        <div className="container-nature section-padding">
+        <div className="container-nature section-padding-sm">
           <div className="max-w-6xl mx-auto">
             
             {/* Program Selector (only shows if multiple programs) */}

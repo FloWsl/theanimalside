@@ -342,7 +342,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
         {/* Enhanced Active Tab with Animation */}
         <AnimatePresence mode="wait">
-          <motion.div 
+          <motion.div  
             key={activeTab}
             className="mt-4 text-center"
             initial={{ opacity: 0, y: 10 }}
