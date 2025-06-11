@@ -1,0 +1,58 @@
+/* Theme Context System - Best Practice Implementation */
+
+/* Context-based color themes */
+.theme-light {
+  --text-primary: var(--deep-forest);
+  --text-secondary: var(--forest);
+  --text-muted: var(--deep-forest, 0.7);
+  --bg-primary: var(--soft-cream);
+  --bg-secondary: var(--warm-beige);
+}
+
+.theme-dark {
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.9);
+  --text-muted: rgba(255, 255, 255, 0.7);
+  --bg-primary: var(--deep-forest);
+  --bg-secondary: var(--forest);
+}
+
+.theme-hero {
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.9);
+  --text-muted: rgba(255, 255, 255, 0.7);
+  --bg-primary: transparent;
+  --bg-accent: rgba(255, 255, 255, 0.15);
+}
+
+/* Apply theme colors to typography utilities */
+.theme-light .text-hero,
+.theme-dark .text-hero,
+.theme-hero .text-hero {
+  color: var(--text-primary);
+}
+
+.theme-light .text-body,
+.theme-dark .text-body,
+.theme-hero .text-body {
+  color: var(--text-secondary);
+}
+
+.theme-light .text-caption,
+.theme-dark .text-caption,
+.theme-hero .text-caption {
+  color: var(--text-muted);
+}
+
+/* Component-specific theme applications */
+.hero-section {
+  @apply theme-hero;
+}
+
+.card-content {
+  @apply theme-light;
+}
+
+.navigation {
+  @apply theme-light;
+}

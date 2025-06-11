@@ -1,0 +1,238 @@
+/* 🦁 The Animal Side - OrganizationDetail Design System Tokens */
+/* Comprehensive spacing, typography, and layout standardization */
+
+@layer utilities {
+  /* ========================================================================== */
+  /* SPACING SYSTEM - Nature-Inspired Harmonious Scale */
+  /* ========================================================================== */
+  
+  /* Vertical Spacing (space-y equivalents) */
+  .space-nature-xs > * + * { margin-top: 0.75rem; } /* 12px - Tight spacing for related items */
+  .space-nature-sm > * + * { margin-top: 1rem; }    /* 16px - Small sections, form groups */
+  .space-nature-md > * + * { margin-top: 1.5rem; }  /* 24px - Default section spacing */
+  .space-nature-lg > * + * { margin-top: 2rem; }    /* 32px - Major section breaks */
+  .space-nature-xl > * + * { margin-top: 3rem; }    /* 48px - Page-level section separation */
+
+  /* Section Padding System */
+  .section-padding-xs { @apply px-4 py-3 lg:px-6 lg:py-4; }      /* 16px/24px mobile, 24px/32px desktop */
+  .section-padding-sm { @apply px-4 py-4 lg:px-6 lg:py-6; }      /* 16px/32px mobile, 24px/48px desktop */
+  .section-padding-md { @apply px-6 py-6 lg:px-8 lg:py-8; }      /* 24px/48px mobile, 32px/64px desktop */
+  .section-padding-lg { @apply px-6 py-8 lg:px-12 lg:py-12; }    /* 24px/64px mobile, 48px/96px desktop */
+
+  /* Gap System for Flexbox/Grid */
+  .gap-nature-xs { @apply gap-3; }    /* 12px - Tight element spacing */
+  .gap-nature-sm { @apply gap-4; }    /* 16px - Default element spacing */
+  .gap-nature-md { @apply gap-6; }    /* 24px - Comfortable section spacing */
+  .gap-nature-lg { @apply gap-8; }    /* 32px - Major section spacing */
+
+  /* ========================================================================== */
+  /* TYPOGRAPHY HIERARCHY - Consistent Content Structure */
+  /* ========================================================================== */
+
+  /* Hero Level - Page Headers */
+  .text-hero {
+    @apply text-4xl lg:text-5xl font-display font-bold leading-tight tracking-tight;
+    /* Color should be set by individual components based on background */
+  }
+
+  /* Section Level - Major Section Headers */
+  .text-section {
+    @apply text-2xl lg:text-3xl font-display font-semibold leading-tight;
+    /* Color should be set by individual components based on background */
+  }
+
+  /* Feature Level - Subsection Headers */
+  .text-feature {
+    @apply text-xl lg:text-2xl font-display font-semibold leading-snug;
+    /* Color should be set by individual components based on background */
+  }
+
+  /* Card Title Level - Card/Component Headers */
+  .text-card-title {
+    @apply text-lg lg:text-xl font-sans font-semibold leading-snug;
+    /* Color should be set by individual components based on background */
+  }
+
+  /* Subtitle Level - Secondary Headers */
+  .text-subtitle {
+    @apply text-base lg:text-lg font-sans font-medium leading-normal;
+    /* Color should be set by individual components based on background */
+  }
+
+  /* Body Text Levels */
+  .text-body-large {
+    @apply text-lg font-sans font-normal leading-relaxed;
+    /* Color should be set by individual components based on background */
+  }
+
+  .text-body {
+    @apply text-base font-sans font-normal leading-relaxed;
+    /* Color should be set by individual components based on background */
+  }
+
+  .text-body-small {
+    @apply text-sm font-sans font-normal leading-relaxed;
+    /* Color should be set by individual components based on background */
+  }
+
+  /* Caption Level - Small Supporting Text */
+  .text-caption {
+    @apply text-sm font-sans font-medium leading-normal;
+    /* Color should be set by individual components based on background */
+  }
+
+  .text-caption-small {
+    @apply text-xs font-sans font-medium leading-normal;
+    /* Color should be set by individual components based on background */
+  }
+
+  /* ========================================================================== */
+  /* CARD SYSTEM - Consistent Container Patterns */
+  /* ========================================================================== */
+
+  /* Standard Card Base */
+  .card-nature {
+    @apply bg-white rounded-2xl shadow-sm border border-warm-beige/60 overflow-hidden;
+  }
+
+  /* Card Hover States */
+  .card-nature-hover {
+    @apply card-nature hover:shadow-lg hover:border-warm-beige/80 transition-all duration-300;
+  }
+
+  /* Card with Enhanced Shadow */
+  .card-nature-elevated {
+    @apply bg-white rounded-2xl shadow-lg border border-warm-beige/60 overflow-hidden;
+  }
+
+  /* Shadow System */
+  .shadow-nature {
+    box-shadow: 0 4px 16px rgba(139, 69, 19, 0.06), 0 2px 8px rgba(139, 69, 19, 0.04);
+  }
+
+  .shadow-nature-xl {
+    box-shadow: 0 8px 32px rgba(139, 69, 19, 0.08), 0 4px 16px rgba(139, 69, 19, 0.06);
+  }
+
+  /* ========================================================================== */
+  /* EXPANDABLE SECTION PATTERNS */
+  /* ========================================================================== */
+
+  .expandable-header {
+    @apply flex items-center justify-between p-4 lg:p-6 cursor-pointer hover:bg-warm-beige/20 transition-colors duration-200;
+    min-height: 48px; /* WCAG touch target minimum */
+  }
+
+  .expandable-content {
+    @apply px-4 pb-4 lg:px-6 lg:pb-6 space-nature-sm;
+  }
+
+  /* ========================================================================== */
+  /* RESPONSIVE CONTAINER SYSTEM */
+  /* ========================================================================== */
+
+  .container-nature {
+    @apply max-w-7xl mx-auto px-4 lg:px-8;
+  }
+
+  .container-nature-wide {
+    @apply max-w-full mx-auto px-4 lg:px-8;
+  }
+
+  .container-nature-narrow {
+    @apply max-w-4xl mx-auto px-4 lg:px-6;
+  }
+
+  /* ========================================================================== */
+  /* BUTTON SYSTEM STANDARDIZATION */
+  /* ========================================================================== */
+
+  .btn-nature-primary {
+    @apply inline-flex items-center gap-2 bg-rich-earth hover:bg-deep-earth text-white px-6 py-3 rounded-2xl font-semibold transition-all duration-200 shadow-nature hover:shadow-nature-xl;
+    min-height: 48px; /* WCAG compliance */
+  }
+
+  .btn-nature-secondary {
+    @apply inline-flex items-center gap-2 bg-white hover:bg-warm-beige text-rich-earth border-2 border-rich-earth px-6 py-3 rounded-2xl font-semibold transition-all duration-200;
+    min-height: 48px;
+  }
+
+  .btn-nature-outline {
+    @apply inline-flex items-center gap-2 bg-transparent hover:bg-warm-beige/50 text-deep-forest border border-warm-beige/60 hover:border-warm-beige px-6 py-3 rounded-2xl font-medium transition-all duration-200;
+    min-height: 48px;
+  }
+
+  /* ========================================================================== */
+  /* FORM ELEMENT STANDARDIZATION */
+  /* ========================================================================== */
+
+  .input-nature {
+    @apply w-full px-4 py-3 bg-white border border-warm-beige/60 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-rich-earth/20 focus:border-rich-earth transition-colors duration-200;
+    min-height: 48px; /* WCAG compliance + prevents iOS zoom */
+    font-size: 16px; /* Prevents iOS zoom */
+  }
+
+  .textarea-nature {
+    @apply w-full px-4 py-3 bg-white border border-warm-beige/60 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-rich-earth/20 focus:border-rich-earth transition-colors duration-200 resize-none;
+    min-height: 96px;
+    font-size: 16px;
+  }
+
+  /* ========================================================================== */
+  /* UTILITY CLASSES */
+  /* ========================================================================== */
+
+  /* Touch Optimization */
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+    touch-action: manipulation;
+  }
+
+  /* Content Flow */
+  .content-flow {
+    @apply space-nature-md;
+  }
+
+  /* Section Separator */
+  .section-separator {
+    @apply my-8 lg:my-12 border-t border-warm-beige/40;
+  }
+}
+
+/* ========================================================================== */
+/* COMPONENT-SPECIFIC OVERRIDES */
+/* ========================================================================== */
+
+@layer components {
+  /* Tab System Standardization */
+  .tab-navigation {
+    @apply bg-white/90 backdrop-blur-sm rounded-2xl border border-warm-beige/60 shadow-nature;
+  }
+
+  .tab-button {
+    @apply flex-1 px-4 py-3 lg:px-6 lg:py-4 text-center transition-all duration-300 rounded-xl touch-target;
+    min-height: 48px;
+  }
+
+  .tab-button-active {
+    @apply bg-rich-earth text-white shadow-sm;
+  }
+
+  .tab-button-inactive {
+    @apply text-deep-forest/70 hover:text-deep-forest hover:bg-warm-beige/30;
+  }
+
+  /* Quick Info Cards */
+  .quick-info-card {
+    @apply card-nature text-center section-padding-sm;
+  }
+
+  .quick-info-value {
+    @apply text-2xl font-bold text-rich-earth mb-1;
+  }
+
+  .quick-info-label {
+    @apply text-caption;
+  }
+}
