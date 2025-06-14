@@ -32,7 +32,7 @@ export const useSmartNavigation = (options: UseSmartNavigationOptions = {}) => {
   const [scrollState, setScrollState] = useState<ScrollState>({
     scrollY: 0,
     scrollDirection: 'none',
-    isVisible: false,
+    isVisible: false, // Start hidden until past hero
     isPastHero: false,
     isNearFooter: false
   });
@@ -74,42 +74,37 @@ export const useSmartNavigation = (options: UseSmartNavigationOptions = {}) => {
       newAccumulator = scrollDelta;
     }
     
-    // Determine visibility with refined logic
+    // Determine visibility with proper hero-based logic
     let isVisible = scrollState.isVisible;
     
     if (!isPastHero) {
-      // Hide navigation if not past hero
+      // Hide navigation in hero section
       isVisible = false;
     } else if (isNearFooter) {
       // Hide navigation when near footer
       isVisible = false;
-    } else if (newIsInContentZone) {
-      // In content zone - be more conservative about hiding
+    } else {
+      // Past hero but not near footer - main content area
+      // Default to visible in main content, only hide during sustained fast scrolling
       if (scrollDirection === 'down') {
-        // Only hide on sustained fast scrolling OR very long scroll
+        // Only hide on very sustained fast scrolling
         const isFastScroll = scrollVelocity > velocityThreshold;
         const isLongScroll = newAccumulator > fastScrollDistance;
         
-        if ((isFastScroll && newAccumulator > hideThreshold) || isLongScroll) {
+        if (isFastScroll && isLongScroll) {
           isVisible = false;
           newAccumulator = 0;
+        } else {
+          // Stay visible during normal scrolling in content area
+          isVisible = true;
         }
-      } else if (scrollDirection === 'up' && Math.abs(newAccumulator) > showThreshold) {
-        // Always show when scrolling up in content zone
+      } else if (scrollDirection === 'up') {
+        // Always show when scrolling up in content area
         isVisible = true;
         newAccumulator = 0;
-      } else if (scrollDirection === 'none' && !isVisible) {
-        // Show when stopped scrolling in content zone
+      } else {
+        // Default to visible when in content area
         isVisible = true;
-      }
-    } else {
-      // Outside content zone - use original logic
-      if (scrollDirection === 'down' && newAccumulator > hideThreshold) {
-        isVisible = false;
-        newAccumulator = 0;
-      } else if (scrollDirection === 'up' && Math.abs(newAccumulator) > showThreshold) {
-        isVisible = true;
-        newAccumulator = 0;
       }
     }
     

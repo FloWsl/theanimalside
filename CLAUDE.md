@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-The Animal Side is a wildlife volunteer discovery platform built with React 18 + TypeScript + Vite, implementing a "discovery-first" design philosophy. This is currently a frontend prototype with comprehensive mock data, designed for future API integration.
+The Animal Side is a wildlife volunteer discovery platform built with React 18 + TypeScript + Vite, implementing a "discovery-first" design philosophy. The platform serves as a **catalyst connecting conservation organizations with prospective volunteers**, helping organizations gain exposure while enabling volunteers to discover their dream conservation missions through comprehensive, authentic information. This is currently a frontend prototype with comprehensive mock data, designed for future API integration.
 
 ## Development Commands
 
@@ -41,8 +41,9 @@ npm run dev:clean  # Clean + reinstall + dev
 ### Core Philosophy: Discovery-First Design
 - **Visual exploration over search-focused interfaces**
 - **Progressive disclosure** for mobile-first experiences
-- **Equal opportunity showcase** - no promotional hierarchies
-- **Authentic content over promotional copy**
+- **Equal opportunity showcase** - no promotional hierarchies, all organizations receive fair representation
+- **Authentic content over promotional copy** - comprehensive transparency supports informed decision-making
+- **Catalyst-focused approach** - optimized for meaningful connections between organizations and volunteers rather than conversion metrics
 
 ### Application Structure
 
@@ -113,6 +114,12 @@ src/
 - **Performance-optimized** with 5-minute caching and memory leak prevention
 - **Modular architecture** with reusable NavigationCard, NavigationContainer, NavigationSkeleton components
 - **Isolated placement** below main content, never in sidebar, consistent across all tabs
+
+**Tab Navigation & Scroll Optimization (December 14, 2024):**
+- **Universal scroll-to-content** functionality across all tab navigation methods
+- **Mobile navigation width optimization** preventing text cutoff on small screens
+- **Responsive label system** with shorter text for very small screens (<375px)
+- **Cross-device scroll targeting** using centralized utility function
 
 **Previous Consolidation (June 8, 2025):**
 - **PracticalInformation.tsx** → Integrated into **PracticalTab.tsx** (466 lines)
@@ -287,6 +294,7 @@ When building features, prioritize:
 2. **Emotional connection** through authentic imagery/content
 3. **Progressive disclosure** for complex information
 4. **Equal treatment** for all content (no promotional bias)
+5. **Catalyst optimization** - features should enhance organization exposure and volunteer mission discovery
 
 ### Mobile-First Approach
 - Design mobile experience first, enhance for desktop
@@ -313,6 +321,7 @@ When building features, prioritize:
 - `src/components/OrganizationDetail/tabs/OverviewTab.tsx` - Photo-first discovery implementation
 - `src/components/SmartNavigation/` - Instagram-style discovery navigation system
 - `src/hooks/useSmartNavigation.ts` - Performance-optimized navigation generation
+- `src/lib/scrollUtils.ts` - Centralized scroll-to-content utility for tab navigation
 - `src/design-tokens.css` - Typography utilities (layout only, no colors)
 - `src/styles/theme-contexts.css` - Theme-based color contexts for advanced scenarios
 - `src/index.css` - Global styles and design system color definitions
@@ -331,3 +340,5 @@ The codebase is architecturally prepared for:
 - Payment processing (cost structures defined in data models)
 - Analytics integration (performance monitoring hooks in place)
 - Content management (all content abstracted to data layer)
+- Organization onboarding and profile management systems
+- Volunteer application and matching algorithms

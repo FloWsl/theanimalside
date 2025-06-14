@@ -1,10 +1,10 @@
 // src/components/OrganizationDetail/tabs/ConnectTab.tsx - Simplified Discovery-First Design
 import React, { useState } from 'react';
-import { 
-  Mail, 
-  MessageCircle, 
-  Send, 
-  Clock, 
+import {
+  Mail,
+  MessageCircle,
+  Send,
+  Clock,
   CheckCircle,
   Heart,
   ArrowRight,
@@ -35,11 +35,11 @@ const ConnectTab: React.FC<ConnectTabProps> = ({ organization, onTabChange }) =>
         icon={Heart}
       >
         <p className="text-body-large text-forest/90 max-w-3xl mx-auto leading-relaxed">
-          You've explored our mission, discovered what your daily experience would be like, 
-          and learned about the practical details. Now it's time to connect and start your 
+          You've explored our mission, discovered what your daily experience would be like,
+          and learned about the practical details. Now it's time to connect and start your
           wildlife conservation journey with {organization.name}.
         </p>
-        
+
         <div className="mt-6 flex items-center justify-center gap-4 text-sm text-forest/70">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-sage-green" />
@@ -62,7 +62,7 @@ const ConnectTab: React.FC<ConnectTabProps> = ({ organization, onTabChange }) =>
           Choose Your Path Forward
         </h2>
         <p className="text-body text-forest/80 max-w-2xl mx-auto">
-          Whether you need more information or you're ready to commit, we've made it simple. 
+          Whether you need more information or you're ready to commit, we've made it simple.
           Pick the option that best describes where you are right now.
         </p>
       </div>
@@ -76,23 +76,23 @@ const ConnectTab: React.FC<ConnectTabProps> = ({ organization, onTabChange }) =>
             </div>
             <h3 className="text-2xl font-semibold text-deep-forest mb-4">I Have Questions</h3>
             <p className="text-body-large text-forest/80 max-w-2xl mx-auto leading-relaxed">
-              Still evaluating? Need clarification about requirements, costs, activities, 
+              Still evaluating? Need clarification about requirements, costs, activities,
               or anything else? Get direct answers from our team.
             </p>
           </div>
 
           {/* Contact Actions */}
           <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <a 
+            <a
               href={`mailto:${organization.email}?subject=Questions about ${program.title} - ${organization.name}&body=Hi! I've been exploring your volunteer program and have some questions. Could you please help me with:%0D%0A%0D%0A1. %0D%0A2. %0D%0A3. %0D%0A%0D%0AThank you!`}
               className="flex items-center justify-center gap-3 bg-warm-sunset hover:bg-warm-sunset/90 text-white px-8 py-4 rounded-2xl font-semibold transition-colors shadow-lg"
             >
               <Mail className="w-5 h-5" />
               Send Email with Questions
             </a>
-            
+
             {organization.phone && (
-              <a 
+              <a
                 href={`tel:${organization.phone}`}
                 className="flex items-center justify-center gap-3 bg-white hover:bg-warm-sunset/10 border-2 border-warm-sunset text-warm-sunset px-8 py-4 rounded-2xl font-semibold transition-colors shadow-lg"
               >
@@ -150,23 +150,23 @@ const ConnectTab: React.FC<ConnectTabProps> = ({ organization, onTabChange }) =>
             </div>
             <h3 className="text-2xl font-semibold text-deep-forest mb-4">I'm Ready to Apply</h3>
             <p className="text-body-large text-forest/80 max-w-2xl mx-auto leading-relaxed">
-              Convinced and excited? Ready to start your wildlife conservation journey? 
+              Convinced and excited? Ready to start your wildlife conservation journey?
               Let's begin the application process and secure your spot.
             </p>
           </div>
 
           {/* Application Actions */}
           <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <a 
+            <a
               href={`mailto:${organization.email}?subject=Application for ${program.title} - ${organization.name}&body=Hi! I'm ready to apply for the ${program.title} volunteer program.%0D%0A%0D%0AMy details:%0D%0AName: %0D%0ANationality: %0D%0APreferred start date: %0D%0ADuration: ${program.duration.min}-${program.duration.max} weeks%0D%0A%0D%0APlease send me the application form and next steps.%0D%0A%0D%0AThank you!`}
               className="flex items-center justify-center gap-3 bg-rich-earth hover:bg-rich-earth/90 text-white px-8 py-4 rounded-2xl font-semibold transition-colors shadow-lg"
             >
               <Send className="w-5 h-5" />
               Start Application Process
             </a>
-            
+
             {organization.website && (
-              <a 
+              <a
                 href={organization.website}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -217,44 +217,6 @@ const ConnectTab: React.FC<ConnectTabProps> = ({ organization, onTabChange }) =>
         </div>
       </div>
 
-      {/* Organization Contact Information */}
-      <div className="bg-gradient-to-r from-sage-green/5 to-rich-earth/5 rounded-2xl p-6 border border-sage-green/20">
-        <h3 className="text-lg font-semibold text-deep-forest mb-4 flex items-center gap-2">
-          <User className="w-5 h-5 text-sage-green" />
-          {organization.name} Contact Details
-        </h3>
-        
-        <div className="grid md:grid-cols-3 gap-4 text-sm">
-          <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
-            <Mail className="w-4 h-4 text-sage-green" />
-            <div>
-              <div className="font-medium text-forest">Email</div>
-              <div className="text-forest/70">{organization.email}</div>
-            </div>
-          </div>
-          
-          {organization.phone && (
-            <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
-              <Phone className="w-4 h-4 text-sage-green" />
-              <div>
-                <div className="font-medium text-forest">Phone</div>
-                <div className="text-forest/70">{organization.phone}</div>
-              </div>
-            </div>
-          )}
-          
-          {organization.website && (
-            <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
-              <Globe className="w-4 h-4 text-sage-green" />
-              <div>
-                <div className="font-medium text-forest">Website</div>
-                <div className="text-forest/70 truncate">{organization.website.replace('https://', '').replace('http://', '')}</div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Simple Encouragement */}
       <div className="text-center py-8">
         <div className="max-w-2xl mx-auto">
@@ -262,8 +224,8 @@ const ConnectTab: React.FC<ConnectTabProps> = ({ organization, onTabChange }) =>
             Your Wildlife Conservation Journey Starts Here 🌿
           </h3>
           <p className="text-body text-forest/80 leading-relaxed">
-            Every volunteer makes a difference. Whether you have questions or you're ready to dive in, 
-            we're here to support you every step of the way. The animals are counting on passionate 
+            Every volunteer makes a difference. Whether you have questions or you're ready to dive in,
+            we're here to support you every step of the way. The animals are counting on passionate
             people like you.
           </p>
         </div>

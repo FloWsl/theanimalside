@@ -1,29 +1,24 @@
 // src/components/OrganizationDetail/tabs/PracticalTab.tsx
 import React, { useState } from 'react';
 import { 
-  FileText, 
   DollarSign, 
   Clock, 
-  Briefcase, 
   Heart, 
-  Stethoscope,
   Shield,
   Plane,
-  AlertTriangle,
   CheckCircle,
-  Info,
   Calendar,
-  Thermometer,
-  Umbrella,
-  Sun,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  Download
+  MapPin,
+  Home,
+  Utensils,
+  Users,
+  Camera,
+  Wifi,
+  Car
 } from 'lucide-react';
 import { OrganizationDetail, Program } from '../../../types';
-import ExpandableSection from '../ExpandableSection';
 import SharedTabSection from '../SharedTabSection';
+import { scrollToTabContent } from '../../../lib/scrollUtils';
 
 interface PracticalTabProps {
   organization: OrganizationDetail;
@@ -34,6 +29,99 @@ interface PracticalTabProps {
   onTabChange?: (tabId: string) => void;
 }
 
+// Photo-First Accommodation Gallery Component
+const AccommodationGallery: React.FC<{ photos: string[] }> = ({ photos }) => {
+  const [selectedPhoto, setSelectedPhoto] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  if (!photos || photos.length === 0) {
+    return (
+      <div className="bg-gradient-to-br from-warm-beige/30 to-gentle-lemon/20 rounded-xl p-8 text-center border border-beige/40">
+        <Camera className="w-12 h-12 text-forest/30 mx-auto mb-3" />
+        <div className="text-sm font-medium text-forest/60 mb-1">Accommodation Photos</div>
+        <p className="text-xs text-forest/50">Images coming soon</p>
+      </div>
+    );
+  }
+  
+  return (
+    <>
+      <div className="space-y-3">
+        {/* Main Photo Display */}
+        <div 
+          className="aspect-[4/3] bg-warm-beige/30 rounded-xl overflow-hidden cursor-pointer group relative"
+          onClick={() => setIsModalOpen(true)}
+        >
+          <img 
+            src={photos[selectedPhoto]} 
+            alt="Accommodation view"
+            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+          />
+          
+          {/* Hover Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-forest/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute bottom-3 left-3 text-white">
+              <div className="text-xs font-medium bg-forest/60 px-2 py-1 rounded">Click to enlarge</div>
+            </div>
+          </div>
+          
+          {/* Photo Counter */}
+          {photos.length > 1 && (
+            <div className="absolute top-3 right-3 bg-forest/60 text-white text-xs px-2 py-1 rounded">
+              {selectedPhoto + 1} / {photos.length}
+            </div>
+          )}
+        </div>
+        
+        {/* Thumbnail Navigation */}
+        {photos.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {photos.map((photo, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedPhoto(index)}
+                className={`flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all ${
+                  selectedPhoto === index 
+                    ? 'border-sage-green shadow-lg scale-105' 
+                    : 'border-transparent hover:border-sage-green/50'
+                }`}
+              >
+                <img 
+                  src={photo} 
+                  alt={`Accommodation view ${index + 1}`} 
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* Simple Modal for Full-Size View */}
+      {isModalOpen && (
+        <div 
+          className="fixed inset-0 bg-forest/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div className="relative max-w-4xl max-h-full">
+            <img 
+              src={photos[selectedPhoto]} 
+              alt="Accommodation full view"
+              className="max-w-full max-h-full object-contain rounded-xl"
+            />
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 bg-white/90 hover:bg-white text-forest rounded-full p-2 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
 const PracticalTab: React.FC<PracticalTabProps> = ({ 
   organization, 
   selectedProgram, 
@@ -42,885 +130,584 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
   hideDuplicateInfo = false,
   onTabChange 
 }) => {
-  // State for expandable sections in comprehensive health guide
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['requirements']));
-  
-  const toggleSection = (section: string) => {
-    const newExpanded = new Set(expandedSections);
-    if (newExpanded.has(section)) {
-      newExpanded.delete(section);
-    } else {
-      newExpanded.add(section);
-    }
-    setExpandedSections(newExpanded);
+  // Physical fitness levels - simple admin-friendly scale
+  const fitnessLevels = {
+    1: { label: 'Minimal', description: 'Light activities suitable for most fitness levels' },
+    2: { label: 'Light', description: 'Some walking and standing, basic activities' },
+    3: { label: 'Moderate', description: 'Walking, lifting, outdoor work in various weather' },
+    4: { label: 'High', description: 'Demanding physical work, hiking, heavy lifting' },
+    5: { label: 'Intensive', description: 'Very demanding work, extreme conditions' }
   };
   
-  const isExpanded = (section: string) => expandedSections.has(section);
+  // Mock accommodation photos following photo-first strategy
+  const mockAccommodationPhotos = [
+    'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&h=400&fit=crop&crop=center', // Comfortable volunteer dormitory
+    'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=400&fit=crop&crop=center', // Common living area
+    'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop&crop=center', // Outdoor volunteer space
+    'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600&h=400&fit=crop&crop=center'  // Shared facilities
+  ];
+  
+  // For demo: assume fitness level 3 (Moderate) - in real app, this comes from organization data
+  const currentFitnessLevel = fitnessLevels[3];
+
   return (
-    <div className="space-nature-md">
-      {/* Level 1: Essential Practical Overview - Conditional based on desktop sidebar */}
-      {!hideDuplicateInfo && (
-        <SharedTabSection
-          title="Practical Information"
-          variant="hero"
-          level="essential"
-          icon={Briefcase}
-        >
-          <p className="text-body-large text-forest/90 max-w-3xl mx-auto mb-6">
-            Everything you need to know about costs, requirements, and logistics for your volunteer experience.
-          </p>
-          
-          {/* Quick Practical Facts - Only on mobile since sidebar shows this on desktop */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-nature-sm">
-            {/* Cost */}
-            <div className="bg-white rounded-2xl p-4 text-center border border-rich-earth/20">
-              <div className="text-2xl font-bold text-rich-earth mb-1">
-                {selectedProgram.cost.amount === 0 ? 'FREE' : `${selectedProgram.cost.currency} ${selectedProgram.cost.amount}`}
-              </div>
-              <div className="text-sm text-deep-forest/70">per {selectedProgram.cost.period}</div>
+    <div className="w-full max-w-none space-y-6 lg:space-y-8">
+      {/* LEVEL 1: ESSENTIAL - Always Visible */}
+      <SharedTabSection
+        title="Essential Information"
+        variant="hero"
+        level="essential"
+        icon={Shield}
+      >
+        <p className="text-body-large text-forest/90 max-w-3xl mx-auto text-center">
+          The key details you need to know about this volunteer program.
+        </p>
+        
+        {/* Essential Quick Facts */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-8">
+          <div className="bg-white rounded-xl p-3 sm:p-4 text-center border border-rich-earth/20">
+            <div className="text-xl sm:text-2xl font-bold text-rich-earth mb-1">
+              {selectedProgram.cost.amount === 0 ? 'FREE' : `${selectedProgram.cost.currency}${selectedProgram.cost.amount}`}
             </div>
-            
-            {/* Duration */}
-            <div className="bg-white rounded-2xl p-4 text-center border border-sage-green/20">
-              <div className="text-2xl font-bold text-sage-green mb-1">
-                {selectedProgram.duration.min}-{selectedProgram.duration.max || '∞'}
-              </div>
-              <div className="text-sm text-deep-forest/70">weeks</div>
-            </div>
-            
-            {/* Age Requirement */}
-            <div className="bg-white rounded-2xl p-4 text-center border border-warm-sunset/20">
-              <div className="text-2xl font-bold text-warm-sunset mb-1">
-                {organization.ageRequirement.min}+
-              </div>
-              <div className="text-sm text-deep-forest/70">years old</div>
-            </div>
-            
-            {/* Languages */}
-            <div className="bg-white rounded-2xl p-4 text-center border border-golden-hour/20">
-              <div className="text-2xl font-bold text-golden-hour mb-1">
-                {organization.languages.length}
-              </div>
-              <div className="text-sm text-deep-forest/70">languages</div>
-            </div>
+            <div className="text-xs sm:text-sm text-deep-forest/70">Program cost</div>
           </div>
-          
-          {/* Quick Requirements List */}
-          <div className="mt-6 p-4 bg-white/80 rounded-2xl border border-sage-green/20">
-            <h4 className="text-sm font-semibold text-deep-forest mb-2">Key Requirements:</h4>
-            <div className="flex flex-wrap gap-2">
-              {selectedProgram.requirements.slice(0, 3).map((req, index) => (
-                <span key={index} className="px-3 py-1 bg-sage-green/10 text-sage-green rounded-full text-xs font-medium">
-                  {req}
-                </span>
-              ))}
-              {selectedProgram.requirements.length > 3 && (
-                <span className="px-3 py-1 bg-forest/10 text-forest rounded-full text-xs font-medium">
-                  +{selectedProgram.requirements.length - 3} more
-                </span>
-              )}
+          <div className="bg-white rounded-xl p-3 sm:p-4 text-center border border-warm-sunset/20">
+            <div className="text-xl sm:text-2xl font-bold text-warm-sunset mb-1">
+              {selectedProgram.duration.min}-{selectedProgram.duration.max || '∞'}
             </div>
+            <div className="text-xs sm:text-sm text-deep-forest/70">Weeks</div>
           </div>
-        </SharedTabSection>
-      )}
+          <div className="bg-white rounded-xl p-3 sm:p-4 text-center border border-sage-green/20">
+            <div className="text-xl sm:text-2xl font-bold text-sage-green mb-1">
+              {organization.ageRequirement.min}+
+            </div>
+            <div className="text-xs sm:text-sm text-deep-forest/70">Years old</div>
+          </div>
+          <div className="bg-white rounded-xl p-3 sm:p-4 text-center border border-golden-hour/20">
+            <div className="text-sm sm:text-lg font-bold text-golden-hour mb-1">
+              {organization.accommodation.provided ? '✓' : '✗'}
+            </div>
+            <div className="text-xs sm:text-sm text-deep-forest/70">Housing</div>
+          </div>
+        </div>
+      </SharedTabSection>
       
-      {/* Desktop: Focus on detailed logistics since basics are in sidebar */}
-      {hideDuplicateInfo && (
-        <SharedTabSection
-          title="Detailed Logistics & Preparation"
-          variant="hero"
-          level="essential"
-          icon={Briefcase}
-        >
-          <p className="text-body-large text-forest/90 max-w-3xl mx-auto">
-            Comprehensive preparation guide and logistics information for your volunteer experience.
-          </p>
-        </SharedTabSection>
-      )}
-
-      {/* Level 2: Important Practical Details - Expandable */}
-      <ExpandableSection
-        title="Costs & What's Included"
-        level="important"
-        icon={DollarSign}
-        preview={hideDuplicateInfo ? 
-          "Detailed cost breakdown and comprehensive list of included services and amenities" :
-          `${selectedProgram.cost.amount === 0 ? 'Free program' : `${selectedProgram.cost.currency} ${selectedProgram.cost.amount}/${selectedProgram.cost.period}`} including ${selectedProgram.cost.includes.slice(0, 2).join(', ').toLowerCase()} and more`
-        }
+      {/* LEVEL 1: ACCOMMODATION - Essential */}
+      <SharedTabSection
+        title="Your Accommodation"
+        variant="section"
+        level="essential"
+        icon={Home}
         className="mt-8"
-        isDesktop={isDesktop}
-        forceExpanded={hideDuplicateInfo}
       >
-        <div className="space-nature-sm">
-          {/* Cost Breakdown */}
-          <div className="grid md:grid-cols-2 gap-nature-sm">
-            <div className="bg-gradient-to-br from-rich-earth/5 to-rich-earth/10 rounded-2xl section-padding-sm border border-rich-earth/20">
-              <h4 className="text-xl font-semibold text-deep-forest mb-4">What's Included</h4>
-              <div className="space-y-2">
-                {selectedProgram.cost.includes.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <Heart className="w-4 h-4 text-rich-earth flex-shrink-0" />
-                    <span className="text-sm text-deep-forest">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-br from-warm-sunset/5 to-warm-sunset/10 rounded-2xl section-padding-sm border border-warm-sunset/20">
-              <h4 className="text-xl font-semibold text-deep-forest mb-4">Not Included</h4>
-              <div className="space-y-2">
-                {selectedProgram.cost.excludes.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="w-4 h-4 border border-warm-sunset rounded flex-shrink-0"></div>
-                    <span className="text-sm text-deep-forest">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-lg sm:text-xl text-forest mb-3">Where You'll Stay</h3>
+            <p className="text-sm sm:text-base text-forest/80 max-w-2xl mx-auto">
+              {organization.accommodation.description}
+            </p>
           </div>
           
-          {/* Accommodation & Meals */}
-          <div className="grid md:grid-cols-2 gap-nature-sm">
-            <div className="bg-sage-green/5 rounded-2xl section-padding-sm border border-sage-green/20">
-              <h4 className="text-lg font-semibold text-deep-forest mb-3">Accommodation</h4>
-              <p className="text-sm text-deep-forest/80 mb-3">{organization.accommodation.description}</p>
-              <div className="space-y-1">
-                {organization.accommodation.amenities.slice(0, 4).map((amenity, index) => (
-                  <div key={index} className="text-xs text-sage-green">• {amenity}</div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="bg-golden-hour/5 rounded-2xl section-padding-sm border border-golden-hour/20">
-              <h4 className="text-lg font-semibold text-deep-forest mb-3">Meals</h4>
-              <p className="text-sm text-deep-forest/80 mb-3">{organization.meals.description}</p>
-              <div className="flex flex-wrap gap-1">
-                {organization.meals.dietaryOptions.map((option, index) => (
-                  <span key={index} className="px-2 py-1 bg-golden-hour/10 text-golden-hour rounded text-xs">
-                    {option}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </ExpandableSection>
-
-      <ExpandableSection
-        title="Requirements & Logistics"
-        level="important"
-        icon={Clock}
-        preview={hideDuplicateInfo ? 
-          "Comprehensive logistics information including transportation, location details, and language requirements" :
-          `Age ${organization.ageRequirement.min}+, ${organization.languages.join('/')} speaking, with ${selectedProgram.requirements.length} specific requirements`
-        }
-        className="mt-8"
-        isDesktop={isDesktop}
-        forceExpanded={hideDuplicateInfo}
-      >
-        <div className="space-nature-sm">
-          {/* Requirements Grid */}
-          <div>
-            <h4 className="text-lg font-semibold text-deep-forest mb-4">Program Requirements</h4>
-            <div className="grid md:grid-cols-2 gap-3">
-              {selectedProgram.requirements.map((req, index) => (
-                <div key={index} className="flex items-start gap-3 p-3 bg-rich-earth/5 rounded-xl">
-                  <div className="w-2 h-2 bg-rich-earth rounded-full flex-shrink-0 mt-2"></div>
-                  <span className="text-sm text-deep-forest">{req}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Transportation & Logistics */}
-          <div className="bg-sage-green/5 rounded-2xl section-padding-sm border border-sage-green/20">
-            <h4 className="text-lg font-semibold text-deep-forest mb-3">Transportation & Location</h4>
-            <p className="text-sm text-deep-forest/80 mb-4">{organization.transportation.description}</p>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <h5 className="text-sm font-semibold text-sage-green mb-2">Location Details</h5>
-                <div className="space-y-1 text-xs text-deep-forest/70">
-                  <div>• {organization.location.city}, {organization.location.region}</div>
-                  <div>• {organization.location.country}</div>
-                  <div>• Timezone: {organization.location.timezone}</div>
-                  {organization.location.nearestAirport && (
-                    <div>• Airport: {organization.location.nearestAirport}</div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <h5 className="text-sm font-semibold text-sage-green mb-2">Languages</h5>
-                <div className="flex flex-wrap gap-1">
-                  {organization.languages.map((lang, index) => (
-                    <span key={index} className="px-2 py-1 bg-sage-green/10 text-sage-green rounded text-xs">
-                      {lang}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ExpandableSection>
-
-      {/* Level 3: Comprehensive Health & Preparation - Detailed Expandable */}
-      <ExpandableSection
-        title="Health Requirements & Preparation"
-        level="comprehensive"
-        icon={Stethoscope}
-        preview={`${organization.healthRequirements.vaccinations.length} required vaccinations, travel insurance ${organization.healthRequirements.insurance ? 'mandatory' : 'recommended'}, plus detailed preparation guidance`}
-        className="mt-8"
-        isDesktop={isDesktop}
-      >
-        <div className="space-nature-sm">
-          {/* Integrated Comprehensive Health & Preparation Guide */}
-          <div className="space-y-8">
-            {/* Section Header */}
-            <div className="text-center space-y-4">
-              <h2 className="text-section text-forest">Essential Preparation Guide</h2>
-              <p className="text-body-large text-forest/80 max-w-3xl mx-auto">
-                Everything you need to know to prepare for your volunteer experience. 
-                We've compiled all the practical details to help you feel confident and ready.
-              </p>
-            </div>
-            
-            {/* Quick Overview Cards */}
-            <div className="grid md:grid-cols-3 gap-6">
-              {/* Age Requirements */}
-              <div className="bg-white rounded-xl p-6 shadow-md border border-beige/60">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-sage-green/10 rounded-lg">
-                    <Calendar className="w-5 h-5 text-sage-green" />
-                  </div>
-                  <h3 className="font-semibold text-forest">Age Requirement</h3>
-                </div>
+          {/* Full-width accommodation showcase */}
+          <div className="bg-gradient-to-br from-soft-cream via-warm-beige to-gentle-lemon/20 rounded-2xl overflow-hidden shadow-nature border border-beige/60">
+            <div className="p-4 sm:p-6 lg:p-8">
+              {/* Photo gallery takes full width */}
+              <AccommodationGallery photos={mockAccommodationPhotos} />
+              
+              {/* Details flow below in single column */}
+              <div className="mt-8 space-y-6">
+                
+                {/* Accommodation description */}
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-forest">
-                    {organization.ageRequirement.min}+
-                    {organization.ageRequirement.max && (
-                      <span className="text-base font-normal text-forest/70">
-                        - {organization.ageRequirement.max}
+                  <p className="text-forest leading-relaxed text-lg max-w-3xl mx-auto">
+                    {organization.accommodation.description}
+                  </p>
+                </div>
+                
+                {/* Amenities - Compact display without non-clickable counters */}
+                <div className="bg-sage-green/5 rounded-lg p-4">
+                  <h4 className="text-card-title text-sage-green mb-3 text-center">✨ Key Amenities</h4>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {organization.accommodation.amenities.map((amenity, index) => (
+                      <span key={index} className="px-3 py-1 bg-white text-forest rounded-full text-sm border border-sage-green/20">
+                        {amenity}
                       </span>
-                    )}
-                  </div>
-                  <div className="text-sm text-forest/70 mt-1">
-                    years old
-                  </div>
-                </div>
-              </div>
-              
-              {/* Physical Fitness */}
-              <div className="bg-white rounded-xl p-6 shadow-md border border-beige/60">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-rich-earth/10 rounded-lg">
-                    <Heart className="w-5 h-5 text-rich-earth" />
-                  </div>
-                  <h3 className="font-semibold text-forest">Fitness Level</h3>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-forest mb-2">
-                    Moderate
-                  </div>
-                  <p className="text-sm text-forest/70 leading-relaxed">
-                    {organization.healthRequirements.physicalFitness}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Insurance */}
-              <div className="bg-white rounded-xl p-6 shadow-md border border-beige/60">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-sunset/10 rounded-lg">
-                    <Shield className="w-5 h-5 text-sunset" />
-                  </div>
-                  <h3 className="font-semibold text-forest">Insurance</h3>
-                </div>
-                <div className="text-center">
-                  <div className={`text-lg font-bold mb-2 ${
-                    organization.healthRequirements.insurance ? 'text-red-600' : 'text-sage-green'
-                  }`}>
-                    {organization.healthRequirements.insurance ? 'Required' : 'Optional'}
-                  </div>
-                  <p className="text-sm text-forest/70">
-                    {organization.healthRequirements.insurance 
-                      ? 'Comprehensive travel insurance with medical coverage'
-                      : 'Recommended for peace of mind'
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Detailed Information Sections */}
-            <div className="space-y-4">
-              
-              {/* Skill Requirements */}
-              <div className="bg-white rounded-2xl shadow-nature border border-beige/60 overflow-hidden">
-                <div 
-                  className="p-6 cursor-pointer hover:bg-beige/30 transition-colors"
-                  onClick={() => toggleSection('requirements')}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-rich-earth/10 rounded-lg">
-                        <Briefcase className="w-5 h-5 text-rich-earth" />
-                      </div>
-                      <h3 className="text-xl font-semibold text-forest">Skills & Requirements</h3>
-                    </div>
-                    {isExpanded('requirements') ? (
-                      <ChevronUp className="w-5 h-5 text-forest/50" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-forest/50" />
-                    )}
+                    ))}
                   </div>
                 </div>
                 
-                {isExpanded('requirements') && (
-                  <div className="px-6 pb-6 space-y-6">
-                    {/* Required Skills */}
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-forest text-lg">Required</h4>
-                      <div className="grid md:grid-cols-2 gap-3">
-                        {organization.skillRequirements.required.map((skill, index) => (
-                          <div key={index} className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0" />
-                            <span className="text-forest">{skill}</span>
-                          </div>
+                {/* Meals & Support - Essential admin-friendly info */}
+                <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                  
+                  {/* Meals Information */}
+                  <div className="bg-rich-earth/5 rounded-xl p-4 lg:p-5">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Utensils className="w-5 h-5 text-rich-earth" />
+                      <h4 className="text-card-title text-forest">Meals Included</h4>
+                    </div>
+                    <p className="text-forest/80 mb-4">
+                      {organization.meals.description}
+                    </p>
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-forest">Dietary Options:</div>
+                      <div className="flex flex-wrap gap-2">
+                        {organization.meals.dietaryOptions.map((option, index) => (
+                          <span key={index} className="px-3 py-1 bg-rich-earth/10 text-rich-earth rounded-full text-sm">
+                            {option}
+                          </span>
                         ))}
                       </div>
                     </div>
-                    
-                    {/* Preferred Skills */}
-                    {organization.skillRequirements.preferred.length > 0 && (
-                      <div className="space-y-3">
-                        <h4 className="font-semibold text-forest text-lg">Preferred (Not Required)</h4>
-                        <div className="grid md:grid-cols-2 gap-3">
-                          {organization.skillRequirements.preferred.map((skill, index) => (
-                            <div key={index} className="flex items-center gap-3 p-3 bg-sage-green/10 border border-sage-green/20 rounded-lg">
-                              <CheckCircle className="w-4 h-4 text-sage-green flex-shrink-0" />
-                              <span className="text-forest">{skill}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Training Provided */}
-                    {organization.skillRequirements.training.length > 0 && (
-                      <div className="space-y-3">
-                        <h4 className="font-semibold text-forest text-lg">Training We Provide</h4>
-                        <div className="grid md:grid-cols-2 gap-3">
-                          {organization.skillRequirements.training.map((training, index) => (
-                            <div key={index} className="flex items-center gap-3 p-3 bg-sunset/10 border border-sunset/20 rounded-lg">
-                              <Info className="w-4 h-4 text-sunset flex-shrink-0" />
-                              <span className="text-forest">{training}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
-                )}
-              </div>
-              
-              {/* Health & Vaccinations */}
-              <div className="bg-white rounded-2xl shadow-nature border border-beige/60 overflow-hidden">
-                <div 
-                  className="p-6 cursor-pointer hover:bg-beige/30 transition-colors"
-                  onClick={() => toggleSection('health')}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-sage-green/10 rounded-lg">
-                        <Heart className="w-5 h-5 text-sage-green" />
-                      </div>
-                      <h3 className="text-xl font-semibold text-forest">Health & Vaccinations</h3>
+                  
+                  {/* Program Support - Simple, admin-friendly */}
+                  <div className="bg-sage-green/5 rounded-xl p-4 lg:p-5">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Users className="w-5 h-5 text-sage-green" />
+                      <h4 className="text-card-title text-forest">Program Support</h4>
                     </div>
-                    {isExpanded('health') ? (
-                      <ChevronUp className="w-5 h-5 text-forest/50" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-forest/50" />
-                    )}
+                    <div className="space-y-3 text-sm text-forest/80">
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-sage-green rounded-full mt-2 flex-shrink-0"></div>
+                        <span>Dedicated volunteer coordinators on-site</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-sage-green rounded-full mt-2 flex-shrink-0"></div>
+                        <span>Flexible programming to match your interests</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-sage-green rounded-full mt-2 flex-shrink-0"></div>
+                        <span>Pre-arrival coordination and guidance</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
-                {isExpanded('health') && (
-                  <div className="px-6 pb-6 space-y-6">
-                    {/* Vaccinations */}
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-forest text-lg">Recommended Vaccinations</h4>
-                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                        <div className="flex items-start gap-3">
-                          <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="text-forest font-medium mb-2">Consult your doctor or travel clinic at least 6 weeks before departure</p>
-                            <div className="grid md:grid-cols-2 gap-2">
-                              {organization.healthRequirements.vaccinations.map((vaccination, index) => (
-                                <div key={index} className="flex items-center gap-2">
-                                  <CheckCircle className="w-4 h-4 text-sage-green" />
-                                  <span className="text-forest text-sm">{vaccination}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Medical Clearance */}
-                    {organization.healthRequirements.medicalClearance && (
-                      <div className="space-y-3">
-                        <h4 className="font-semibold text-forest text-lg">Medical Clearance</h4>
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                          <div className="flex items-start gap-3">
-                            <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <p className="text-forest font-medium">Medical clearance required</p>
-                              <p className="text-forest/70 text-sm mt-1">
-                                You'll need a doctor's certificate confirming you're fit for physical work with animals.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Physical Fitness Details */}
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-forest text-lg">Physical Fitness Requirements</h4>
-                      <div className="bg-cream rounded-lg p-4">
-                        <p className="text-forest leading-relaxed">
-                          {organization.healthRequirements.physicalFitness}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </SharedTabSection>
+
+      {/* LEVEL 1: BASIC REQUIREMENTS - Essential */}
+      <SharedTabSection
+        title="Basic Requirements"
+        variant="section"
+        level="essential"
+        icon={CheckCircle}
+        className="mt-8"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl p-4 text-center border border-sage-green/20">
+            <Calendar className="w-8 h-8 text-sage-green mx-auto mb-3" />
+            <div className="font-semibold text-forest mb-2">Age Requirement</div>
+            <div className="text-sage-green font-bold">
+              {organization.ageRequirement.min}+ years
+              {organization.ageRequirement.max && ` - ${organization.ageRequirement.max} years`}
+            </div>
+          </div>
+          <div className="bg-white rounded-xl p-4 text-center border border-rich-earth/20">
+            <Heart className="w-8 h-8 text-rich-earth mx-auto mb-3" />
+            <div className="font-semibold text-forest mb-2">Fitness Level</div>
+            <div className="text-rich-earth font-bold">Moderate</div>
+            <div className="text-xs text-forest/60 mt-1">Walking, lifting, outdoor work</div>
+          </div>
+          <div className="bg-white rounded-xl p-4 text-center border border-warm-sunset/20">
+            <MapPin className="w-8 h-8 text-warm-sunset mx-auto mb-3" />
+            <div className="font-semibold text-forest mb-2">Languages</div>
+            <div className="text-warm-sunset font-bold text-sm">
+              {organization.languages.join(', ')}
+            </div>
+          </div>
+        </div>
+      </SharedTabSection>
+
+      {/* LEVEL 2: EXPANDABLE SECTIONS */}
+      
+      {/* Internet & Communication */}
+      <SharedTabSection
+        title="Internet & Communication"
+        variant="section"
+        level="essential"
+        icon={Wifi}
+        className="mt-8"
+      >
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-lg sm:text-xl text-forest mb-3">Staying Connected</h3>
+            <p className="text-sm sm:text-base text-forest/80 max-w-2xl mx-auto">
+              Essential information about internet access during your volunteer program.
+            </p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-soft-cream via-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-6 lg:p-8 border border-warm-beige/40 shadow-nature">
+            <div className="text-center">
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
+                organization.internetAccess.available ? 'bg-sage-green/20' : 'bg-gray-100'
+              }`}>
+                <Wifi className={`w-8 h-8 ${
+                  organization.internetAccess.available ? 'text-sage-green' : 'text-gray-400'
+                }`} />
               </div>
               
-              {/* Travel & Logistics */}
-              <div className="bg-white rounded-2xl shadow-nature border border-beige/60 overflow-hidden">
-                <div 
-                  className="p-6 cursor-pointer hover:bg-beige/30 transition-colors"
-                  onClick={() => toggleSection('travel')}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-sunset/10 rounded-lg">
-                        <Plane className="w-5 h-5 text-sunset" />
+              <div className="mb-4">
+                <div className="text-lg font-semibold text-forest mb-2">
+                  {organization.internetAccess.available 
+                    ? `${organization.internetAccess.quality.charAt(0).toUpperCase() + organization.internetAccess.quality.slice(1)} WiFi Available` 
+                    : 'Limited Internet Access'
+                  }
+                </div>
+                <p className="text-forest/80 leading-relaxed max-w-lg mx-auto">
+                  {organization.internetAccess.description}
+                </p>
+              </div>
+              
+              {organization.internetAccess.available && (
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-sage-green/10 text-sage-green rounded-full text-sm font-medium">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Video calls and messaging supported</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </SharedTabSection>
+      
+      {/* Cost Breakdown */}
+      <SharedTabSection
+        title="Cost Breakdown"
+        variant="section"
+        level="important"
+        icon={DollarSign}
+        className="mt-8"
+      >
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-lg sm:text-xl text-forest mb-3">Program Investment</h3>
+            <p className="text-sm sm:text-base text-forest/80 max-w-2xl mx-auto">
+              Complete breakdown of what's included and what you'll need to arrange separately.
+            </p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-soft-cream via-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-6 lg:p-8 border border-warm-beige/40 shadow-nature">
+            <div className="grid sm:grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* Program Cost */}
+              <div className="lg:col-span-1 bg-white rounded-xl p-6 text-center border border-rich-earth/30">
+                <DollarSign className="w-12 h-12 text-rich-earth mx-auto mb-3" />
+                <div className="text-sm font-medium text-forest/70 mb-2">Total Program Cost</div>
+                <div className="text-3xl font-bold text-rich-earth mb-2">
+                  {selectedProgram.cost.amount === 0 ? 'FREE' : `${selectedProgram.cost.currency}${selectedProgram.cost.amount}`}
+                </div>
+                <div className="text-forest/70 font-medium text-sm">per {selectedProgram.cost.period}</div>
+              </div>
+              
+              {/* What's Included & Not Included */}
+              <div className="lg:col-span-2 space-y-4">
+                
+                {/* What's Included */}
+                <div className="bg-white rounded-xl p-5 border border-sage-green/30">
+                  <div className="flex items-center gap-3 mb-4">
+                    <CheckCircle className="w-5 h-5 text-sage-green" />
+                    <h4 className="font-semibold text-forest">What's Included</h4>
+                  </div>
+                  <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-2">
+                    {selectedProgram.cost.includes.map((item, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-sage-green rounded-full flex-shrink-0 mt-2"></div>
+                        <span className="text-sm text-forest">{item}</span>
                       </div>
-                      <h3 className="text-xl font-semibold text-forest">Travel & Logistics</h3>
-                    </div>
-                    {isExpanded('travel') ? (
-                      <ChevronUp className="w-5 h-5 text-forest/50" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-forest/50" />
-                    )}
+                    ))}
                   </div>
                 </div>
                 
-                {isExpanded('travel') && (
-                  <div className="px-6 pb-6 space-y-6">
-                    {/* Airport & Transportation */}
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-forest text-lg">Getting There</h4>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="bg-cream rounded-lg p-4">
-                          <h5 className="font-medium text-forest mb-2">Nearest Airport</h5>
-                          <p className="text-forest/70 text-sm">{organization.location.nearestAirport}</p>
-                        </div>
-                        <div className="bg-cream rounded-lg p-4">
-                          <h5 className="font-medium text-forest mb-2">Airport Pickup</h5>
-                          <p className="text-forest/70 text-sm">
-                            {organization.transportation.airportPickup 
-                              ? 'Complimentary pickup included' 
-                              : 'Not provided - arrange your own transport'
-                            }
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Transportation Details */}
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-forest text-lg">Local Transportation</h4>
-                      <div className="bg-cream rounded-lg p-4">
-                        <p className="text-forest leading-relaxed">
-                          {organization.transportation.description}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Timezone */}
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-forest text-lg">Time Zone</h4>
-                      <div className="bg-cream rounded-lg p-4">
-                        <p className="text-forest">
-                          {organization.location.timezone}
-                        </p>
-                      </div>
-                    </div>
+                {/* What's Not Included */}
+                <div className="bg-white rounded-xl p-5 border border-warm-sunset/30">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Plane className="w-5 h-5 text-warm-sunset" />
+                    <h4 className="font-semibold text-forest">Additional Expenses</h4>
                   </div>
-                )}
-              </div>
-              
-              {/* Climate & Packing */}
-              <div className="bg-white rounded-2xl shadow-nature border border-beige/60 overflow-hidden">
-                <div 
-                  className="p-6 cursor-pointer hover:bg-beige/30 transition-colors"
-                  onClick={() => toggleSection('packing')}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-rich-earth/10 rounded-lg">
-                        <Thermometer className="w-5 h-5 text-rich-earth" />
+                  <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-2">
+                    {selectedProgram.cost.excludes.map((item, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 border border-warm-sunset rounded-full flex-shrink-0 mt-2"></div>
+                        <span className="text-sm text-forest/80">{item}</span>
                       </div>
-                      <h3 className="text-xl font-semibold text-forest">Climate & What to Pack</h3>
-                    </div>
-                    {isExpanded('packing') ? (
-                      <ChevronUp className="w-5 h-5 text-forest/50" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-forest/50" />
-                    )}
+                    ))}
                   </div>
                 </div>
-                
-                {isExpanded('packing') && (
-                  <div className="px-6 pb-6 space-y-6">
-                    {/* Climate Info */}
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-forest text-lg">Climate in {organization.location.region}</h4>
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-                          <Sun className="w-6 h-6 text-yellow-600 mx-auto mb-2" />
-                          <div className="font-medium text-forest">Dry Season</div>
-                          <div className="text-sm text-forest/70">Dec - Apr</div>
-                          <div className="text-xs text-forest/60 mt-1">Less rain, more sun</div>
-                        </div>
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                          <Umbrella className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-                          <div className="font-medium text-forest">Wet Season</div>
-                          <div className="text-sm text-forest/70">May - Nov</div>
-                          <div className="text-xs text-forest/60 mt-1">Daily afternoon rain</div>
-                        </div>
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
-                          <Thermometer className="w-6 h-6 text-orange-600 mx-auto mb-2" />
-                          <div className="font-medium text-forest">Temperature</div>
-                          <div className="text-sm text-forest/70">22-28°C</div>
-                          <div className="text-xs text-forest/60 mt-1">Year-round tropical</div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Essential Packing List */}
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-forest text-lg">Essential Packing List</h4>
-                      <div className="grid md:grid-cols-2 gap-6">
-                        {/* Clothing */}
-                        <div className="space-y-3">
-                          <h5 className="font-medium text-forest">Clothing</h5>
-                          <div className="space-y-2">
-                            {[
-                              'Lightweight, quick-dry shirts',
-                              'Long pants for animal work',
-                              'Rain jacket or poncho',
-                              'Comfortable walking shoes',
-                              'Waterproof boots',
-                              'Hat with sun protection'
-                            ].map((item, index) => (
-                              <div key={index} className="flex items-center gap-2">
-                                <CheckCircle className="w-3 h-3 text-sage-green" />
-                                <span className="text-sm text-forest">{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        
-                        {/* Essentials */}
-                        <div className="space-y-3">
-                          <h5 className="font-medium text-forest">Essentials</h5>
-                          <div className="space-y-2">
-                            {[
-                              'Strong insect repellent',
-                              'High SPF sunscreen',
-                              'Personal medications',
-                              'Reusable water bottle',
-                              'Head torch/flashlight',
-                              'Personal first aid kit'
-                            ].map((item, index) => (
-                              <div key={index} className="flex items-center gap-2">
-                                <CheckCircle className="w-3 h-3 text-sage-green" />
-                                <span className="text-sm text-forest">{item}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Download Packing List */}
-                    <div className="bg-sage-green/10 border border-sage-green/20 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h5 className="font-medium text-forest">Complete Packing Checklist</h5>
-                          <p className="text-sm text-forest/70">Download our comprehensive packing guide</p>
-                        </div>
-                        <button className="flex items-center gap-2 text-sage-green hover:text-forest transition-colors">
-                          <Download className="w-4 h-4" />
-                          <span className="text-sm font-medium">Download PDF</span>
-                        </button>
-                      </div>
-                    </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SharedTabSection>
+      
+      {/* What You Need to Arrange */}
+      <SharedTabSection
+        title="What You Need to Arrange"
+        variant="section"
+        level="important"
+        icon={Plane}
+        className="mt-8"
+      >
+        <div className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-lg sm:text-xl text-forest mb-3">Travel Arrangements</h3>
+            <p className="text-sm sm:text-base text-forest/80 max-w-2xl mx-auto">
+              These services are not included in the program cost. You'll need to arrange them separately.
+            </p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-soft-cream via-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-6 lg:p-8 border border-warm-beige/40 shadow-nature">
+            <div className="space-y-6">
+              {/* Essential Items */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Flights */}
+                <div className="bg-white p-5 border border-rich-earth/20 rounded-xl">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Plane className="w-5 h-5 text-rich-earth" />
+                    <h4 className="font-semibold text-forest">International Flights</h4>
                   </div>
-                )}
+                  <p className="text-sm text-forest/70 mb-3">
+                    To {organization.location.nearestAirport || organization.location.city}. Book 2-3 months ahead for better rates.
+                  </p>
+                  <button className="text-sm text-rich-earth hover:underline">
+                    Flight search resources →
+                  </button>
+                </div>
+                
+                {/* Insurance */}
+                <div className="bg-white p-5 border border-sage-green/20 rounded-xl">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Shield className="w-5 h-5 text-sage-green" />
+                    <h4 className="font-semibold text-forest">Travel Insurance</h4>
+                  </div>
+                  <p className="text-sm text-forest/70 mb-3">
+                    Recommended for medical coverage and trip protection.
+                  </p>
+                  <button className="text-sm text-sage-green hover:underline">
+                    Insurance information →
+                  </button>
+                </div>
+              </div>
+              
+              {/* Other Services */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-warm-beige/30">
+                <div className="text-center p-3 bg-white rounded-lg">
+                  <MapPin className="w-5 h-5 text-warm-sunset mx-auto mb-2" />
+                  <div className="text-sm font-medium text-forest mb-1">Visas</div>
+                  <button className="text-xs text-warm-sunset hover:underline">Check requirements</button>
+                </div>
+                
+                <div className="text-center p-3 bg-white rounded-lg">
+                  <Heart className="w-5 h-5 text-golden-hour mx-auto mb-2" />
+                  <div className="text-sm font-medium text-forest mb-1">Health prep</div>
+                  <button className="text-xs text-golden-hour hover:underline">Find clinics</button>
+                </div>
+                
+                <div className="text-center p-3 bg-white rounded-lg">
+                  <Camera className="w-5 h-5 text-sage-green mx-auto mb-2" />
+                  <div className="text-sm font-medium text-forest mb-1">Travel gear</div>
+                  <button 
+                    onClick={() => {
+                      const packingSection = document.querySelector('[data-section="packing"]');
+                      if (packingSection) {
+                        packingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }}
+                    className="text-xs text-sage-green hover:underline cursor-pointer"
+                  >
+                    See packing guide ↓
+                  </button>
+                </div>
+                
+                <div className="text-center p-3 bg-white rounded-lg">
+                  <Car className="w-5 h-5 text-rich-earth mx-auto mb-2" />
+                  <div className="text-sm font-medium text-forest mb-1">Airport transfer</div>
+                  <button 
+                    onClick={() => {
+                      if (onTabChange) {
+                        onTabChange('location');
+                        scrollToTabContent();
+                      }
+                    }}
+                    className="text-xs text-rich-earth hover:underline cursor-pointer"
+                  >
+                    See Location tab →
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SharedTabSection>
+      
+      {/* Packing Essentials */}
+      <SharedTabSection
+        title="Packing Essentials"
+        variant="section"
+        level="important"
+        icon={CheckCircle}
+        className="mt-8"
+      >
+        <div className="space-y-6" data-section="packing">
+          <div className="text-center">
+            <h3 className="text-lg sm:text-xl text-forest mb-3">What to Bring</h3>
+            <p className="text-sm sm:text-base text-forest/80 max-w-2xl mx-auto">
+              Essential items for conservation work and comfortable living in {organization.location.country}.
+            </p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-soft-cream via-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-6 lg:p-8 border border-warm-beige/40 shadow-nature">
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              
+              {/* Essential Items */}
+              <div className="bg-white rounded-xl p-5 border border-warm-sunset/20">
+                <h4 className="font-semibold text-forest mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-warm-sunset/20 rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-3 h-3 text-warm-sunset" />
+                  </div>
+                  Essential Items
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-warm-sunset rounded-full flex-shrink-0 mt-2"></div>
+                    <span className="text-sm text-forest">Lightweight, quick-dry clothing</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-warm-sunset rounded-full flex-shrink-0 mt-2"></div>
+                    <span className="text-sm text-forest">Waterproof jacket and pants</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-warm-sunset rounded-full flex-shrink-0 mt-2"></div>
+                    <span className="text-sm text-forest">Sturdy hiking boots</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-warm-sunset rounded-full flex-shrink-0 mt-2"></div>
+                    <span className="text-sm text-forest">Insect repellent and sunscreen</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Work Gear */}
+              <div className="bg-white rounded-xl p-5 border border-sage-green/20">
+                <h4 className="font-semibold text-forest mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 bg-sage-green/20 rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-3 h-3 text-sage-green" />
+                  </div>
+                  Conservation Work Gear
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-sage-green rounded-full flex-shrink-0 mt-2"></div>
+                    <span className="text-sm text-forest">Work gloves</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-sage-green rounded-full flex-shrink-0 mt-2"></div>
+                    <span className="text-sm text-forest">Old clothes for animal care</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-sage-green rounded-full flex-shrink-0 mt-2"></div>
+                    <span className="text-sm text-forest">Rubber boots</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-sage-green rounded-full flex-shrink-0 mt-2"></div>
+                    <span className="text-sm text-forest">Hat and sunglasses</span>
+                  </div>
+                </div>
               </div>
             </div>
             
-            {/* Support Section */}
-            <div className="bg-gradient-to-r from-rich-earth/5 to-sunset/5 rounded-2xl p-8 border border-rich-earth/20">
-              <div className="text-center space-y-4">
-                <h3 className="text-feature text-forest">Still Have Questions?</h3>
-                <p className="text-body text-forest/80 max-w-2xl mx-auto">
-                  We're here to help you prepare for your volunteer experience. Don't hesitate to reach out 
-                  with any questions about requirements, preparation, or what to expect.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button className="btn-primary">
-                    Contact {organization.name}
-                  </button>
-                  <button className="btn-outline flex items-center gap-2">
-                    <ExternalLink className="w-4 h-4" />
-                    Preparation Resources
-                  </button>
-                </div>
+            {/* Future Comprehensive Guide CTA */}
+            <div className="bg-gradient-to-r from-golden-hour/10 to-warm-sunset/10 rounded-xl p-5 border border-golden-hour/30 text-center">
+              <div className="w-12 h-12 bg-golden-hour/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <Calendar className="w-6 h-6 text-golden-hour" />
               </div>
+              <h4 className="font-semibold text-forest mb-2">Complete Packing Guide</h4>
+              <p className="text-sm text-forest/70 mb-4 max-w-lg mx-auto">
+                Get our comprehensive guide with detailed packing lists, climate info, and insider tips for {organization.location.country}.
+              </p>
+              <button 
+                onClick={() => {
+                  console.log('Download guide for:', organization.location.country);
+                  alert('Comprehensive packing guide coming soon! We\'ll notify you when it\'s available.');
+                }}
+                className="inline-flex items-center gap-2 text-sm text-golden-hour hover:text-white hover:bg-golden-hour font-medium bg-golden-hour/10 px-4 py-2 rounded-lg transition-colors"
+              >
+                <Calendar className="w-4 h-4" />
+                Download Complete Guide
+              </button>
             </div>
           </div>
         </div>
-      </ExpandableSection>
+      </SharedTabSection>
 
-      {/* NEW: Visa & Documentation Requirements */}
-      <ExpandableSection
-        title="Visa & Documentation"
-        level="important"
-        icon={Plane}
-        preview="Required documents, visa information, and entry requirements for international volunteers"
-        className="mt-8"
-      >
-        <div className="space-y-6">
-          <div className="bg-gradient-to-r from-warm-sunset/5 to-golden-hour/5 rounded-2xl p-6 border border-warm-sunset/20">
-            <h4 className="text-lg font-semibold text-deep-forest mb-4 flex items-center gap-2">
-              <Plane className="w-5 h-5 text-warm-sunset" />
-              Entry Requirements
-            </h4>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="p-3 bg-white rounded-lg border border-warm-sunset/10">
-                  <div className="font-medium text-deep-forest mb-1">Tourist Visa</div>
-                  <div className="text-sm text-deep-forest/70">Most volunteers can enter on tourist visa (check with your embassy)</div>
-                </div>
-                <div className="p-3 bg-white rounded-lg border border-warm-sunset/10">
-                  <div className="font-medium text-deep-forest mb-1">Passport Validity</div>
-                  <div className="text-sm text-deep-forest/70">Must be valid for at least 6 months from entry date</div>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="p-3 bg-white rounded-lg border border-warm-sunset/10">
-                  <div className="font-medium text-deep-forest mb-1">Return Ticket</div>
-                  <div className="text-sm text-deep-forest/70">Proof of onward travel required at border</div>
-                </div>
-                <div className="p-3 bg-white rounded-lg border border-warm-sunset/10">
-                  <div className="font-medium text-deep-forest mb-1">Immigration Support</div>
-                  <div className="text-sm text-deep-forest/70">We provide invitation letters and documentation support</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <div className="font-medium text-blue-900 mb-1">Important Note</div>
-                <div className="text-sm text-blue-800">
-                  Visa requirements vary by nationality. Contact us for specific guidance based on your passport.
-                  We recommend applying for visas 4-6 weeks before travel.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ExpandableSection>
-
-      {/* NEW: Cancellation & Refund Policy */}
-      <ExpandableSection
-        title="Cancellation & Refund Policy"
+      {/* Detailed Requirements */}
+      <SharedTabSection
+        title="Program Requirements"
+        variant="section"
         level="important"
         icon={Shield}
-        preview="Clear cancellation terms, refund conditions, and flexibility options for peace of mind"
         className="mt-8"
       >
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-sage-green/5 to-rich-earth/5 rounded-2xl p-6 border border-sage-green/20">
-            <h4 className="text-lg font-semibold text-deep-forest mb-4 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-sage-green" />
-              Cancellation Timeline
-            </h4>
-            <div className="space-y-4">
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="p-4 bg-white rounded-lg border border-sage-green/10 text-center">
-                  <div className="text-2xl font-bold text-sage-green mb-2">90+ days</div>
-                  <div className="text-sm font-medium text-deep-forest mb-1">Full Refund</div>
-                  <div className="text-xs text-deep-forest/70">Minus $50 admin fee</div>
-                </div>
-                <div className="p-4 bg-white rounded-lg border border-warm-sunset/10 text-center">
-                  <div className="text-2xl font-bold text-warm-sunset mb-2">30-89 days</div>
-                  <div className="text-sm font-medium text-deep-forest mb-1">75% Refund</div>
-                  <div className="text-xs text-deep-forest/70">or 100% credit</div>
-                </div>
-                <div className="p-4 bg-white rounded-lg border border-rich-earth/10 text-center">
-                  <div className="text-2xl font-bold text-rich-earth mb-2">0-29 days</div>
-                  <div className="text-sm font-medium text-deep-forest mb-1">50% Credit</div>
-                  <div className="text-xs text-deep-forest/70">Valid for 2 years</div>
-                </div>
-              </div>
-            </div>
+          <div className="text-center">
+            <h3 className="text-lg sm:text-xl text-forest mb-3">What's Expected</h3>
+            <p className="text-sm sm:text-base text-forest/80 max-w-2xl mx-auto">
+              Specific requirements for this conservation program to ensure safety and program effectiveness.
+            </p>
           </div>
           
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <div className="font-medium text-yellow-900 mb-1">Emergency Situations</div>
-                <div className="text-sm text-yellow-800">
-                  Special consideration for medical emergencies, family crises, or travel restrictions. 
-                  We work with you to find fair solutions including date transfers and extended credits.
+          <div className="bg-gradient-to-br from-soft-cream via-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-6 lg:p-8 border border-warm-beige/40 shadow-nature">
+            <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-4">
+              {selectedProgram.requirements.map((req, index) => (
+                <div key={index} className="flex items-start gap-3 p-4 bg-white rounded-xl border border-sage-green/20">
+                  <CheckCircle className="w-5 h-5 text-sage-green flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-forest">{req}</span>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
-      </ExpandableSection>
+      </SharedTabSection>
 
-      {/* NEW: Emergency Support & Safety */}
-      <ExpandableSection
-        title="Emergency Support & Safety"
-        level="important"
-        icon={Heart}
-        preview="24/7 emergency contacts, safety protocols, and comprehensive volunteer support systems"
-        className="mt-8"
-      >
-        <div className="space-y-6">
-          <div className="bg-gradient-to-r from-rich-earth/5 to-warm-sunset/5 rounded-2xl p-6 border border-rich-earth/20">
-            <h4 className="text-lg font-semibold text-deep-forest mb-4 flex items-center gap-2">
-              <Heart className="w-5 h-5 text-rich-earth" />
-              Safety & Support Network
-            </h4>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="p-4 bg-white rounded-lg border border-rich-earth/10">
-                  <div className="font-medium text-deep-forest mb-2">24/7 Emergency Hotline</div>
-                  <div className="text-sm text-deep-forest/70 mb-2">
-                    Dedicated emergency line for urgent situations, medical emergencies, or safety concerns
-                  </div>
-                  <div className="text-xs text-rich-earth font-medium">+[Country Code] Emergency Number</div>
-                </div>
-                <div className="p-4 bg-white rounded-lg border border-rich-earth/10">
-                  <div className="font-medium text-deep-forest mb-2">On-Site Coordinator</div>
-                  <div className="text-sm text-deep-forest/70">
-                    Experienced local coordinator available daily for support, guidance, and assistance
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div className="p-4 bg-white rounded-lg border border-rich-earth/10">
-                  <div className="font-medium text-deep-forest mb-2">Medical Support</div>
-                  <div className="text-sm text-deep-forest/70 mb-2">
-                    Partnership with local medical facilities and English-speaking healthcare providers
-                  </div>
-                  <div className="text-xs text-rich-earth font-medium">Hospital: 5 minutes • Clinic: 2 minutes</div>
-                </div>
-                <div className="p-4 bg-white rounded-lg border border-rich-earth/10">
-                  <div className="font-medium text-deep-forest mb-2">Embassy Support</div>
-                  <div className="text-sm text-deep-forest/70">
-                    Direct contacts and assistance with embassy/consulate services if needed
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* OPTIONAL CANCELLATION POLICY - Only show if organization provides it */}
+      {/* Note: organization.cancellationPolicy doesn't exist in mock data, but would be added for real implementation */}
+      {false && ( // Will be: organization.cancellationPolicy && (
+        <SharedTabSection
+          title="Cancellation Policy"
+          variant="section"
+          level="important"
+          icon={Shield}
+          className="mt-8"
+        >
+          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+            <p className="text-forest leading-relaxed">
+              {/* organization.cancellationPolicy */}
+              Sample: Cancel 90+ days before for full refund minus $50 admin fee. 30-89 days: 75% refund. 0-29 days: 50% credit valid for 2 years.
+            </p>
           </div>
-        </div>
-      </ExpandableSection>
+        </SharedTabSection>
+      )}
 
-      {/* NEW: Insurance Requirements */}
-      <ExpandableSection
-        title="Insurance Requirements"
-        level="important" 
-        icon={Shield}
-        preview="Mandatory travel insurance, health coverage requirements, and recommended protection levels"
-        className="mt-8"
-      >
-        <div className="space-y-6">
-          <div className="bg-gradient-to-r from-golden-hour/5 to-gentle-lemon/10 rounded-2xl p-6 border border-golden-hour/20">
-            <h4 className="text-lg font-semibold text-deep-forest mb-4 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-golden-hour" />
-              Required Coverage
-            </h4>
-            <div className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-4 bg-white rounded-lg border border-golden-hour/10">
-                  <div className="font-medium text-deep-forest mb-2 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-sage-green" />
-                    Medical Coverage
-                  </div>
-                  <div className="text-sm text-deep-forest/70 mb-2">Minimum $100,000 USD medical coverage</div>
-                  <div className="text-xs text-golden-hour font-medium">Must include emergency evacuation</div>
-                </div>
-                <div className="p-4 bg-white rounded-lg border border-golden-hour/10">
-                  <div className="font-medium text-deep-forest mb-2 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-sage-green" />
-                    Activity Coverage
-                  </div>
-                  <div className="text-sm text-deep-forest/70 mb-2">Covers volunteer work and animal handling</div>
-                  <div className="text-xs text-golden-hour font-medium">Adventure activities optional</div>
-                </div>
-              </div>
-              
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-medium text-blue-900 mb-1">Insurance Verification Required</div>
-                    <div className="text-sm text-blue-800">
-                      You must provide proof of insurance before arrival. We can recommend trusted providers 
-                      if you need assistance finding suitable coverage.
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-4 bg-gradient-to-r from-sage-green/10 to-rich-earth/5 rounded-xl border border-sage-green/20">
-                <div className="font-medium text-deep-forest mb-2">Recommended Providers</div>
-                <div className="text-sm text-deep-forest/70">
-                  World Nomads, SafetyWing, or IMG Global - all offer volunteer-specific coverage with competitive rates
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ExpandableSection>
-      
+
       {/* Simple Next Step CTA */}
-      <div className="mt-12 text-center">
-        <p className="text-body text-deep-forest/70 mb-4">
-          All set with the details? Time to get in touch!
+      <div className="mt-12 text-center py-8 bg-gradient-to-r from-soft-cream/50 to-warm-beige/20 rounded-xl border border-warm-beige/30">
+        <h3 className="text-lg font-semibold text-deep-forest mb-3">
+          Questions About This Program?
+        </h3>
+        <p className="text-sm text-forest/70 mb-6">
+          Get in touch with the organization for more details or to start your application.
         </p>
         {onTabChange && (
           <button
-            onClick={() => onTabChange('connect')}
-            className="inline-flex items-center gap-2 bg-sage-green hover:bg-sage-green/90 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+            onClick={() => {
+              onTabChange('connect');
+              scrollToTabContent();
+            }}
+            className="inline-flex items-center gap-2 bg-rich-earth hover:bg-rich-earth/90 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
           >
-            Ready to Apply
+            Contact Organization
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

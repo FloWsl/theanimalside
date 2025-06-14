@@ -1,5 +1,5 @@
 // src/components/OrganizationDetail/TabNavigation.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, PanInfo, AnimatePresence } from 'framer-motion';
 import { 
   Home, 
@@ -13,6 +13,7 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { useSmartNavigation } from '../../lib/useSmartNavigation';
+import { scrollToTabContent } from '../../lib/scrollUtils';
 
 export type TabId = 'overview' | 'experience' | 'practical' | 'location' | 'stories' | 'connect';
 
@@ -68,20 +69,48 @@ const tabs: Tab[] = [
   }
 ];
 
+// Function to get responsive label
+const getResponsiveLabel = (label: string, screenWidth: number) => {
+  if (screenWidth < 375) { // Very small screens
+    const shortLabels: Record<string, string> = {
+      'Overview': 'Info',
+      'Experience': 'Daily',
+      'Practical': 'Details',
+      'Location': 'Place',
+      'Stories': 'Stories',
+      'Connect': 'Contact'
+    };
+    return shortLabels[label] || label;
+  }
+  return label;
+};
+
 const TabNavigation: React.FC<TabNavigationProps> = ({ 
   activeTab, 
   onTabChange, 
   className = '',
   variant = 'desktop'
 }) => {
+  // Screen width state for responsive labels
+  const [screenWidth, setScreenWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 768
+  );
+
+  // Update screen width on resize
+  useEffect(() => {
+    const handleResize = () => setScreenWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Smart navigation for mobile - scroll-based visibility with refined behavior
   const smartNav = useSmartNavigation({
-    heroHeight: 500, // Adjust based on actual hero height
+    heroHeight: window.innerHeight * 0.9, // Show navigation after 90% of viewport (past hero)
     footerOffset: 150,
-    hideThreshold: 60, // More conservative - require more scroll to hide
+    hideThreshold: 100, // Require more scroll before hiding
     showThreshold: 20, // Show easier when scrolling up
-    velocityThreshold: 2, // Detect "fast" scrolling (pixels/ms)
-    fastScrollDistance: 120 // Distance for sustained scroll before hiding
+    velocityThreshold: 3, // Detect "fast" scrolling (pixels/ms)
+    fastScrollDistance: 150 // Distance for sustained scroll before hiding
   });
   
   const activeTabIndex = tabs.findIndex(tab => tab.id === activeTab);
@@ -99,10 +128,12 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
         // Swipe right - go to previous tab
         const prevIndex = Math.max(0, activeTabIndex - 1);
         onTabChange(tabs[prevIndex].id);
+        scrollToTabContent();
       } else if (offset.x < 0 && activeTabIndex < tabs.length - 1) {
         // Swipe left - go to next tab
         const nextIndex = Math.min(tabs.length - 1, activeTabIndex + 1);
         onTabChange(tabs[nextIndex].id);
+        scrollToTabContent();
       }
     }
   };
@@ -123,7 +154,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
                   role="tab"
                   aria-selected={isActive}
                   aria-controls={`tabpanel-${tab.id}`}
-                  onClick={() => onTabChange(tab.id)}
+                  onClick={() => {
+                    onTabChange(tab.id);
+                    scrollToTabContent();
+                  }}
                   className={`
                     group relative flex-1 px-4 py-4 text-center transition-all duration-300
                     ${isActive 
@@ -190,14 +224,14 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
           <div className="absolute inset-x-0 -top-4 h-4 bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
           
           <motion.div
-            className="bg-white/98 backdrop-blur-lg border-t border-beige/30 shadow-nature-xl"
+            className="bg-white/98 backdrop-blur-lg border-t border-beige/30 shadow-nature-xl px-2"
             style={{
               paddingBottom: 'max(env(safe-area-inset-bottom), 16px)'
             }}
             onPan={handleSwipe}
             onPanEnd={handleSwipe}
           >
-        <nav className="flex" role="tablist">
+        <nav className="flex w-full" role="tablist">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
@@ -208,14 +242,17 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
                 role="tab"
                 aria-selected={isActive}
                 aria-controls={`tabpanel-${tab.id}`}
-                onClick={() => onTabChange(tab.id)}
+                onClick={() => {
+                  onTabChange(tab.id);
+                  scrollToTabContent();
+                }}
                 className={`
-                  flex-1 flex flex-col items-center justify-center gap-1 px-1 py-2 min-h-[60px] touch-manipulation transition-all duration-300
+                  flex-1 flex flex-col items-center justify-center gap-0.5 px-0.5 py-2 min-h-[60px] touch-manipulation transition-all duration-300
                   ${isActive 
                     ? 'text-rich-earth' 
                     : 'text-forest/70 active:text-rich-earth active:bg-beige/20'
                   }
-                  focus:outline-none focus:ring-2 focus:ring-rich-earth/40 focus:ring-inset rounded-lg mx-1
+                  focus:outline-none focus:ring-2 focus:ring-rich-earth/40 focus:ring-inset rounded-lg
                 `}
                 whileTap={{ scale: 0.92 }}
                 animate={{
@@ -236,7 +273,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
                     }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Icon className={`w-6 h-6 transition-colors duration-300 ${
+                    <Icon className={`w-5 h-5 transition-colors duration-300 ${
                       isActive ? 'text-rich-earth' : ''
                     }`} />
                   </motion.div>
@@ -257,10 +294,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
                   )}
                 </div>
                 
-                <span className={`text-xs font-semibold leading-tight text-center transition-all duration-300 ${
+                <span className={`text-xs sm:text-xs font-semibold leading-tight text-center transition-all duration-300 max-w-full truncate ${
                   isActive ? 'text-rich-earth scale-105' : 'scale-95'
                 }`}>
-                  {tab.label}
+                  {getResponsiveLabel(tab.label, screenWidth)}
                 </span>
               </motion.button>
             );

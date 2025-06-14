@@ -238,6 +238,7 @@ const OrganizationDetail: React.FC = () => {
           <LocationTab 
             {...commonProps}
             hideDuplicateInfo={isDesktop}
+            onTabChange={handleTabChange}
           />
         );
       case 'stories':

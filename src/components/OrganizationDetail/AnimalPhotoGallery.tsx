@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ChevronRight, X } from "lucide-react";
 import { AnimalCare } from "../../types";
 
@@ -8,7 +9,6 @@ interface AnimalPhotoGalleryProps {
 
 const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) => {
   const [selectedAnimal, setSelectedAnimal] = useState<number | null>(null);
-  const carouselRef = useRef<HTMLDivElement>(null);
 
   // Lock background scroll when modal is open
   useEffect(() => {
@@ -22,14 +22,6 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
     };
   }, [selectedAnimal]);
 
-  // When a new animal is selected, scroll to its panel in the modal carousel
-  useEffect(() => {
-    if (selectedAnimal !== null && carouselRef.current) {
-      const container = carouselRef.current;
-      const panelWidth = container.clientWidth;
-      container.scrollTo({ left: panelWidth * selectedAnimal, behavior: "instant" });
-    }
-  }, [selectedAnimal]);
 
   return (
     <div className="space-y-0 ">
@@ -56,7 +48,7 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
                 {/* Card */}
                 <div
                   className="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
-                  onClick={() => setSelectedAnimal(isSelected ? null : index)}
+                  onClick={() => setSelectedAnimal(index)}
                 >
                   {/* Image */}
                   <div className="relative h-40 md:h-48 overflow-hidden">
@@ -78,55 +70,6 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
                     </div>
                   </div>
                 </div>
-
-                {/* Overlay on Hover/Tap */}
-                <div 
-                  className={`absolute inset-0 z-10 transition-all duration-300 ${
-                    isSelected
-                      ? "opacity-100 pointer-events-auto"
-                      : "opacity-0 pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto"
-                  }`}
-                >
-                  <div className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-2xl" />
-                  <div className="absolute inset-0 p-4 flex flex-col justify-center">
-                    {/* Close on Mobile */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedAnimal(null);
-                      }}
-                      className="absolute top-2 right-2 bg-white/20 backdrop-blur-sm rounded-full p-1 md:hidden"
-                    >
-                      <X className="w-4 h-4 text-white" />
-                    </button>
-                    <div className="text-center space-y-3">
-                      <h4 className="text-white font-bold text-lg">{animal.animalType}</h4>
-                      <div className="space-y-2">
-                        <p className="text-white/80 text-xs font-medium">Example species:</p>
-                        <div className="space-y-1">
-                          {animal.species.slice(0, 2).map((species, idx) => (
-                            <div key={idx} className="text-white text-sm font-medium">
-                              • {species}
-                            </div>
-                          ))}
-                          {animal.species.length > 2 && (
-                            <div className="text-white/70 text-xs">
-                              + {animal.species.length - 2} more varieties
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <a
-                        href={`/opportunities/${animalSlug}`}
-                        className="inline-flex items-center gap-2 bg-white/90 hover:bg-white text-forest px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Explore Opportunities
-                        <ChevronRight className="w-4 h-4" />
-                      </a>
-                    </div>
-                  </div>
-                </div>
               </div>
             );
           })}
@@ -135,28 +78,21 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
         {/* Footer Note */}
         <div className="text-center">
           <p className="text-sm text-forest/60 max-w-md mx-auto">
-            <span className="md:hidden">Swipe left or right</span>
-            <span className="hidden md:inline">Hover or click</span> any animal to see details and
-            explore opportunities.
+            Click any animal to learn more about the species and find opportunities to work with them.
           </p>
         </div>
       </div>
 
-      {/* Full-Screen Modal Carousel for Selected Animal(s) */}
-      {selectedAnimal !== null && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center touch-none p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md max-h-[90vh] overflow-auto shadow-2xl">
-            {/* Carousel Container */}
-            <div
-              ref={carouselRef}
-              className="flex h-full overflow-x-auto snap-x snap-mandatory touch-pan-x scrollbar-hide"
-            >
-              {animalTypes.map((animal, idx) => {
-                return (
-                  <div
-                    key={idx}
-                    className="snap-start flex-shrink-0 w-full h-full flex flex-col"
-                  >
+      {/* Full-Screen Modal for Selected Animal */}
+      {selectedAnimal !== null && createPortal(
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md max-h-[90vh] overflow-hidden shadow-2xl">
+            {(() => {
+              const animal = animalTypes[selectedAnimal];
+              if (!animal) return null;
+              
+              return (
+                <>
                     {/* Modal Header Image */}
                     <div className="relative h-52 md:h-64 overflow-hidden">
                       <img
@@ -164,14 +100,12 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
                         alt={`${animal.animalType} details`}
                         className="w-full h-full object-cover"
                       />
-                      {selectedAnimal === idx && (
-                        <button
-                          onClick={() => setSelectedAnimal(null)}
-                          className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full p-2 text-white hover:bg-black/70 transition-colors duration-200 focus:outline-none"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      )}
+                    <button
+                      onClick={() => setSelectedAnimal(null)}
+                      className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm rounded-full p-2 text-white hover:bg-black/70 transition-colors duration-200 focus:outline-none"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-5">
                         <h3 className="text-white font-bold text-2xl leading-tight">
                           {animal.animalType}
@@ -179,8 +113,8 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
                       </div>
                     </div>
 
-                    {/* Modal Content */}
-                    <div className="p-6 space-y-6 overflow-y-auto touch-pan-y">
+                  {/* Modal Content */}
+                  <div className="p-6 space-y-6 max-h-[40vh] overflow-y-auto">
                       <div>
                         <p className="text-forest/80 leading-relaxed">
                           {animal.description}
@@ -192,7 +126,7 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
                           {animal.species.map((species, sIdx) => (
                             <div
                               key={sIdx}
-                              className="flex items-center gap-3 p-3 bg-cream rounded-lg"
+                              className="flex items-center gap-3 p-3 bg-warm-beige/30 rounded-lg"
                             >
                               <div className="w-2 h-2 bg-rich-earth rounded-full flex-shrink-0" />
                               <span className="text-forest font-medium">{species}</span>
@@ -209,13 +143,13 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
                           <ChevronRight className="w-5 h-5" />
                         </a>
                       </div>
-                    </div>
                   </div>
-                );
-              })}
-            </div>
+                </>
+              );
+            })()}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

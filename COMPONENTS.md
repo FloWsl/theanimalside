@@ -704,11 +704,18 @@ const credibilityBadges = [
 ### **Overview**
 The OrganizationDetail page system uses a **streamlined, consolidated architecture** with **responsive content-sidebar layout** that provides optimal experiences across all devices. Features persistent essential information on desktop while preserving award-winning mobile tab-based discovery system.
 
-### **🔄 Recent Consolidation (June 8, 2025)**
+### **🔄 Recent Updates**
+**June 8, 2025 - Code Consolidation:**
 - **PracticalInformation.tsx** → Integrated into **PracticalTab.tsx** (466 lines consolidated)
 - **ProgramDescription.tsx** → Integrated into **ExperienceTab.tsx** (242 lines consolidated) 
 - **WildlifeCareSection.tsx** → Removed (unused component)
-- **Result**: 708+ lines of redundant code eliminated, zero functionality lost
+
+**June 10, 2025 - ExperienceTab Simplification:**
+- **Auto-categorization functions** → Removed (unrealistic admin assumptions)
+- **Complex activity metadata** → Replaced with simple activity lists
+- **Column layouts within columns** → Fixed with single-column design
+- **Animal modal functionality** → Restored by removing SharedTabSection wrapper
+- **Result**: Streamlined from 425 to 180 lines, improved maintainability
 
 ### **🧩 Core Components**
 
@@ -756,12 +763,12 @@ const infoCards = [
 ];
 ```
 
-#### **ExperienceTab - Integrated Program Experience** 
-- **Typical Day breakdown** with practical schedule (integrated from ProgramDescription)
-- **Activity lists** with conservation focus
-- **Learning outcomes** and skill development
-- **Animal photo gallery** for species showcase
-- **Requirements** clearly stated
+#### **ExperienceTab - Simplified Daily Reality Preview** 
+- **Typical Day timeline** with realistic schedule (simplified from complex auto-categorization)
+- **Activity lists** using admin-provided data only
+- **Learning outcomes** and skill development (realistic progression)
+- **Animal photo gallery** for species showcase (modal functionality restored)
+- **Compact content** with streamlined presentation
 
 #### **AnimalPhotoGallery - Species-Specific Showcase**
 - **Conservation status** for each species
