@@ -1,0 +1,62 @@
+{
+  "scripts": {
+    "dev": "vite",
+    "dev:host": "vite --host",
+    "build": "tsc && vite build",
+    "build:analyze": "vite build --mode analyze",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "preview": "vite preview",
+    "clean": "rm -rf node_modules dist .vite",
+    "dev:clean": "npm run clean && npm install && npm run dev",
+    
+    "db:setup": "bash scripts/setup-supabase.sh",
+    "db:migrate": "npx tsx database/migrate-mock-data.ts",
+    "db:types": "supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types/supabase-generated.ts",
+    "db:reset": "supabase db reset",
+    
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run src/services/__tests__/",
+    
+    "benchmark": "npx tsx scripts/run-benchmarks.ts",
+    "performance": "node -e \"console.log('Run: window.runDatabaseBenchmarks() in browser console')\"",
+    
+    "setup": "npm install && npm run db:setup",
+    "deploy:preview": "npm run build && npm run preview",
+    "deploy:prod": "npm run type-check && npm run test:run && npm run build"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0",
+    "@tanstack/react-query": "^5.8.0",
+    "@tanstack/react-query-devtools": "^5.8.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.18.0",
+    "framer-motion": "^10.16.4",
+    "lucide-react": "^0.291.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@types/node": "^20.8.0",
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
+    "@vitejs/plugin-react": "^4.1.0",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.53.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.4",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "typescript": "^5.2.2",
+    "vite": "^4.5.0",
+    "vitest": "^0.34.0",
+    "@vitest/coverage-v8": "^0.34.0",
+    "tsx": "^4.1.0"
+  }
+}

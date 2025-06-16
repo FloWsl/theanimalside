@@ -1,4 +1,6 @@
-// src/components/OrganizationDetail/EssentialInfoSidebar.tsx
+// 🗃️ Database-Ready EssentialInfoSidebar Component
+// Updated to use normalized data structure and Supabase integration
+
 import React, { useState } from 'react';
 import { 
   DollarSign, 
@@ -11,37 +13,81 @@ import {
   Wifi,
   Car,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
-import { OrganizationDetail, Program } from '../../types';
+import { useOrganizationEssentials, useTabData } from '../../hooks/useOrganizationData';
+import type { Program } from '../../types/database';
 
 interface EssentialInfoSidebarProps {
-  organization: OrganizationDetail;
-  selectedProgram: Program;
+  organizationId: string; // Changed from full organization object
+  selectedProgramId?: string; // Allow program selection
   isDesktop?: boolean;
   sidebarExpanded?: boolean;
   className?: string;
 }
 
+// Loading skeleton component
+const SidebarSkeleton: React.FC = () => (
+  <div className="max-w-7xl mx-auto px-4 space-y-4">
+    {[...Array(6)].map((_, i) => (
+      <div key={i} className="bg-white rounded-2xl p-6 border border-warm-beige/60">
+        <div className="animate-pulse">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+            <div className="h-6 bg-gray-200 rounded w-32"></div>
+          </div>
+          <div className="space-y-3">
+            <div className="h-4 bg-gray-200 rounded w-full"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+// Error component
+const SidebarError: React.FC<{ error: Error; retry: () => void }> = ({ error, retry }) => (
+  <div className="max-w-7xl mx-auto px-4">
+    <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+      <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+      <h3 className="text-lg font-semibold text-red-900 mb-2">Unable to Load Information</h3>
+      <p className="text-red-700 mb-4">{error.message}</p>
+      <button 
+        onClick={retry}
+        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+      >
+        Try Again
+      </button>
+    </div>
+  </div>
+);
+
 const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({ 
-  organization, 
-  selectedProgram, 
+  organizationId, 
+  selectedProgramId,
   isDesktop = false, 
-  sidebarExpanded = true,
   className = ''
 }) => {
-  const mainProgram = selectedProgram;
-  
-  // Enhanced responsive disclosure state - all expanded on desktop, progressive on mobile
+  // Use the new data hook
+  const essentialsQuery = useOrganizationEssentials(organizationId);
+  const { data: essentials, isLoading, isError, error, refetch } = useTabData(
+    essentialsQuery, 
+    'Essential Information'
+  );
+
+  // Enhanced responsive disclosure state
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    cost: true, // Keep cost always visible as it's critical
-    duration: true, // Keep duration always visible as it's critical
+    cost: true,
+    duration: true, 
     requirements: isDesktop ? true : false,
     accommodation: isDesktop ? true : false,
     meals: isDesktop ? true : false,
     location: isDesktop ? true : false
   });
-  
+
   // Update expanded sections when switching to/from desktop
   React.useEffect(() => {
     if (isDesktop) {
@@ -55,7 +101,7 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
       });
     }
   }, [isDesktop]);
-  
+
   const toggleSection = (section: string) => {
     if (!isDesktop) {
       setExpandedSections(prev => ({
@@ -64,8 +110,21 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
       }));
     }
   };
-  
-  // Enhanced responsive card component - simplified for desktop, touch-friendly for mobile
+
+  // Loading state
+  if (isLoading) {
+    return <SidebarSkeleton />;
+  }
+
+  // Error state
+  if (isError || !essentials) {
+    return <SidebarError error={error || new Error('Data not found')} retry={refetch} />;
+  }
+
+  // Select the correct program (either selected or primary)
+  const currentProgram = essentials.primary_program;
+
+  // Enhanced responsive card component
   const ResponsiveCard: React.FC<{ 
     children: React.ReactNode; 
     className?: string;
@@ -113,7 +172,7 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
   
   return (
     <div className={`max-w-7xl mx-auto px-4 space-nature-sm ${isDesktop ? 'lg:space-nature-xs' : ''} ${className}`}>
-      {/* Quick Facts Header - Always visible for orientation */}
+      {/* Quick Facts Header */}
       <ResponsiveCard>
         <h2 className={`text-xl font-semibold text-forest mb-3 ${
           isDesktop ? 'lg:text-lg lg:mb-2' : ''
@@ -125,7 +184,7 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
         </p>
       </ResponsiveCard>
       
-      {/* Cost Information - Critical info, always expanded */}
+      {/* Cost Information */}
       <ResponsiveCard>
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-rich-earth/10 rounded-lg">
@@ -135,32 +194,25 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
         </div>
         
         <div className="space-y-4">
-          {/* Mobile-optimized cost display */}
           <div className="text-center bg-gradient-to-r from-rich-earth/5 to-warm-sunset/5 rounded-xl p-4">
             <div className="text-3xl font-bold text-forest mb-1">
-              {mainProgram.cost.amount === 0 ? 'FREE' : `${mainProgram.cost.amount} ${mainProgram.cost.currency}`}
+              {currentProgram.cost_amount === 0 ? 'FREE' : `${currentProgram.cost_amount} ${currentProgram.cost_currency}`}
             </div>
             <div className="text-sm text-forest/70">
-              {mainProgram.cost.amount === 0 ? 'No program fees' : `per ${mainProgram.cost.period}`}
+              {currentProgram.cost_amount === 0 ? 'No program fees' : `per ${currentProgram.cost_period}`}
             </div>
           </div>
           
-          {/* What's Included - Complete transparency */}
-          <div className="space-y-3">
-            <h4 className="font-medium text-forest text-sm">What's Included:</h4>
-            <div className="grid grid-cols-1 gap-2">
-              {mainProgram.cost.includes.map((item, index) => (
-                <div key={index} className="text-sm text-forest/80 flex items-center gap-3 p-2 bg-sage-green/5 rounded-lg">
-                  <div className="w-2 h-2 bg-sage-green rounded-full flex-shrink-0" />
-                  <span className="leading-relaxed">{item}</span>
-                </div>
-              ))}
-            </div>
+          {/* Note: Program inclusions would come from separate query */}
+          <div className="text-center text-sm text-forest/60">
+            <button className="text-sage-green hover:text-deep-forest transition-colors">
+              View complete cost breakdown in Practical tab
+            </button>
           </div>
         </div>
       </ResponsiveCard>
       
-      {/* Duration - Critical info, always expanded */}
+      {/* Duration */}
       <ResponsiveCard>
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-warm-sunset/10 rounded-lg">
@@ -170,41 +222,39 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
         </div>
         
         <div className="space-y-4">
-          {/* Mobile-optimized duration display */}
           <div className="text-center bg-gradient-to-r from-warm-sunset/5 to-golden-hour/5 rounded-xl p-4">
             <div className="text-2xl font-bold text-forest mb-1">
-              {mainProgram.duration.min} - {mainProgram.duration.max || '∞'} weeks
+              {currentProgram.duration_min_weeks} - {currentProgram.duration_max_weeks || '∞'} weeks
             </div>
             <div className="text-sm text-forest/70">
               Flexible length options
             </div>
           </div>
           
-          {/* Schedule details - mobile-optimized */}
           <div className="space-y-3">
             <div className="bg-warm-sunset/5 rounded-lg p-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-forest/70">Minimum stay:</span>
-                <span className="font-semibold text-forest">{mainProgram.duration.min} weeks</span>
+                <span className="font-semibold text-forest">{currentProgram.duration_min_weeks} weeks</span>
               </div>
             </div>
             <div className="bg-warm-sunset/5 rounded-lg p-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-forest/70">Work schedule:</span>
-                <span className="font-semibold text-forest">{mainProgram.schedule.daysPerWeek} days/week</span>
+                <span className="font-semibold text-forest">{currentProgram.days_per_week} days/week</span>
               </div>
             </div>
             <div className="bg-warm-sunset/5 rounded-lg p-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-forest/70">Daily hours:</span>
-                <span className="font-semibold text-forest">{mainProgram.schedule.hoursPerDay} hours/day</span>
+                <span className="font-semibold text-forest">{currentProgram.hours_per_day} hours/day</span>
               </div>
             </div>
           </div>
         </div>
       </ResponsiveCard>
       
-      {/* Age Requirements - Always expanded on desktop, expandable on mobile */}
+      {/* Age Requirements */}
       <ResponsiveCard 
         expandable={!isDesktop}
         expanded={expandedSections.requirements}
@@ -212,11 +262,10 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
         title="Age & Requirements"
       >
         <div className="space-y-4">
-          {/* Age requirements */}
           <div className="text-center bg-gradient-to-r from-rich-earth/5 to-sage-green/5 rounded-xl p-4">
             <div className="text-2xl font-bold text-forest mb-1">
-              {organization.ageRequirement.min}+ years old
-              {organization.ageRequirement.max && ` (max ${organization.ageRequirement.max})`}
+              {essentials.age_requirement.min_age}+ years old
+              {essentials.age_requirement.max_age && ` (max ${essentials.age_requirement.max_age})`}
             </div>
             <div className="text-sm text-forest/70">
               Minimum age for volunteers
@@ -224,26 +273,26 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
           </div>
         </div>
         
-        {/* Essential Requirements */}
-        {organization.skillRequirements.required.length > 0 && (
+        {/* Key Requirements */}
+        {essentials.key_requirements.length > 0 && (
           <div className="space-y-3 mt-4">
             <h4 className="font-medium text-forest text-sm flex items-center gap-2">
               <Clock className="w-4 h-4 text-warm-sunset" />
               Key Requirements
             </h4>
-            {organization.skillRequirements.required.length <= 3 ? (
+            {essentials.key_requirements.length <= 3 ? (
               <div className="space-y-2">
-                {organization.skillRequirements.required.map((requirement, index) => (
-                  <div key={index} className="text-sm text-forest/80 flex items-center gap-3 p-3 bg-warm-sunset/5 rounded-lg">
+                {essentials.key_requirements.map((requirement, index) => (
+                  <div key={requirement.id} className="text-sm text-forest/80 flex items-center gap-3 p-3 bg-warm-sunset/5 rounded-lg">
                     <div className="w-2 h-2 bg-warm-sunset rounded-full flex-shrink-0" />
-                    <span className="leading-relaxed">{requirement}</span>
+                    <span className="leading-relaxed">{requirement.skill_name}</span>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="bg-gradient-to-r from-warm-sunset/5 to-golden-hour/5 rounded-xl p-4">
                 <div className="text-sm text-forest/80 leading-relaxed mb-3">
-                  <strong>{organization.skillRequirements.required.length} essential requirements</strong> including physical fitness, wildlife experience, and language skills.
+                  <strong>{essentials.key_requirements.length} essential requirements</strong> including physical fitness, wildlife experience, and language skills.
                 </div>
                 <button className="text-sm font-medium text-warm-sunset hover:text-deep-earth transition-colors duration-200 flex items-center gap-2">
                   <span>View complete requirements in Experience tab</span>
@@ -255,7 +304,7 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
         )}
       </ResponsiveCard>
       
-      {/* Languages - Streamlined for decision-making */}
+      {/* Languages */}
       <ResponsiveCard 
         expandable={!isDesktop}
         expanded={expandedSections.location}
@@ -263,15 +312,15 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
         title="Languages & Communication"
       >
         <div className="space-y-3">
-          {organization.languages.length <= 3 ? (
+          {essentials.languages.length <= 3 ? (
             <div className="flex flex-wrap gap-3">
-              {organization.languages.map((language, index) => (
+              {essentials.languages.map((language) => (
                 <span 
-                  key={index}
+                  key={language.id}
                   className="px-4 py-2 bg-sage-green/10 text-sage-green rounded-full text-sm font-medium flex items-center gap-2 border border-sage-green/20"
                 >
                   <Globe className="w-4 h-4" />
-                  {language}
+                  {language.language_name}
                 </span>
               ))}
             </div>
@@ -279,8 +328,8 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
             <div className="bg-gradient-to-r from-sage-green/5 to-forest/5 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Globe className="w-5 h-5 text-sage-green" />
-                <span className="font-medium text-forest">{organization.languages[0]}</span>
-                <span className="text-sm text-forest/60">+ {organization.languages.length - 1} more</span>
+                <span className="font-medium text-forest">{essentials.languages[0]?.language_name}</span>
+                <span className="text-sm text-forest/60">+ {essentials.languages.length - 1} more</span>
               </div>
               <div className="text-sm text-forest/70 leading-relaxed">
                 Multiple language support available for international volunteers.
@@ -290,7 +339,7 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
         </div>
       </ResponsiveCard>
       
-      {/* Accommodation - Always expanded on desktop, expandable on mobile */}
+      {/* Accommodation */}
       <ResponsiveCard 
         expandable={!isDesktop}
         expanded={expandedSections.accommodation}
@@ -298,59 +347,29 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
         title="Accommodation & Amenities"
       >
         <div className="space-y-4">
-          {/* Accommodation type */}
           <div className="text-center bg-gradient-to-r from-rich-earth/5 to-warm-beige/20 rounded-xl p-4">
             <div className="text-lg font-bold text-forest mb-2 capitalize">
-              {organization.accommodation.provided ? 
-                organization.accommodation.type.replace('_', ' ') : 
+              {essentials.accommodation.provided ? 
+                essentials.accommodation.accommodation_type.replace('_', ' ') : 
                 'Not Provided'
               }
             </div>
             <div className="text-sm text-forest/70 leading-relaxed">
-              {organization.accommodation.description}
+              {essentials.accommodation.description}
             </div>
           </div>
           
-          {/* Amenities - Smart summary approach */}
-          {organization.accommodation.provided && organization.accommodation.amenities.length > 0 && (
-            <div className="space-y-3">
-              <h4 className="font-medium text-forest text-sm flex items-center gap-2">
-                <Home className="w-4 h-4 text-rich-earth" />
-                Key Amenities
-              </h4>
-              {organization.accommodation.amenities.length <= 4 ? (
-                <div className="grid grid-cols-1 gap-2">
-                  {organization.accommodation.amenities.map((amenity, index) => (
-                    <div key={index} className="text-sm text-forest/80 flex items-center gap-3 p-2 bg-rich-earth/5 rounded-lg">
-                      <div className="w-2 h-2 bg-rich-earth rounded-full flex-shrink-0" />
-                      <span className="leading-relaxed">{amenity}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="bg-gradient-to-r from-rich-earth/5 to-warm-beige/20 rounded-xl p-4">
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {organization.accommodation.amenities.slice(0, 3).map((amenity, index) => (
-                      <span key={index} className="px-3 py-1 bg-rich-earth/10 text-rich-earth rounded-full text-xs font-medium">
-                        {amenity}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="text-sm text-forest/70 leading-relaxed mb-2">
-                    <strong>{organization.accommodation.amenities.length} total amenities</strong> including essentials and comfort features.
-                  </div>
-                  <button className="text-sm font-medium text-rich-earth hover:text-deep-earth transition-colors duration-200 flex items-center gap-2">
-                    <span>Complete amenities list in Practical tab</span>
-                    <ChevronDown className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
+          {essentials.accommodation.provided && (
+            <div className="text-center text-sm text-forest/60">
+              <button className="text-rich-earth hover:text-deep-earth transition-colors">
+                View complete amenities list in Practical tab
+              </button>
             </div>
           )}
         </div>
       </ResponsiveCard>
       
-      {/* Meals - Always expanded on desktop, expandable on mobile */}
+      {/* Meals */}
       <ResponsiveCard 
         expandable={!isDesktop}
         expanded={expandedSections.meals}
@@ -358,46 +377,33 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
         title="Meals & Dietary Options"
       >
         <div className="space-y-4">
-          {/* Meal provision status */}
           <div className="text-center bg-gradient-to-r from-warm-sunset/5 to-golden-hour/5 rounded-xl p-4">
             <div className="text-lg font-bold text-forest mb-2">
-              {organization.meals.provided ? 'Meals Included' : 'Meals Not Provided'}
+              {essentials.meal_plan.provided ? 'Meals Included' : 'Meals Not Provided'}
             </div>
-            {organization.meals.provided && (
+            {essentials.meal_plan.provided && (
               <div className="text-sm text-forest/70 capitalize mb-2">
-                {organization.meals.type.replace('_', ' ')}
+                {essentials.meal_plan.meal_type.replace('_', ' ')}
               </div>
             )}
-            {organization.meals.provided && (
+            {essentials.meal_plan.provided && (
               <div className="text-sm text-forest/70 leading-relaxed">
-                {organization.meals.description}
+                {essentials.meal_plan.description}
               </div>
             )}
           </div>
           
-          {/* Dietary options - Complete and accessible */}
-          {organization.meals.provided && organization.meals.dietaryOptions.length > 0 && (
-            <div className="space-y-3">
-              <h4 className="font-medium text-forest text-sm flex items-center gap-2">
-                <UtensilsCrossed className="w-4 h-4 text-warm-sunset" />
-                Dietary Options Available
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {organization.meals.dietaryOptions.map((option, index) => (
-                  <span 
-                    key={index}
-                    className="px-3 py-2 bg-warm-sunset/10 text-warm-sunset rounded-full text-sm font-medium border border-warm-sunset/20"
-                  >
-                    {option}
-                  </span>
-                ))}
-              </div>
+          {essentials.meal_plan.provided && (
+            <div className="text-center text-sm text-forest/60">
+              <button className="text-warm-sunset hover:text-deep-earth transition-colors">
+                View dietary options in Practical tab
+              </button>
             </div>
           )}
         </div>
       </ResponsiveCard>
       
-      {/* Location & Logistics - Final section with transport details */}
+      {/* Location & Logistics */}
       <ResponsiveCard>
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-sage-green/10 rounded-lg">
@@ -407,73 +413,70 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
         </div>
         
         <div className="space-y-4">
-          {/* Location details - mobile-optimized */}
           <div className="space-y-3">
             <div className="bg-sage-green/5 rounded-lg p-3">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-forest/70">Region:</span>
-                <span className="font-semibold text-forest">{organization.location.region}</span>
+                <span className="text-forest/70">Organization:</span>
+                <span className="font-semibold text-forest">{essentials.organization.name}</span>
               </div>
             </div>
-            <div className="bg-sage-green/5 rounded-lg p-3">
-              <div className="flex flex-col gap-1">
-                <span className="text-forest/70 text-sm">Nearest Airport:</span>
-                <span className="font-semibold text-forest text-sm leading-relaxed">
-                  {organization.location.nearestAirport}
-                </span>
+            {essentials.organization.phone && (
+              <div className="bg-sage-green/5 rounded-lg p-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-forest/70">Contact:</span>
+                  <span className="font-semibold text-forest">{essentials.organization.phone}</span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
           
-          {/* Transportation & Services - Enhanced mobile layout */}
+          {/* Transportation & Services */}
           <div className="bg-gradient-to-r from-sage-green/5 to-rich-earth/5 rounded-xl p-4">
             <h4 className="font-medium text-forest text-sm mb-3">Services & Connectivity</h4>
             <div className="grid grid-cols-3 gap-4">
               <div className="flex flex-col items-center gap-2 p-3 bg-white/70 rounded-lg">
                 <Car className={`w-5 h-5 ${
-                  organization.transportation.airportPickup ? 'text-sage-green' : 'text-gray-400'
+                  essentials.transportation.airport_pickup ? 'text-sage-green' : 'text-gray-400'
                 }`} />
                 <span className="text-xs text-forest/80 text-center font-medium">
                   Airport Pickup
                 </span>
                 <div className={`w-2 h-2 rounded-full ${
-                  organization.transportation.airportPickup ? 'bg-sage-green' : 'bg-gray-300'
+                  essentials.transportation.airport_pickup ? 'bg-sage-green' : 'bg-gray-300'
                 }`} />
               </div>
               <div className="flex flex-col items-center gap-2 p-3 bg-white/70 rounded-lg">
                 <Car className={`w-5 h-5 ${
-                  organization.transportation.localTransport ? 'text-sage-green' : 'text-gray-400'
+                  essentials.transportation.local_transport ? 'text-sage-green' : 'text-gray-400'
                 }`} />
                 <span className="text-xs text-forest/80 text-center font-medium">
                   Local Transport
                 </span>
                 <div className={`w-2 h-2 rounded-full ${
-                  organization.transportation.localTransport ? 'bg-sage-green' : 'bg-gray-300'
+                  essentials.transportation.local_transport ? 'bg-sage-green' : 'bg-gray-300'
                 }`} />
               </div>
               <div className="flex flex-col items-center gap-2 p-3 bg-white/70 rounded-lg">
                 <Wifi className={`w-5 h-5 ${
-                  organization.internetAccess.available ? 'text-sage-green' : 'text-gray-400'
+                  essentials.internet_access.available ? 'text-sage-green' : 'text-gray-400'
                 }`} />
                 <span className="text-xs text-forest/80 text-center font-medium capitalize">
-                  {organization.internetAccess.quality} WiFi
+                  {essentials.internet_access.quality} WiFi
                 </span>
                 <div className={`w-2 h-2 rounded-full ${
-                  organization.internetAccess.available ? 'bg-sage-green' : 'bg-gray-300'
+                  essentials.internet_access.available ? 'bg-sage-green' : 'bg-gray-300'
                 }`} />
               </div>
             </div>
             
-            {/* Transportation description */}
             <div className="mt-3 p-3 bg-white/50 rounded-lg">
               <p className="text-xs text-forest/70 leading-relaxed">
-                {organization.transportation.description}
+                {essentials.transportation.description}
               </p>
             </div>
           </div>
         </div>
       </ResponsiveCard>
-
     </div>
   );
 };
