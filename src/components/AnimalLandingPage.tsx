@@ -15,7 +15,7 @@ interface AnimalLandingPageProps {
   type?: 'animal' | 'conservation';
 }
 
-const AnimalLandingPage: React.FC<AnimalLandingPageProps> = ({ type: _type = 'animal' }) => {
+const AnimalLandingPage: React.FC<AnimalLandingPageProps> = ({ type = 'animal' }) => {
   const params = useParams<{ animal?: string; category?: string }>();
   const breadcrumbs = useBreadcrumbs();
 

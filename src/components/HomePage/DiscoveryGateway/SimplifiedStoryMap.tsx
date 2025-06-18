@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { MapPin, Filter, RotateCcw, Eye, Globe } from 'lucide-react';
+import { MapPin, Filter, RotateCcw, Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { animalCategories } from '@/data/animals';
 import { 
@@ -281,7 +281,7 @@ const SimplifiedStoryMap: React.FC<SimplifiedStoryMapProps> = ({
             
             {selectedAnimal && (
               <button
-                onClick={() => onLocationSelect?.(null as any)}
+                onClick={() => onLocationSelect?.(null!)}
                 className="px-3 py-3 text-[#87A96B] hover:text-[#8B4513] transition-colors border-l border-[#F0E5D0]/40"
                 title="Show all stories"
               >
@@ -313,8 +313,9 @@ const SimplifiedStoryMap: React.FC<SimplifiedStoryMapProps> = ({
                               name: animal.id, 
                               coordinates: [0, 0], 
                               country: '', 
-                              description: '' 
-                            } as any);
+                              description: '',
+                              verified: true
+                            } as AnimalLocation);
                             setShowFilters(false);
                           }}
                           className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${

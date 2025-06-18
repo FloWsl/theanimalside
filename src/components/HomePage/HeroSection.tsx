@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronRight, Heart, Globe, Shield } from 'lucide-react';
+import { ChevronRight, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const HeroSection: React.FC = () => {

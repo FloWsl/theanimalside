@@ -32,7 +32,7 @@ const DiscoveryGateway: React.FC<DiscoveryGatewayProps> = ({
   // Enhanced header handlers
   const handleAnimalSelect = (animalId: string) => {
     setSelectedAnimal(animalId);
-  };
+  };  // 
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);

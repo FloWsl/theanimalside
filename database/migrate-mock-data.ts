@@ -119,7 +119,7 @@ export class DataMigrator {
   /**
    * Migrate a single organization and all related data
    */
-  private async migrateOrganization(orgData: any): Promise<void> {
+  private async migrateOrganization(orgData: typeof organizationDetails[0]): Promise<void> {
     console.log(`📋 Migrating: ${orgData.name}`);
 
     try {
@@ -127,7 +127,7 @@ export class DataMigrator {
       const organization = await this.insertOrganization(orgData);
       
       // 2. Programs (with primary designation)
-      const programs = await this.insertPrograms(organization.id, orgData.programs);
+      await this.insertPrograms(organization.id, orgData.programs);
       
       // 3. Animal types and related data
       await this.insertAnimalTypes(organization.id, orgData.animalTypes);
@@ -166,7 +166,7 @@ export class DataMigrator {
   /**
    * Insert core organization data
    */
-  private async insertOrganization(orgData: any): Promise<any> {
+  private async insertOrganization(orgData: typeof organizationDetails[0]): Promise<Database['public']['Tables']['organizations']['Row']> {
     const { data, error } = await supabase
       .from('organizations')
       .insert({
@@ -205,7 +205,7 @@ export class DataMigrator {
   /**
    * Insert programs with primary designation
    */
-  private async insertPrograms(organizationId: string, programs: any[]): Promise<any[]> {
+  private async insertPrograms(organizationId: string, programs: typeof organizationDetails[0]['programs']): Promise<Database['public']['Tables']['programs']['Row'][]> {
     const insertedPrograms = [];
 
     for (let i = 0; i < programs.length; i++) {

@@ -1,7 +1,7 @@
 // C:\Users\USER\Downloads\theanimalside_v0.1\project\src\components\HomePage\index.tsx
 
 import React, { useEffect } from 'react';
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import HeroSection from './HeroSection';
 // DISCOVERY GATEWAY TRANSFORMATION - Unified experience replacing 3 sections
 import DiscoveryGateway from './DiscoveryGateway';

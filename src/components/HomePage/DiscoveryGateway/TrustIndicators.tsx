@@ -17,7 +17,7 @@ import { Link } from 'react-router-dom';
 
 interface TrustMetric {
   id: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   value: string;
   label: string;
   description: string;
@@ -103,7 +103,7 @@ const TrustIndicators: React.FC = () => {
       <div className="h-full flex flex-col justify-between">
         {/* Trust Metrics Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          {trustMetrics.map((metric, index) => {
+          {trustMetrics.map((metric) => {
             const IconComponent = metric.icon;
             
             return (

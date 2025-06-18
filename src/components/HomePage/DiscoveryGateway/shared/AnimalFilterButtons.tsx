@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { animalCategories } from '@/data/animals';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import { Star, TrendingUp } from 'lucide-react';
 
 /**
@@ -96,7 +96,7 @@ const AnimalFilterButtons: React.FC<AnimalFilterButtonsProps> = ({
   };
 
   // Enhanced animal selection with visual feedback
-  const handleAnimalClick = (animal: any) => {
+  const handleAnimalClick = (animal: typeof animalCategories[0]) => {
     onAnimalSelect(animal.id);
     
     // Add haptic feedback for supported devices
@@ -120,7 +120,7 @@ const AnimalFilterButtons: React.FC<AnimalFilterButtonsProps> = ({
         animate={isInView ? "visible" : "hidden"}
         className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 max-w-5xl mx-auto"
       >
-        {displayAnimals.map((animal, index) => {
+        {displayAnimals.map((animal) => {
           const isHovered = hoveredAnimal === animal.id;
           const isSelected = selectedAnimal === animal.id;
           const hasImageError = imageLoadErrors.has(animal.id);
