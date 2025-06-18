@@ -1,5 +1,6 @@
 import { opportunities } from '../data/opportunities';
 import { organizationDetails } from '../data/organizationDetails';
+import { generateOpportunityRoute } from './routeUtils';
 
 // Mapping from opportunity ID to organization slug
 const opportunityToOrganizationSlug: { [opportunityId: string]: string } = {
@@ -29,17 +30,33 @@ export const getOrganizationSlugByOpportunityId = (opportunityId: string): strin
 };
 
 /**
- * Get the route path for an opportunity
+ * Get the route path for an opportunity using new SEO-friendly routes
  * @param opportunityId The ID of the opportunity
- * @returns The route path or null if no organization found
+ * @returns The route path or null if no opportunity found
  */
 export const getOpportunityRoute = (opportunityId: string): string | null => {
-  const slug = getOrganizationSlugByOpportunityId(opportunityId);
-  return slug ? `/organization/${slug}` : null;
+  // Find the opportunity by ID
+  const opportunity = opportunities.find(opp => opp.id === opportunityId);
+  
+  if (!opportunity) {
+    return null;
+  }
+  
+  // Use the new route generation utility to get the best SEO route
+  return generateOpportunityRoute(opportunity);
 };
 
 /**
- * Check if an opportunity has a valid organization route
+ * Get the route path for an opportunity object (more efficient when you already have the opportunity)
+ * @param opportunity The opportunity object
+ * @returns The route path
+ */
+export const getOpportunityRouteFromObject = (opportunity: any): string => {
+  return generateOpportunityRoute(opportunity);
+};
+
+/**
+ * Check if an opportunity has a valid route
  * @param opportunityId The ID of the opportunity
  * @returns True if the opportunity has a valid route
  */

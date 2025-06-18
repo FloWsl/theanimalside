@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { opportunities } from '../../../data/opportunities';
 import { SearchFilters } from '../../../types';
 import OpportunitiesPageHero from './OpportunitiesPageHero';
+import Breadcrumb, { useBreadcrumbs } from '../../ui/Breadcrumb';
 
 // Lazy load heavy components
 const OpportunityFilters = lazy(() => import('./OpportunityFilters'));
@@ -42,6 +43,7 @@ export interface V2SearchFilters extends SearchFilters {
 
 const OpportunitiesPageV2: React.FC = () => {
   const [filters, setFilters] = useState<V2SearchFilters>({});
+  const breadcrumbs = useBreadcrumbs();
   
   // Smart filtering logic with performance optimization
   const filteredOpportunities = useMemo(() => {
@@ -189,6 +191,11 @@ const OpportunitiesPageV2: React.FC = () => {
       <div className="min-h-screen bg-soft-cream">
         {/* Hero Section */}
         <OpportunitiesPageHero />
+        
+        {/* Breadcrumb Navigation */}
+        <div className="container mx-auto px-6 pt-6">
+          <Breadcrumb items={breadcrumbs} />
+        </div>
         
         {/* Filters Section */}
         <Suspense fallback={<FilterLoader />}>

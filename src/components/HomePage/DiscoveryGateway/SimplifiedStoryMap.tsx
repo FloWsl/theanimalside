@@ -13,7 +13,7 @@ import {
   getConservationLocationsByAnimal,
   type AnimalLocation 
 } from '@/lib/animal-coordinates';
-import { generateOpportunityURL } from '@/lib/search-utils';
+import { generateAnimalRoute } from '@/utils/routeUtils';
 import 'leaflet/dist/leaflet.css';
 
 /**
@@ -77,28 +77,36 @@ const STORY_CONFIGS = {
 const CLEAN_TILE_URL = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 const CLEAN_ATTRIBUTION = '';
 
-// Create clean, story-focused markers
-const createCleanMarker = (animalId: string, isActive: boolean = false) => {
+// Create clean, story-focused markers with selection states
+const createCleanMarker = (animalId: string, isActive: boolean = false, isSelected: boolean = false) => {
   const config = STORY_CONFIGS[animalId as keyof typeof STORY_CONFIGS] || STORY_CONFIGS.lions;
   
+  // Determine marker state styling
+  const size = isSelected ? '52px' : isActive ? '48px' : '36px';
+  const fontSize = isSelected ? '24px' : isActive ? '22px' : '18px';
+  const borderColor = isSelected ? '#D2691E' : '#FFFFFF';
+  const borderWidth = isSelected ? '4px' : '3px';
+  const transform = isSelected ? 'scale(1.2)' : isActive ? 'scale(1.1)' : 'scale(1)';
+  const zIndex = isSelected ? '1100' : isActive ? '1000' : '100';
+  
   const markerHtml = `
-    <div class="clean-story-marker ${isActive ? 'active' : ''}" 
+    <div class="clean-story-marker ${isActive ? 'active' : ''} ${isSelected ? 'selected' : ''}" 
          style="
            background: ${config.color};
-           width: ${isActive ? '48px' : '36px'};
-           height: ${isActive ? '48px' : '36px'};
+           width: ${size};
+           height: ${size};
            border-radius: 50%;
            display: flex;
            align-items: center;
            justify-content: center;
-           border: 3px solid #FFFFFF;
-           box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+           border: ${borderWidth} solid ${borderColor};
+           box-shadow: ${isSelected ? '0 4px 20px rgba(210, 105, 30, 0.4)' : '0 2px 12px rgba(0,0,0,0.15)'};
            transition: all 0.3s ease;
            cursor: pointer;
-           transform: ${isActive ? 'scale(1.1)' : 'scale(1)'};
-           z-index: ${isActive ? '1000' : '100'};
+           transform: ${transform};
+           z-index: ${zIndex};
          ">
-      <span style="font-size: ${isActive ? '22px' : '18px'}; line-height: 1;">
+      <span style="font-size: ${fontSize}; line-height: 1;">
         ${config.emoji}
       </span>
     </div>
@@ -207,6 +215,7 @@ const SimplifiedStoryMap: React.FC<SimplifiedStoryMapProps> = ({
   onLocationSelect
 }) => {
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
+  const [selectedLocationForNavigation, setSelectedLocationForNavigation] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
   // Get conservation locations with intelligent limiting
@@ -221,11 +230,31 @@ const SimplifiedStoryMap: React.FC<SimplifiedStoryMapProps> = ({
     return allLocations.slice(0, 15); // Max 15 locations for overview
   }, [selectedAnimal, locationsByAnimal, allLocations]);
 
-  // Handle location interaction
+  // Reset selected location when animal filter changes
+  React.useEffect(() => {
+    setSelectedLocationForNavigation(null);
+    setActiveLocation(null);
+  }, [selectedAnimal]);
+
+  // Handle location interaction with two-click pattern
   const handleLocationClick = (location: AnimalLocation, animalId: string) => {
-    const url = generateOpportunityURL('animal', animalId);
+    const locationKey = `${location.name}-${animalId}`;
+    
+    // First click: Show info card and select location
+    if (selectedLocationForNavigation !== locationKey) {
+      setSelectedLocationForNavigation(locationKey);
+      setActiveLocation(location.name);
+      onLocationSelect?.(location);
+      return;
+    }
+    
+    // Second click: Navigate to animal page
+    const animalCategory = animalCategories.find(cat => cat.id === animalId);
+    const animalName = animalCategory?.name || animalId;
+    
+    // Generate SEO-friendly route like "/lions-volunteer"
+    const url = generateAnimalRoute(animalName);
     window.open(url, '_blank');
-    onLocationSelect?.(location);
   };
 
   return (
@@ -361,12 +390,14 @@ const SimplifiedStoryMap: React.FC<SimplifiedStoryMapProps> = ({
             
             const config = STORY_CONFIGS[animalId as keyof typeof STORY_CONFIGS];
             const isActive = activeLocation === location.name;
+            const locationKey = `${location.name}-${animalId}`;
+            const isSelected = selectedLocationForNavigation === locationKey;
             
             return (
               <Marker
                 key={`${location.name}-${index}`}
                 position={location.coordinates}
-                icon={createCleanMarker(animalId, isActive)}
+                icon={createCleanMarker(animalId, isActive, isSelected)}
                 eventHandlers={{
                   click: () => handleLocationClick(location, animalId),
                   mouseover: () => setActiveLocation(location.name),
@@ -393,17 +424,61 @@ const SimplifiedStoryMap: React.FC<SimplifiedStoryMapProps> = ({
                       {location.description}
                     </p>
                     
+                    {/* Enhanced project information */}
+                    {location.availablePrograms && (
+                      <div className="mb-3">
+                        <p className="text-xs text-[#87A96B] mb-1">Available Programs:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {location.availablePrograms.slice(0, 2).map((program, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              {program}
+                            </Badge>
+                          ))}
+                          {location.availablePrograms.length > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{location.availablePrograms.length - 2} more
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="flex items-center justify-between pt-3 border-t border-[#F0E5D0]">
-                      <Badge variant="secondary" className="text-xs">
-                        {location.projectCount || 3} projects
-                      </Badge>
+                      <div className="flex gap-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {location.projectCount || 3} projects
+                        </Badge>
+                        {location.averageCost && (
+                          <Badge variant="outline" className="text-xs">
+                            ${location.averageCost}/week
+                          </Badge>
+                        )}
+                      </div>
                       <button
                         onClick={() => handleLocationClick(location, animalId)}
                         className="text-[#8B4513] hover:text-[#D2691E] font-medium text-sm transition-colors flex items-center gap-1"
                       >
-                        Explore
-                        <span className="text-xs">→</span>
+                        {isSelected ? (
+                          <>
+                            Go to {config?.storyText}
+                            <span className="text-xs">→</span>
+                          </>
+                        ) : (
+                          <>
+                            Select Location
+                            <span className="text-xs">👆</span>
+                          </>
+                        )}
                       </button>
+                    </div>
+                    
+                    {/* Two-click instruction */}
+                    <div className="mt-2 text-xs text-[#87A96B] text-center">
+                      {isSelected ? (
+                        'Click again to explore opportunities'
+                      ) : (
+                        'Click to select, then click again to explore'
+                      )}
                     </div>
                   </div>
                 </Popup>

@@ -24,6 +24,7 @@ import ProgramSelector from './ProgramSelector';
 // Import layout components for responsive architecture
 import { Layout } from '../Layout/Container';
 import EssentialInfoSidebar from './EssentialInfoSidebar';
+import Breadcrumb, { useBreadcrumbs } from '../ui/Breadcrumb';
 
 // Enhanced cross-device state management hook
 const useCrossDeviceState = () => {
@@ -99,6 +100,7 @@ const useCrossDeviceState = () => {
 
 const OrganizationDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const breadcrumbs = useBreadcrumbs();
   
   // Get organization data by slug
   const organization: OrganizationDetailType | undefined = slug ? getOrganizationBySlug(slug) : undefined;
@@ -447,6 +449,11 @@ const OrganizationDetail: React.FC = () => {
         {/* Main Content Layout */}
         <div className="container-nature-wide section-padding-sm">
           <div className="max-w-7xl mx-auto px-4">
+            
+            {/* Breadcrumb Navigation */}
+            <div className="mb-6">
+              <Breadcrumb items={breadcrumbs} />
+            </div>
             
             {/* Program Selector (only shows if multiple programs) */}
             {organization.programs.length > 1 && (

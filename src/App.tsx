@@ -8,6 +8,12 @@ const HomePage = React.lazy(() => import('./components/HomePage'));
 const OpportunitiesPage = React.lazy(() => import('./components/OpportunitiesPage/v2'));
 const OrganizationDetail = React.lazy(() => import('./components/OrganizationDetail'));
 
+// New SEO-friendly pages
+const CountryLandingPage = React.lazy(() => import('./components/CountryLandingPage'));
+const AnimalLandingPage = React.lazy(() => import('./components/AnimalLandingPage'));
+const CombinedPage = React.lazy(() => import('./components/CombinedPage'));
+const FlatOrganizationPage = React.lazy(() => import('./components/FlatOrganizationPage'));
+
 // Lightweight loading component
 const PageLoader: React.FC = () => (
   <div className="min-h-screen flex items-center justify-center bg-soft-cream">
@@ -34,12 +40,48 @@ function App() {
                 <OpportunitiesPage />
               </Suspense>
             } />
+            {/* Legacy organization route - keep for backward compatibility */}
             <Route path="organization/:slug" element={
               <Suspense fallback={<PageLoader />}>
                 <OrganizationDetail />
               </Suspense>
             } />
-            {/* Add more routes as the application grows */}
+            
+            {/* Level 1 - Main category pages */}
+            <Route path="volunteer-:country" element={
+              <Suspense fallback={<PageLoader />}>
+                <CountryLandingPage />
+              </Suspense>
+            } />
+            <Route path=":animal-volunteer" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage />
+              </Suspense>
+            } />
+            <Route path=":category-conservation" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage type="conservation" />
+              </Suspense>
+            } />
+            
+            {/* Level 2 - Combined category pages */}
+            <Route path="volunteer-:country/:animal" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="country-animal" />
+              </Suspense>
+            } />
+            <Route path=":animal-volunteer/:country" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="animal-country" />
+              </Suspense>
+            } />
+            
+            {/* Level 3 - Flat organization pages */}
+            <Route path=":orgSlug" element={
+              <Suspense fallback={<PageLoader />}>
+                <FlatOrganizationPage />
+              </Suspense>
+            } />
           </Route>
         </Routes>
       </BrowserRouter>

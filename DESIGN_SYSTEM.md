@@ -62,6 +62,29 @@
   @apply text-forest/80 text-sm;
 }
 
+### **Navigation Dropdown Patterns**
+```css
+.navigation-dropdown {
+  @apply w-56 bg-soft-cream/95 backdrop-blur-md border border-warm-beige/60 rounded-xl shadow-xl;
+}
+
+.navigation-item {
+  @apply flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-white/80 transition-colors;
+}
+
+.navigation-compact-spacing {
+  @apply p-2 space-y-0; /* Ultra-compact for maximum visibility */
+}
+
+.navigation-emoji-display {
+  @apply text-base; /* Consistent emoji sizing across dropdowns */
+}
+
+.navigation-divider {
+  @apply border-t border-warm-beige/40 mt-1 pt-1;
+}
+```
+
 .rating-themes {
   @apply flex flex-wrap gap-2 justify-center;
 }

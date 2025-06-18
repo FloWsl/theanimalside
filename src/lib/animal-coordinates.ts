@@ -18,6 +18,10 @@ export interface AnimalLocation {
   coordinates: Coordinate;
   description: string;
   verified: boolean;
+  projectCount?: number;
+  organizationCount?: number;
+  averageCost?: number;
+  availablePrograms?: string[];
 }
 
 export interface AnimalCoordinateMap {
@@ -36,14 +40,22 @@ const animalConservationHotspots: AnimalCoordinateMap = {
       country: 'Kenya',
       coordinates: [-1.4061, 35.0009],
       description: 'World-famous lion conservation area in the Great Rift Valley',
-      verified: true
+      verified: true,
+      projectCount: 8,
+      organizationCount: 3,
+      averageCost: 350,
+      availablePrograms: ['Wildlife Research', 'Anti-Poaching', 'Community Outreach']
     },
     {
       name: 'Serengeti National Park',
       country: 'Tanzania', 
       coordinates: [-2.3333, 34.8333],
       description: 'Home to the largest lion population in Africa',
-      verified: true
+      verified: true,
+      projectCount: 12,
+      organizationCount: 5,
+      averageCost: 280,
+      availablePrograms: ['Lion Tracking', 'Research', 'Conservation Education']
     },
     {
       name: 'Kruger National Park',

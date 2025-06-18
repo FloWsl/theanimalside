@@ -3,7 +3,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { animalCategories } from '@/data/animals';
-import { generateOpportunityURL } from '@/lib/search-utils';
 import { Link } from 'react-router-dom';
 import { Star, TrendingUp } from 'lucide-react';
 

@@ -3,6 +3,7 @@ import { OrganizationDetail } from '../types';
 import { animalCategories } from '../data/animals';
 import { TabId } from '../components/OrganizationDetail/TabNavigation';
 import { navigationPerformanceMonitor } from '../utils/performance/navigationMetrics';
+import { generateAnimalRoute, generateCountryRoute } from '../utils/routeUtils';
 
 export type { TabId };
 
@@ -105,16 +106,14 @@ const generateStaticRecommendations = (context: NavigationContext): NavigationRe
   const secondaryAnimals = organization.animalTypes.slice(1, 3);
   const totalAnimalsRescued = organization.statistics.animalsRescued;
   const yearsOperating = organization.statistics.yearsOperating;
-  const regionSlug = organization.location.country.toLowerCase().replace(/\s+/g, '-');
 
   // 1. Similar animal type (SEO-friendly URL)
   if (primaryAnimal) {
-    const animalSlug = primaryAnimal.animalType.toLowerCase().replace(/\s+/g, '-');
     recommendations.push({
       id: 'similar-animals',
       title: primaryAnimal.animalType,
       description: '',
-      url: `/opportunities/${animalSlug}`,
+      url: generateAnimalRoute(primaryAnimal.animalType),
       category: 'comparison',
       priority: 9,
       reasoning: 'Similar animal programs',
@@ -130,7 +129,7 @@ const generateStaticRecommendations = (context: NavigationContext): NavigationRe
     id: 'regional-programs',
     title: organization.location.country,
     description: '',
-    url: `/opportunities/${regionSlug}`,
+    url: generateCountryRoute(organization.location.country),
     category: 'comparison',
     priority: 8,
     reasoning: 'Regional alternatives',
@@ -143,12 +142,11 @@ const generateStaticRecommendations = (context: NavigationContext): NavigationRe
   // 3. Secondary animal if available
   if (secondaryAnimals.length > 0) {
     const secondaryAnimal = secondaryAnimals[0];
-    const animalSlug = secondaryAnimal.animalType.toLowerCase().replace(/\s+/g, '-');
     recommendations.push({
       id: 'secondary-animals',
       title: secondaryAnimal.animalType,
       description: '',
-      url: `/opportunities/${animalSlug}`,
+      url: generateAnimalRoute(secondaryAnimal.animalType),
       category: 'comparison',
       priority: 7,
       reasoning: 'Alternative animal programs',
@@ -164,7 +162,7 @@ const generateStaticRecommendations = (context: NavigationContext): NavigationRe
     id: 'wildlife-programs',
     title: 'Wildlife',
     description: '',
-    url: `/opportunities/wildlife`,
+    url: '/opportunities',
     category: 'comparison',
     priority: 6,
     reasoning: 'General wildlife programs',

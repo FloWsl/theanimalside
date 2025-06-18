@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { Shield, Globe, CheckCircle, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { generateOpportunityURL } from '@/lib/search-utils';
 
 /**
  * Integrated Trust Indicators Component
@@ -150,7 +149,7 @@ const TrustIndicators: React.FC = () => {
             className="bg-[#8B4513] hover:bg-[#A0522D] text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
             asChild
           >
-            <Link to={generateOpportunityURL('location', 'all')}>
+            <Link to="/opportunities">
               <span className="flex items-center gap-2">
                 Start Your Discovery
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

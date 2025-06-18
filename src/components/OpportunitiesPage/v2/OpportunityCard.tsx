@@ -109,7 +109,7 @@ const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, index })
           stiffness: 100
         }}
       >
-        <CardContent opportunity={opportunity} costInfo={costInfo} disabled={true} />
+        <CardContent opportunity={opportunity} costInfo={costInfo} disabled={true} index={index} />
       </motion.article>
     );
   }
@@ -123,7 +123,7 @@ const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, index })
       whileHover={{ y: -4 }}
     >
       <Link to={opportunityRoute} className="block h-full">
-        <CardContent opportunity={opportunity} costInfo={costInfo} disabled={false} />
+        <CardContent opportunity={opportunity} costInfo={costInfo} disabled={false} index={index} />
       </Link>
     </motion.article>
   );
@@ -134,9 +134,10 @@ interface CardContentProps {
   opportunity: Opportunity;
   costInfo: { display: string; color: string; bgColor: string };
   disabled: boolean;
+  index: number;
 }
 
-const CardContent: React.FC<CardContentProps> = ({ opportunity, costInfo, disabled }) => {
+const CardContent: React.FC<CardContentProps> = ({ opportunity, costInfo, disabled, index }) => {
   return (
     <>
       {/* Optimized image section with responsive overlays */}
