@@ -446,14 +446,18 @@ const OrganizationDetail: React.FC = () => {
         {/* Organization Header */}
         <OrganizationHeader organization={organization} />
         
+        {/* Breadcrumb Navigation - Top of page */}
+        <div className="bg-soft-cream/80 backdrop-blur-sm border-b border-warm-beige/30">
+          <div className="container-nature-wide py-3">
+            <div className="max-w-7xl mx-auto px-4">
+              <Breadcrumb items={breadcrumbs} />
+            </div>
+          </div>
+        </div>
+
         {/* Main Content Layout */}
         <div className="container-nature-wide section-padding-sm">
           <div className="max-w-7xl mx-auto px-4">
-            
-            {/* Breadcrumb Navigation */}
-            <div className="mb-6">
-              <Breadcrumb items={breadcrumbs} />
-            </div>
             
             {/* Program Selector (only shows if multiple programs) */}
             {organization.programs.length > 1 && (

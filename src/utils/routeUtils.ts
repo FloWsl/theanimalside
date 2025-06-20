@@ -23,9 +23,23 @@ export interface RouteParams {
  * Generate country landing page route
  * @param country - Country name (e.g., "Costa Rica")
  * @returns Route like "/volunteer-costa-rica"
+ * 
+ * Note: Now uses explicit routes instead of dynamic parameters
+ * for better SEO and route predictability
  */
 export const generateCountryRoute = (country: string): string => {
   const countrySlug = country.toLowerCase().replace(/\s+/g, '-');
+  
+  // Validate against supported countries for explicit routing
+  const supportedCountries = [
+    'costa-rica', 'thailand', 'south-africa', 'australia', 
+    'indonesia', 'kenya', 'ecuador', 'peru', 'brazil', 'india'
+  ];
+  
+  if (!supportedCountries.includes(countrySlug)) {
+    console.warn(`Country "${countrySlug}" not supported in explicit routes. Add to App.tsx routes.`);
+  }
+  
   return `/volunteer-${countrySlug}`;
 };
 
@@ -33,9 +47,23 @@ export const generateCountryRoute = (country: string): string => {
  * Generate animal landing page route  
  * @param animal - Animal type (e.g., "Lions")
  * @returns Route like "/lions-volunteer"
+ * 
+ * Note: Now uses explicit routes instead of dynamic parameters
+ * for better SEO and route predictability
  */
 export const generateAnimalRoute = (animal: string): string => {
   const animalSlug = animal.toLowerCase().replace(/\s+/g, '-');
+  
+  // Validate against supported animals for explicit routing
+  const supportedAnimals = [
+    'lions', 'elephants', 'sea-turtles', 'orangutans', 'koalas', 
+    'tigers', 'pandas', 'rhinos', 'whales', 'dolphins'
+  ];
+  
+  if (!supportedAnimals.includes(animalSlug)) {
+    console.warn(`Animal "${animalSlug}" not supported in explicit routes. Add to App.tsx routes.`);
+  }
+  
   return `/${animalSlug}-volunteer`;
 };
 

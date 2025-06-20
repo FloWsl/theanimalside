@@ -204,5 +204,209 @@ export const opportunities: Opportunity[] = [
     ],
     featured: false,
     datePosted: '2025-01-25T00:00:00Z'
+  },
+  {
+    id: 'elephant-sanctuary-thailand',
+    title: 'Elephant Sanctuary Volunteer',
+    organization: 'Thai Elephant Conservation Center',
+    location: {
+      country: 'Thailand',
+      city: 'Chiang Mai',
+      coordinates: [18.7883, 98.9853]
+    },
+    animalTypes: ['Elephants'],
+    duration: {
+      min: 1,
+      max: 12
+    },
+    description: 'Care for rescued Asian elephants at our ethical sanctuary. Volunteers help with feeding, bathing, habitat maintenance, and behavioral enrichment activities. Learn about elephant behavior and conservation challenges.',
+    requirements: [
+      'Minimum age 18',
+      'Physical fitness for outdoor work',
+      'Comfortable around large animals',
+      'Basic English communication'
+    ],
+    cost: {
+      amount: 1200,
+      currency: 'USD',
+      period: 'month',
+      includes: ['Accommodation', 'Meals', 'Training', 'Local transport', 'Elephant care materials']
+    },
+    images: [
+      'https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1551969014-7d2c4cddf0b6?w=800&h=600&fit=crop'
+    ],
+    featured: true,
+    datePosted: '2025-01-10T00:00:00Z'
+  },
+  {
+    id: 'african-elephant-kenya',
+    title: 'African Elephant Research Volunteer',
+    organization: 'Kenya Wildlife Service',
+    location: {
+      country: 'Kenya',
+      city: 'Amboseli',
+      coordinates: [-2.6528, 37.2606]
+    },
+    animalTypes: ['Elephants'],
+    duration: {
+      min: 4,
+      max: 16
+    },
+    description: 'Join long-term elephant research in Amboseli National Park. Assist with population monitoring, GPS collar tracking, and human-elephant conflict mitigation programs. Contribute to Africa\'s largest elephant database.',
+    requirements: [
+      'Minimum age 21',
+      'University degree preferred',
+      'Research experience helpful',
+      'Ability to work in hot, dusty conditions'
+    ],
+    cost: {
+      amount: 1800,
+      currency: 'USD',
+      period: 'month',
+      includes: ['Research camp accommodation', 'Meals', 'Equipment', 'Park fees', 'Training']
+    },
+    images: [
+      'https://images.unsplash.com/photo-1564759298141-d6d68c7b8915?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1575550959106-5a7defe28b56?w=800&h=600&fit=crop'
+    ],
+    featured: false,
+    datePosted: '2025-01-08T00:00:00Z'
+  },
+  {
+    id: 'sea-turtle-greece',
+    title: 'Sea Turtle Conservation Volunteer',
+    organization: 'Mediterranean Turtle Project',
+    location: {
+      country: 'Greece',
+      city: 'Crete',
+      coordinates: [35.2401, 24.8093]
+    },
+    animalTypes: ['Sea Turtles', 'Marine Life'],
+    duration: {
+      min: 2,
+      max: 8
+    },
+    description: 'Protect loggerhead sea turtles on Crete\'s nesting beaches. Conduct night patrols, monitor nests, assist with hatchling releases, and educate tourists about conservation. Experience Mediterranean marine ecology.',
+    requirements: [
+      'Minimum age 18',
+      'Comfortable working at night',
+      'Basic swimming ability',
+      'Interest in marine conservation'
+    ],
+    cost: {
+      amount: 900,
+      currency: 'USD',
+      period: 'month',
+      includes: ['Beach camp accommodation', 'Meals', 'Equipment', 'Training', 'Local transport']
+    },
+    images: [
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&h=600&fit=crop'
+    ],
+    featured: true,
+    datePosted: '2025-01-12T00:00:00Z'
+  },
+  {
+    id: 'sea-turtle-mexico',
+    title: 'Pacific Sea Turtle Protection',
+    organization: 'Turtle Conservation Mexico',
+    location: {
+      country: 'Mexico',
+      city: 'Puerto Vallarta',
+      coordinates: [20.6534, -105.2253]
+    },
+    animalTypes: ['Sea Turtles', 'Marine Life'],
+    duration: {
+      min: 1,
+      max: 6
+    },
+    description: 'Protect olive ridley and leatherback sea turtles on Pacific beaches. Volunteers patrol nesting beaches, relocate vulnerable nests, monitor hatcheries, and participate in data collection for scientific research.',
+    requirements: [
+      'Minimum age 16',
+      'Basic Spanish helpful but not required',
+      'Willingness to work irregular hours',
+      'Physical fitness for beach walking'
+    ],
+    cost: {
+      amount: 750,
+      currency: 'USD',
+      period: 'month',
+      includes: ['Volunteer house accommodation', 'Meals', 'Training', 'Beach equipment']
+    },
+    images: [
+      'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1571752726103-48c6358c09ca?w=800&h=600&fit=crop'
+    ],
+    featured: false,
+    datePosted: '2025-01-15T00:00:00Z'
+  },
+  {
+    id: 'orangutan-rescue-sumatra',
+    title: 'Orangutan Rescue and Rehabilitation',
+    organization: 'Sumatran Orangutan Society',
+    location: {
+      country: 'Indonesia',
+      city: 'Medan',
+      coordinates: [3.5952, 98.6722]
+    },
+    animalTypes: ['Orangutans', 'Primates'],
+    duration: {
+      min: 3,
+      max: 12
+    },
+    description: 'Support critically endangered Sumatran orangutans through rescue, rehabilitation, and release programs. Assist with daily care, forest school training, habitat restoration, and community education initiatives.',
+    requirements: [
+      'Minimum age 21',
+      'Previous animal care experience preferred',
+      'Physical fitness for jungle work',
+      'Commitment to conservation ethics'
+    ],
+    cost: {
+      amount: 1400,
+      currency: 'USD',
+      period: 'month',
+      includes: ['Jungle station accommodation', 'Local meals', 'Training', 'Equipment', 'Transport from Medan']
+    },
+    images: [
+      'https://images.unsplash.com/photo-1605552055839-c4d54ad6c88c?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1564133727-b8d0dd5c2a88?w=800&h=600&fit=crop'
+    ],
+    featured: true,
+    datePosted: '2025-01-05T00:00:00Z'
+  },
+  {
+    id: 'elephant-orphanage-sri-lanka',
+    title: 'Elephant Orphanage Volunteer',
+    organization: 'Sri Lankan Elephant Foundation',
+    location: {
+      country: 'Sri Lanka',
+      city: 'Kandy',
+      coordinates: [7.2906, 80.6337]
+    },
+    animalTypes: ['Elephants'],
+    duration: {
+      min: 2,
+      max: 8
+    },
+    description: 'Care for orphaned baby elephants at our rehabilitation center. Daily activities include feeding, bathing, medical care assistance, and preparing elephants for eventual release back to the wild.',
+    requirements: [
+      'Minimum age 18',
+      'Animal care experience preferred',
+      'Physical stamina for active work',
+      'Emotional resilience for animal welfare work'
+    ],
+    cost: {
+      amount: 1000,
+      currency: 'USD',
+      period: 'month',
+      includes: ['On-site accommodation', 'Meals', 'Veterinary training', 'Equipment', 'Weekend excursions']
+    },
+    images: [
+      'https://images.unsplash.com/photo-1551969014-7d2c4cddf0b6?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800&h=600&fit=crop'
+    ],
+    featured: false,
+    datePosted: '2025-01-20T00:00:00Z'
   }
 ];

@@ -193,6 +193,13 @@ const CombinedPage: React.FC<CombinedPageProps> = ({ type }) => {
 
   return (
     <div className="min-h-screen bg-soft-cream">
+      {/* Breadcrumb Navigation - Top of page */}
+      <div className="bg-soft-cream/80 backdrop-blur-sm border-b border-warm-beige/30">
+        <Container className="py-3">
+          <Breadcrumb items={breadcrumbs} />
+        </Container>
+      </div>
+      
       {/* Hero Section */}
       <div 
         className="relative bg-cover bg-center bg-deep-forest"
@@ -201,8 +208,6 @@ const CombinedPage: React.FC<CombinedPageProps> = ({ type }) => {
         }}
       >
         <Container className="py-16 lg:py-24">
-          <Breadcrumb items={breadcrumbs} className="mb-8 text-white/80" />
-          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

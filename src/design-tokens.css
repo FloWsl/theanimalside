@@ -143,6 +143,204 @@
     @apply max-w-4xl mx-auto px-4 lg:px-6;
   }
 
+  .container-nature-full {
+    @apply w-full mx-auto px-4 lg:px-8;
+  }
+
+  /* ========================================================================== */
+  /* GRID SYSTEM - Nature-Inspired Layout Architecture */
+  /* ========================================================================== */
+
+  /* Responsive Grid Variants */
+  .grid-nature {
+    @apply grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12;
+  }
+
+  .grid-nature-auto {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+
+  .grid-nature-2 {
+    @apply grid grid-cols-1 md:grid-cols-2;
+  }
+
+  .grid-nature-3 {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .grid-nature-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+
+  /* Featured Layout for Opportunities */
+  .grid-featured {
+    @apply grid grid-cols-1 lg:grid-cols-12 gap-nature-lg;
+  }
+
+  /* Organic Golden Ratio Layout */
+  .grid-organic-golden {
+    @apply grid grid-cols-1 lg:grid-cols-8;
+  }
+
+  .grid-organic-1 {
+    @apply grid grid-cols-1 md:grid-cols-3;
+  }
+
+  .grid-organic-2 {
+    @apply grid grid-cols-1 md:grid-cols-5;
+  }
+
+  .grid-organic-3 {
+    @apply grid grid-cols-1 lg:grid-cols-7;
+  }
+
+  /* Layout Patterns */
+  .layout-hero-split {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-nature-xl items-center;
+  }
+
+  .layout-content-sidebar {
+    @apply grid grid-cols-1 lg:grid-cols-3 gap-nature-lg;
+  }
+
+  .layout-three-column {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-nature-lg;
+  }
+
+  .layout-opportunities {
+    @apply grid grid-cols-1 lg:grid-cols-12 gap-nature-lg;
+  }
+
+  /* Grid Item Positioning */
+  .opportunity-featured {
+    @apply lg:col-span-8;
+  }
+
+  .opportunity-card1 {
+    @apply lg:col-span-4;
+  }
+
+  .opportunity-card2 {
+    @apply lg:col-span-4;
+  }
+
+  .opportunity-card3 {
+    @apply lg:col-span-4;
+  }
+
+  .opportunity-card4 {
+    @apply lg:col-span-4;
+  }
+
+  /* ========================================================================== */
+  /* BORDER SYSTEM - Consistent Border Utilities */
+  /* ========================================================================== */
+
+  .border-nature-light {
+    @apply border border-warm-beige/60;
+  }
+
+  .border-nature-dark {
+    @apply border border-white/20;
+  }
+
+  .border-nature-glass {
+    @apply border border-warm-beige/70;
+  }
+
+  /* Border Radius Scale */
+  .radius-nature-sm {
+    @apply rounded-lg;
+  }
+
+  .radius-nature-md {
+    @apply rounded-xl;
+  }
+
+  .radius-nature-lg {
+    @apply rounded-2xl;
+  }
+
+  .radius-nature-full {
+    @apply rounded-full;
+  }
+
+  /* ========================================================================== */
+  /* GLASSMORPHISM SYSTEM - Context-Aware Glass Effects */
+  /* ========================================================================== */
+
+  /* Light Context Glassmorphism (for light backgrounds) */
+  .glass-nature-light {
+    @apply backdrop-blur-md bg-soft-cream/90 border-nature-glass radius-nature-lg;
+  }
+
+  /* Dark Context Glassmorphism (for dark backgrounds) */
+  .glass-nature-dark {
+    @apply backdrop-blur-md bg-black/20 border-nature-dark radius-nature-lg;
+  }
+
+  /* Hero Context Glassmorphism (for hero sections) */
+  .glass-nature-hero {
+    @apply backdrop-blur-md bg-white/10 border-nature-dark radius-nature-lg;
+  }
+
+  /* Legacy glass-nature for backward compatibility */
+  .glass-nature {
+    @apply glass-nature-light;
+  }
+
+  /* ========================================================================== */
+  /* BADGE SYSTEM - Consistent Badge Components */
+  /* ========================================================================== */
+
+  .badge-nature {
+    @apply inline-flex items-center section-padding-xs radius-nature-full text-caption font-medium;
+  }
+
+  .badge-nature-light {
+    @apply badge-nature bg-sage-green/10 text-sage-green border-nature-light;
+  }
+
+  .badge-nature-dark {
+    @apply badge-nature bg-sage-green/90 text-white border-nature-dark;
+  }
+
+  .badge-nature-hero {
+    @apply badge-nature glass-nature-hero text-white;
+  }
+
+  /* Card Overlay Badge - for image overlays */
+  .badge-nature-overlay {
+    @apply inline-flex items-center gap-1 px-2 py-1 radius-nature-full text-xs font-medium backdrop-blur-md border shadow-sm;
+  }
+
+  .badge-nature-overlay-light {
+    @apply badge-nature-overlay bg-white/90 text-deep-forest border-white/40;
+  }
+
+  .badge-nature-overlay-dark {
+    @apply badge-nature-overlay bg-black/20 text-white border-white/20;
+  }
+
+  /* ========================================================================== */
+  /* SECTION BACKGROUND PATTERNS */
+  /* ========================================================================== */
+
+  .section-jungle {
+    @apply bg-gradient-to-br from-soft-cream via-gentle-lemon/20 to-warm-beige;
+    border-top: 1px solid rgba(135, 169, 107, 0.2); /* sage-green/20 */
+  }
+
+  .section-savannah {
+    @apply bg-gradient-to-br from-warm-beige via-gentle-lemon/30 to-soft-cream;
+    border-top: 1px solid var(--warm-beige);
+  }
+
+  .section-forest {
+    @apply bg-gradient-to-br from-deep-forest via-sage-green/20 to-rich-earth/10;
+    border-top: 1px solid rgba(26, 46, 26, 0.3); /* deep-forest/30 */
+  }
+
   /* ========================================================================== */
   /* BUTTON SYSTEM STANDARDIZATION */
   /* ========================================================================== */

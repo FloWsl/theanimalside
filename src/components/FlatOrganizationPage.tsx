@@ -19,40 +19,23 @@ import OrganizationDetail from './OrganizationDetail';
  */
 
 const FlatOrganizationPage: React.FC = () => {
+  console.log('🏢 DEBUG: FlatOrganizationPage component rendering');
+  console.log('🏢 DEBUG: Current URL:', window.location.pathname);
   const { orgSlug } = useParams<{ orgSlug: string }>();
+  console.log('🏢 DEBUG: orgSlug param:', orgSlug);
 
-  // Validate route and check if this should be handled by other components
+  // Validate organization route
   const routeValidation = React.useMemo(() => {
     if (!orgSlug) return { isValid: false, shouldRedirect: true, redirectTo: '/opportunities' };
 
-    // Parse the current URL to see if it matches other route patterns
-    const currentPath = window.location.pathname;
-    const routeInfo = parseRoute(currentPath);
-    
-    // If this route should be handled by other components, redirect appropriately
-    if (routeInfo.type === 'country') {
-      return { isValid: false, shouldRedirect: true, redirectTo: currentPath };
-    }
-    if (routeInfo.type === 'animal') {
-      return { isValid: false, shouldRedirect: true, redirectTo: currentPath };
-    }
-    if (routeInfo.type === 'combined') {
-      return { isValid: false, shouldRedirect: true, redirectTo: currentPath };
-    }
-    if (routeInfo.type === 'opportunities') {
-      return { isValid: false, shouldRedirect: true, redirectTo: '/opportunities' };
-    }
-    if (routeInfo.type === 'home') {
-      return { isValid: false, shouldRedirect: true, redirectTo: '/' };
-    }
-
     // Check if it's a valid organization slug
     const isValidOrg = isValidOrganizationSlug(orgSlug);
+    console.log('🏢 DEBUG: Organization validation result:', isValidOrg);
     
     return {
       isValid: isValidOrg,
-      shouldRedirect: false,
-      redirectTo: null
+      shouldRedirect: !isValidOrg,
+      redirectTo: isValidOrg ? null : '/opportunities'
     };
   }, [orgSlug]);
 
@@ -77,8 +60,9 @@ const FlatOrganizationPage: React.FC = () => {
 
   useSEO(seoMetadata);
 
-  // Handle redirects for routes that should be handled by other components
+  // Handle invalid organization routes
   if (routeValidation.shouldRedirect && routeValidation.redirectTo) {
+    console.log('🏢 DEBUG: Redirecting to:', routeValidation.redirectTo);
     return <Navigate to={routeValidation.redirectTo} replace />;
   }
 

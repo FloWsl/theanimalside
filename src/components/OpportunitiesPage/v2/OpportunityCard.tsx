@@ -99,7 +99,7 @@ const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, index })
   if (!hasValidRoute || !opportunityRoute) {
     return (
       <motion.article 
-        className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-warm-beige/30 transition-all duration-500"
+        className="group card-nature overflow-hidden"
         initial={{ opacity: 0, y: 30, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ 
@@ -116,7 +116,7 @@ const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, index })
   
   return (
     <motion.article 
-      className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl border border-warm-beige/30 transition-all duration-500 hover:border-sage-green/30"
+      className="group card-nature-hover hover:shadow-nature-xl hover:border-sage-green/30"
       initial={{ opacity: 0, y: 30, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
@@ -148,28 +148,34 @@ const CardContent: React.FC<CardContentProps> = ({ opportunity, costInfo, disabl
           className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
           loading="lazy"
           decoding="async"
-          fetchPriority={index < 3 ? 'high' : 'low'}
+          fetchpriority={index < 3 ? 'high' : 'low'}
           onError={(e) => {
             e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y1ZTJkMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjODc4Nzg3IiBmb250LXNpemU9IjE0Ij5JbWFnZSBub3QgZm91bmQ8L3RleHQ+PC9zdmc+';
           }}
         />
         
-        {/* Responsive overlays - stack on small screens */}
+        {/* Responsive overlays - proper badge design */}
         <div className="absolute top-3 left-3 right-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            {/* Location overlay */}
-            <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-semibold text-deep-forest shadow-md border border-white/20 max-w-fit">
+          <div className="flex items-start justify-between gap-2">
+            {/* Location overlay - card overlay badge */}
+            <div className="badge-nature-overlay-light flex-shrink-0">
               <span className="text-sm">{getCountryFlag(opportunity.location.country)}</span>
-              <span className="truncate">
-                {opportunity.location.city.length > 8 
-                  ? opportunity.location.city.substring(0, 8) + '...' 
+              <span className="font-semibold">
+                {opportunity.location.city.length > 12 
+                  ? opportunity.location.city.substring(0, 12) + '...' 
                   : opportunity.location.city}
               </span>
             </div>
             
-            {/* Price overlay */}
-            <div className={`${costInfo.bgColor} ${costInfo.color} px-3 py-1.5 rounded-full text-xs font-bold shadow-md border border-white/20 backdrop-blur-md max-w-fit ml-auto sm:ml-0`}>
-              {costInfo.display}
+            {/* Price overlay - context-aware styling */}
+            <div className={`flex-shrink-0 ${
+              costInfo.bgColor === 'bg-sage-green' 
+                ? 'badge-nature-overlay-dark' 
+                : 'badge-nature-overlay-light'
+            }`}>
+              <span className="font-bold">
+                {costInfo.display}
+              </span>
             </div>
           </div>
         </div>
@@ -179,15 +185,15 @@ const CardContent: React.FC<CardContentProps> = ({ opportunity, costInfo, disabl
         
         {/* Heart icon for emotional connection */}
         <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-          <div className="bg-white/90 backdrop-blur-sm p-1.5 rounded-full text-warm-sunset">
+          <div className="glass-nature-hero text-warm-sunset section-padding-xs">
             <Heart className="w-4 h-4" />
           </div>
         </div>
       </div>
       
       {/* Optimized content section with compact spacing */}
-      <div className="p-4 space-y-3">
-        {/* Organization with trust indicator */}
+      <div className="section-padding-sm space-nature-sm">
+        {/* Organization with trust indicator - Award-winning sizing */}
         <div className="flex items-center justify-between">
           <div className="text-sage-green text-xs font-semibold tracking-wide uppercase truncate">
             {opportunity.organization}
@@ -198,73 +204,85 @@ const CardContent: React.FC<CardContentProps> = ({ opportunity, costInfo, disabl
           </div>
         </div>
         
-        {/* Optimized title */}
-        <h3 className="text-lg lg:text-xl font-display font-semibold text-deep-forest leading-tight line-clamp-2 group-hover:text-rich-earth transition-colors duration-300">
+        {/* Optimized title - Award-winning sizing */}
+        <h3 className="text-lg font-semibold text-deep-forest leading-tight line-clamp-2 group-hover:text-rich-earth transition-colors duration-300">
           {opportunity.title}
         </h3>
         
-        {/* Compact key stats */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center gap-1.5 bg-warm-beige/40 px-2.5 py-1.5 rounded-lg">
+        {/* Flexible key stats - improved layout */}
+        <div className="flex gap-2">
+          <div className="flex items-center gap-1.5 bg-warm-beige/40 px-2 py-1 radius-nature-sm flex-1 min-w-0">
             <Calendar className="w-3.5 h-3.5 text-sage-green flex-shrink-0" />
-            <span className="text-xs font-medium text-deep-forest truncate">
+            <span className="text-sm font-medium text-deep-forest truncate">
               {opportunity.duration.min}-{opportunity.duration.max || '∞'} wks
             </span>
           </div>
-          <div className="flex items-center gap-1.5 bg-warm-beige/40 px-2.5 py-1.5 rounded-lg">
+          <div className="flex items-center gap-1.5 bg-warm-beige/40 px-2 py-1 radius-nature-sm flex-1 min-w-0">
             <Users className="w-3.5 h-3.5 text-sage-green flex-shrink-0" />
-            <span className="text-xs font-medium text-deep-forest truncate">
-              {opportunity.animalTypes.length} species
+            <span className="text-sm font-medium text-deep-forest truncate">
+              {opportunity.animalTypes.length} {opportunity.animalTypes.length === 1 ? 'species' : 'species'}
             </span>
           </div>
         </div>
         
-        {/* Compact animal types */}
+        {/* Animal types - improved chip design */}
         <div className="flex flex-wrap gap-1.5">
-          {opportunity.animalTypes.slice(0, 2).map((type, i) => (
-            <span 
-              key={i}
-              className="flex items-center gap-1 bg-gradient-to-r from-sage-green/10 to-sage-green/5 text-sage-green px-2 py-1 rounded-full text-xs font-medium border border-sage-green/20"
-            >
-              <span className="text-sm">{getAnimalEmoji(type)}</span>
-              <span className="truncate max-w-20">{type}</span>
-            </span>
-          ))}
+          {opportunity.animalTypes.slice(0, 2).map((type, i) => {
+            // Smart truncation for different animal names
+            const getDisplayName = (name: string) => {
+              if (name.length <= 12) return name;
+              const words = name.split(' ');
+              if (words.length > 1) {
+                return words[0].length <= 8 ? words[0] : words[0].substring(0, 8) + '...';
+              }
+              return name.substring(0, 10) + '...';
+            };
+            
+            return (
+              <span 
+                key={i}
+                className="inline-flex items-center gap-1 bg-sage-green/10 text-sage-green px-2 py-1 radius-nature-full text-xs font-medium border border-sage-green/20 max-w-fit"
+              >
+                <span>{getAnimalEmoji(type)}</span>
+                <span className="whitespace-nowrap">{getDisplayName(type)}</span>
+              </span>
+            );
+          })}
           {opportunity.animalTypes.length > 2 && (
-            <span className="bg-warm-beige/50 text-forest/70 px-2 py-1 rounded-full text-xs font-medium border border-warm-beige">
+            <span className="inline-flex items-center bg-warm-beige/50 text-forest/70 px-2 py-1 radius-nature-full text-xs font-medium border border-warm-beige/60">
               +{opportunity.animalTypes.length - 2}
             </span>
           )}
         </div>
         
-        {/* Compact description */}
-        <p className="text-forest/75 text-sm leading-relaxed line-clamp-2">
+        {/* Compact description - Award-winning sizing */}
+        <p className="text-sm text-forest/75 line-clamp-2 leading-relaxed">
           {opportunity.description}
         </p>
         
-        {/* Compact CTA - now part of whole card click */}
+        {/* CTA button - improved text fit */}
         <div className="pt-1">
-          <div className={`w-full flex items-center justify-center py-2.5 px-4 rounded-lg font-semibold transition-all duration-300 text-sm shadow-md ${
+          <div className={`w-full flex items-center justify-center px-3 py-2 radius-nature-sm font-semibold transition-all duration-300 text-sm shadow-nature touch-target ${
             disabled 
               ? 'bg-warm-beige/60 text-forest/60 cursor-not-allowed'
-              : 'bg-gradient-to-r from-rich-earth to-warm-sunset group-hover:from-deep-earth group-hover:to-rich-earth text-white group-hover:shadow-lg'
+              : 'bg-gradient-to-r from-rich-earth to-warm-sunset group-hover:from-deep-earth group-hover:to-rich-earth text-white group-hover:shadow-nature-xl'
           }`}>
-            <span>{disabled ? 'Coming Soon' : 'Discover Adventure'}</span>
-            {!disabled && <ExternalLink className="w-4 h-4 ml-1.5 transition-transform group-hover:translate-x-0.5" />}
+            <span className="whitespace-nowrap">{disabled ? 'Coming Soon' : 'Discover Adventure'}</span>
+            {!disabled && <ExternalLink className="w-4 h-4 ml-1.5 transition-transform group-hover:translate-x-0.5 flex-shrink-0" />}
           </div>
         </div>
         
-        {/* Compact footer with social proof */}
-        <div className="flex items-center justify-between pt-2 border-t border-warm-beige/30">
-          <span className="text-xs text-forest/60">
+        {/* Footer with social proof - improved spacing */}
+        <div className="flex items-center justify-between pt-2 border-t border-nature-light gap-2">
+          <span className="text-xs text-forest/60 flex-shrink-0">
             {new Date(opportunity.datePosted).toLocaleDateString('en-US', { 
               month: 'short', 
               day: 'numeric'
             })}
           </span>
-          <div className="flex items-center gap-1 text-golden-hour">
-            <span className="text-xs font-medium">4.9★</span>
-            <span className="text-xs text-forest/60 hidden sm:inline">156 reviews</span>
+          <div className="flex items-center gap-1 text-golden-hour flex-shrink-0">
+            <span className="text-xs font-medium whitespace-nowrap">4.9★</span>
+            <span className="text-xs text-forest/60 hidden sm:inline whitespace-nowrap">156 reviews</span>
           </div>
         </div>
       </div>

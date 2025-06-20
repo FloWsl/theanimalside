@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Content Hubs</title>
+</head>
+<body>
+    <h1>Debug Content Hubs</h1>
+    <div id="debug-output"></div>
+    
+    <script type="module">
+        // Simulate the content hub data loading
+        const contentHubs = [
+            {
+                id: 'lions',
+                type: 'animal',
+                seoTitle: 'Lion Conservation Volunteer Programs | The Animal Side',
+                status: 'published',
+                conservation: {
+                    challenge: 'African lion populations have declined by 75% over the past 50 years...',
+                    solution: 'Volunteers contribute to lion monitoring programs...',
+                    impact: 'Volunteer programs have helped establish 8 protected wildlife corridors...'
+                }
+            },
+            {
+                id: 'costa-rica',
+                type: 'country', 
+                seoTitle: 'Costa Rica Wildlife Volunteer Programs | The Animal Side',
+                status: 'published',
+                conservation: {
+                    challenge: 'Costa Rica\'s incredible biodiversity faces mounting pressure...',
+                    solution: 'Volunteers support sea turtle protection through night patrols...',
+                    impact: 'International volunteers have helped protect over 5,000 sea turtle nests...'
+                }
+            }
+        ];
+        
+        const getContentHub = (id) => {
+            return contentHubs.find(hub => hub.id === id && hub.status === 'published');
+        };
+        
+        // Test the function
+        const lionsHub = getContentHub('lions');
+        const costaRicaHub = getContentHub('costa-rica');
+        const nonExistentHub = getContentHub('tigers');
+        
+        const output = document.getElementById('debug-output');
+        output.innerHTML = `
+            <h2>Content Hub Tests:</h2>
+            <p><strong>Lions hub:</strong> ${lionsHub ? 'Found ✅' : 'Not found ❌'}</p>
+            <p><strong>Costa Rica hub:</strong> ${costaRicaHub ? 'Found ✅' : 'Not found ❌'}</p>
+            <p><strong>Non-existent hub:</strong> ${nonExistentHub ? 'Found ❌' : 'Not found ✅'}</p>
+            
+            <h2>Lions Hub Data:</h2>
+            <pre>${JSON.stringify(lionsHub, null, 2)}</pre>
+            
+            <h2>URL Parameter Simulation:</h2>
+            <p>For URL: /lions-volunteer</p>
+            <p>React Router param: { animal: "lions" }</p>
+            <p>animalSlug extracted: "lions"</p>
+            <p>contentHub = getContentHub("lions"): ${lionsHub ? 'Success ✅' : 'Failed ❌'}</p>
+        `;
+    </script>
+</body>
+</html>

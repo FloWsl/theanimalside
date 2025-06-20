@@ -16,27 +16,27 @@ interface BreadcrumbProps {
 const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = '' }) => {
   return (
     <nav aria-label="Breadcrumb" className={`flex ${className}`}>
-      <ol className="flex items-center space-x-2 text-sm">
+      <ol className="flex items-center gap-3">
         {items.map((item, index) => (
           <li key={index} className="flex items-center">
             {index > 0 && (
-              <ChevronRight className="w-4 h-4 text-forest/40 mx-2" />
+              <ChevronRight className="w-2.5 h-2.5 mx-2 opacity-50" />
             )}
             {item.current ? (
-              <span className="text-deep-forest font-medium" aria-current="page">
+              <span className="text-xs font-semibold px-1" aria-current="page">
                 {item.label}
               </span>
             ) : item.href ? (
               <Link
                 to={item.href}
-                className="text-forest/70 hover:text-deep-forest transition-colors duration-200"
+                className="text-xs font-medium hover:opacity-100 transition-opacity duration-200 opacity-75 px-1 py-0.5 rounded hover:bg-white/10"
               >
-                {index === 0 && <Home className="w-4 h-4 inline mr-1" />}
+                {index === 0 && <Home className="w-2.5 h-2.5 inline mr-1.5" />}
                 {item.label}
               </Link>
             ) : (
-              <span className="text-forest/70">
-                {index === 0 && <Home className="w-4 h-4 inline mr-1" />}
+              <span className="text-xs font-medium opacity-75 px-1">
+                {index === 0 && <Home className="w-2.5 h-2.5 inline mr-1.5" />}
                 {item.label}
               </span>
             )}
@@ -80,7 +80,10 @@ export const useBreadcrumbs = () => {
     // Country landing: /volunteer-{country}
     if (pathSegments[0]?.startsWith('volunteer-') && pathSegments.length === 1) {
       const country = formatCountryName(pathSegments[0]);
-      breadcrumbs.push({ label: `Volunteer in ${country}`, current: true });
+      breadcrumbs.push(
+        { label: 'Conservation Programs', href: '/opportunities' },
+        { label: `${country} Programs`, current: true }
+      );
       return breadcrumbs;
     }
 

@@ -25,6 +25,11 @@ const PageLoader: React.FC = () => (
 );
 
 function App() {
+  // Debug current route
+  React.useEffect(() => {
+    console.log('🌐 DEBUG: App mounted, current pathname:', window.location.pathname);
+  }, []);
+
   return (
     <HelmetProvider>
       <BrowserRouter>
@@ -47,36 +52,176 @@ function App() {
               </Suspense>
             } />
             
-            {/* Level 1 - Main category pages */}
-            <Route path="volunteer-:country" element={
+            {/* Level 1 - Main category pages (MUST come before catch-all routes) */}
+            {/* Country routes - use explicit country list to avoid pattern conflicts */}
+            <Route path="volunteer-costa-rica" element={
               <Suspense fallback={<PageLoader />}>
                 <CountryLandingPage />
               </Suspense>
             } />
-            <Route path=":animal-volunteer" element={
+            <Route path="volunteer-thailand" element={
+              <Suspense fallback={<PageLoader />}>
+                <CountryLandingPage />
+              </Suspense>
+            } />
+            <Route path="volunteer-south-africa" element={
+              <Suspense fallback={<PageLoader />}>
+                <CountryLandingPage />
+              </Suspense>
+            } />
+            <Route path="volunteer-australia" element={
+              <Suspense fallback={<PageLoader />}>
+                <CountryLandingPage />
+              </Suspense>
+            } />
+            <Route path="volunteer-indonesia" element={
+              <Suspense fallback={<PageLoader />}>
+                <CountryLandingPage />
+              </Suspense>
+            } />
+            <Route path="volunteer-kenya" element={
+              <Suspense fallback={<PageLoader />}>
+                <CountryLandingPage />
+              </Suspense>
+            } />
+            <Route path="volunteer-ecuador" element={
+              <Suspense fallback={<PageLoader />}>
+                <CountryLandingPage />
+              </Suspense>
+            } />
+            <Route path="volunteer-peru" element={
+              <Suspense fallback={<PageLoader />}>
+                <CountryLandingPage />
+              </Suspense>
+            } />
+            <Route path="volunteer-brazil" element={
+              <Suspense fallback={<PageLoader />}>
+                <CountryLandingPage />
+              </Suspense>
+            } />
+            <Route path="volunteer-india" element={
+              <Suspense fallback={<PageLoader />}>
+                <CountryLandingPage />
+              </Suspense>
+            } />
+            
+            {/* Animal routes - explicit list to avoid pattern conflicts */}
+            <Route path="lions-volunteer" element={
               <Suspense fallback={<PageLoader />}>
                 <AnimalLandingPage />
               </Suspense>
             } />
-            <Route path=":category-conservation" element={
+            <Route path="elephants-volunteer" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage />
+              </Suspense>
+            } />
+            <Route path="sea-turtles-volunteer" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage />
+              </Suspense>
+            } />
+            <Route path="orangutans-volunteer" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage />
+              </Suspense>
+            } />
+            <Route path="koalas-volunteer" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage />
+              </Suspense>
+            } />
+            <Route path="tigers-volunteer" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage />
+              </Suspense>
+            } />
+            <Route path="pandas-volunteer" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage />
+              </Suspense>
+            } />
+            <Route path="rhinos-volunteer" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage />
+              </Suspense>
+            } />
+            <Route path="whales-volunteer" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage />
+              </Suspense>
+            } />
+            <Route path="dolphins-volunteer" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage />
+              </Suspense>
+            } />
+            
+            {/* Conservation routes */}
+            <Route path="wildlife-conservation" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage type="conservation" />
+              </Suspense>
+            } />
+            <Route path="marine-conservation" element={
+              <Suspense fallback={<PageLoader />}>
+                <AnimalLandingPage type="conservation" />
+              </Suspense>
+            } />
+            <Route path="forest-conservation" element={
               <Suspense fallback={<PageLoader />}>
                 <AnimalLandingPage type="conservation" />
               </Suspense>
             } />
             
-            {/* Level 2 - Combined category pages */}
-            <Route path="volunteer-:country/:animal" element={
+            {/* Level 2 - Combined category pages (explicit routes for main combinations) */}
+            {/* Costa Rica + Animals */}
+            <Route path="volunteer-costa-rica/sea-turtles" element={
               <Suspense fallback={<PageLoader />}>
                 <CombinedPage type="country-animal" />
               </Suspense>
             } />
-            <Route path=":animal-volunteer/:country" element={
+            <Route path="volunteer-costa-rica/orangutans" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="country-animal" />
+              </Suspense>
+            } />
+            <Route path="volunteer-costa-rica/lions" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="country-animal" />
+              </Suspense>
+            } />
+            <Route path="volunteer-costa-rica/elephants" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="country-animal" />
+              </Suspense>
+            } />
+            
+            {/* Thailand + Animals */}
+            <Route path="volunteer-thailand/elephants" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="country-animal" />
+              </Suspense>
+            } />
+            <Route path="volunteer-thailand/orangutans" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="country-animal" />
+              </Suspense>
+            } />
+            
+            {/* Animal + Country combinations */}
+            <Route path="sea-turtles-volunteer/costa-rica" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="animal-country" />
+              </Suspense>
+            } />
+            <Route path="elephants-volunteer/thailand" element={
               <Suspense fallback={<PageLoader />}>
                 <CombinedPage type="animal-country" />
               </Suspense>
             } />
             
-            {/* Level 3 - Flat organization pages */}
+            {/* Level 3 - Flat organization pages (CATCH-ALL - must be last) */}
             <Route path=":orgSlug" element={
               <Suspense fallback={<PageLoader />}>
                 <FlatOrganizationPage />

@@ -189,13 +189,15 @@ const OpportunitiesPageV2: React.FC = () => {
       </Helmet>
       
       <div className="min-h-screen bg-soft-cream">
+        {/* Breadcrumb Navigation - Top of page */}
+        <div className="bg-soft-cream/80 backdrop-blur-sm border-b border-warm-beige/30">
+          <div className="container mx-auto px-6 py-3">
+            <Breadcrumb items={breadcrumbs} />
+          </div>
+        </div>
+
         {/* Hero Section */}
         <OpportunitiesPageHero />
-        
-        {/* Breadcrumb Navigation */}
-        <div className="container mx-auto px-6 pt-6">
-          <Breadcrumb items={breadcrumbs} />
-        </div>
         
         {/* Filters Section */}
         <Suspense fallback={<FilterLoader />}>

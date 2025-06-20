@@ -5,8 +5,13 @@ import { MapPin, Calendar, ArrowRight, Star, Shield, Heart, Leaf } from 'lucide-
 import { Container, Grid } from './Layout/Container';
 import Breadcrumb, { useBreadcrumbs } from './ui/Breadcrumb';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import ConservationSection from './ContentHub/ConservationSection';
+import ContentHubSEO from './ContentHub/ContentHubSEO';
+import RelatedContentSection from './ContentHub/RelatedContentSection';
+import OpportunityCard from './OpportunitiesPage/v2/OpportunityCard';
 import { opportunities } from '../data/opportunities';
 import { animalCategories } from '../data/animals';
+import { getContentHub, getAllContentHubs } from '../data/contentHubs';
 import { generateAnimalPageSEO, useSEO } from '../utils/seoUtils';
 import { generateOpportunityRoute } from '../utils/routeUtils';
 import type { Opportunity } from '../types';
@@ -16,25 +21,34 @@ interface AnimalLandingPageProps {
 }
 
 const AnimalLandingPage: React.FC<AnimalLandingPageProps> = ({ type = 'animal' }) => {
-  const params = useParams<{ animal?: string; category?: string }>();
+  console.log('🦁 DEBUG: AnimalLandingPage component rendering for type:', type);
+  const params = useParams();  // Remove type constraint to see all params
   const breadcrumbs = useBreadcrumbs();
+  console.log('🦁 DEBUG: AnimalLandingPage params:', params);
 
-  // Extract animal type from URL - React Router handles the parameter extraction
+  // Extract animal type from URL path (no longer using dynamic parameters)
   const animalSlug = React.useMemo(() => {
-    // For route :animal-volunteer, param will be { animal: "lions" }
-    if (params.animal) {
-      return params.animal;
+    console.log('🦁 DEBUG: Parsing URL for animal:', window.location.pathname);
+    
+    const pathname = window.location.pathname;
+    
+    // Parse from explicit animal routes like /lions-volunteer
+    if (pathname.includes('-volunteer')) {
+      const extracted = pathname.replace('/', '').replace('-volunteer', '');
+      console.log('🦁 DEBUG: Extracted animal from URL:', extracted);
+      return extracted;
     }
     
-    // For route :category-conservation, param will be { category: "marine" }
-    if (params.category) {
-      return params.category;
+    // Parse from conservation routes like /wildlife-conservation
+    if (pathname.includes('-conservation')) {
+      const extracted = pathname.replace('/', '').replace('-conservation', '');
+      console.log('🦁 DEBUG: Extracted conservation category from URL:', extracted);
+      return extracted;
     }
     
-    // Fallback: try to extract from any param that looks like an animal
-    const allParams = Object.values(params).filter(Boolean);
-    return allParams[0] || '';
-  }, [params]);
+    console.log('🦁 DEBUG: No animal found in URL');
+    return '';
+  }, []);
 
   // Find animal category data
   const animalCategory = React.useMemo(() => {
@@ -46,7 +60,9 @@ const AnimalLandingPage: React.FC<AnimalLandingPageProps> = ({ type = 'animal' }
 
   // Get formatted animal name
   const animalName = React.useMemo(() => {
-    if (animalCategory) return animalCategory.name;
+    if (animalCategory) {
+      return animalCategory.name;
+    }
     
     const animalMap: Record<string, string> = {
       'lions': 'Lions',
@@ -73,7 +89,7 @@ const AnimalLandingPage: React.FC<AnimalLandingPageProps> = ({ type = 'animal' }
 
   // Filter opportunities by animal type
   const animalOpportunities = React.useMemo(() => {
-    return opportunities.filter(opp => 
+    const filtered = opportunities.filter(opp => 
       opp.animalTypes.some(type => {
         const normalizedType = type.toLowerCase();
         const normalizedAnimal = animalName.toLowerCase();
@@ -93,7 +109,19 @@ const AnimalLandingPage: React.FC<AnimalLandingPageProps> = ({ type = 'animal' }
         return false;
       })
     );
+    
+    return filtered;
   }, [animalSlug, animalName]);
+
+  // Get content hub data for conservation information
+  const contentHub = React.useMemo(() => {
+    return getContentHub(animalSlug);
+  }, [animalSlug]);
+
+  // Get all content hubs for related content
+  const allContentHubs = React.useMemo(() => {
+    return getAllContentHubs();
+  }, []);
 
   // Get unique countries where this animal type is found
   const availableCountries = React.useMemo(() => {
@@ -114,7 +142,7 @@ const AnimalLandingPage: React.FC<AnimalLandingPageProps> = ({ type = 'animal' }
 
   useSEO(seoMetadata);
 
-  if (!animalSlug || animalOpportunities.length === 0) {
+  if (!animalSlug) {
     return (
       <Container className="min-h-screen bg-soft-cream">
         <div className="py-16 text-center">
@@ -158,6 +186,21 @@ const AnimalLandingPage: React.FC<AnimalLandingPageProps> = ({ type = 'animal' }
 
   return (
     <div className="min-h-screen bg-soft-cream">
+      {/* SEO Enhancement */}
+      {contentHub && (
+        <ContentHubSEO 
+          hubData={contentHub}
+          opportunities={animalOpportunities}
+        />
+      )}
+      
+      {/* Breadcrumb Navigation - Top of page */}
+      <div className="bg-soft-cream/80 backdrop-blur-sm border-b border-warm-beige/30">
+        <Container className="py-3">
+          <Breadcrumb items={breadcrumbs} />
+        </Container>
+      </div>
+      
       {/* Hero Section */}
       <div 
         className="relative bg-cover bg-center bg-deep-forest"
@@ -166,8 +209,6 @@ const AnimalLandingPage: React.FC<AnimalLandingPageProps> = ({ type = 'animal' }
         }}
       >
         <Container className="py-16 lg:py-24">
-          <Breadcrumb items={breadcrumbs} className="mb-8 text-white/80" />
-          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -208,6 +249,14 @@ const AnimalLandingPage: React.FC<AnimalLandingPageProps> = ({ type = 'animal' }
           </motion.div>
         </Container>
       </div>
+
+      {/* Conservation Section */}
+      {contentHub && (
+        <ConservationSection 
+          content={contentHub.conservation}
+          className="bg-soft-cream"
+        />
+      )}
 
       <Container className="py-12">
         {/* Countries Section */}
@@ -293,7 +342,7 @@ const AnimalLandingPage: React.FC<AnimalLandingPageProps> = ({ type = 'animal' }
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * index, duration: 0.6 }}
               >
-                <OpportunityCard opportunity={opportunity} />
+                <OpportunityCard opportunity={opportunity} index={index} />
               </motion.div>
             ))}
           </Grid>
@@ -332,83 +381,19 @@ const AnimalLandingPage: React.FC<AnimalLandingPageProps> = ({ type = 'animal' }
           </div>
         </motion.section>
       </Container>
+
+      {/* Related Content Section */}
+      {contentHub && allContentHubs.length > 1 && (
+        <RelatedContentSection 
+          currentHub={contentHub}
+          allHubs={allContentHubs}
+          className="bg-warm-beige/20"
+        />
+      )}
     </div>
   );
 };
 
-// Opportunity Card Component  
-const OpportunityCard: React.FC<{ opportunity: Opportunity }> = ({ opportunity }) => {
-  const opportunityRoute = generateOpportunityRoute(opportunity);
-  
-  return (
-    <Link to={opportunityRoute}>
-      <Card className="h-full hover:shadow-xl transition-all duration-300 group cursor-pointer overflow-hidden">
-      <div 
-        className="h-56 bg-cover bg-center relative"
-        style={{ backgroundImage: `url(${opportunity.images?.[0] || 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=400&fit=crop'})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute top-4 left-4">
-          {opportunity.featured && (
-            <div className="flex items-center bg-golden-hour/90 text-deep-forest px-2 py-1 rounded-full text-xs font-medium">
-              <Star className="w-3 h-3 mr-1" />
-              Featured
-            </div>
-          )}
-        </div>
-        <div className="absolute bottom-4 left-4 text-white">
-          <div className="flex items-center mb-2">
-            <span className="text-xl mr-2">{getCountryFlag(opportunity.location.country)}</span>
-            <div>
-              <div className="font-medium">{opportunity.location.city}</div>
-              <div className="text-xs text-white/80">{opportunity.location.country}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <CardHeader>
-        <CardTitle className="text-deep-forest group-hover:text-rich-earth transition-colors">
-          {opportunity.title}
-        </CardTitle>
-        <CardDescription>
-          {opportunity.organization}
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent>
-        <p className="text-forest/80 mb-4 line-clamp-3">
-          {opportunity.description}
-        </p>
-        
-        <div className="flex flex-wrap gap-2 mb-4">
-          {opportunity.animalTypes.slice(0, 3).map((animal, idx) => (
-            <span 
-              key={idx}
-              className="px-2 py-1 bg-sage-green/20 text-sage-green text-xs rounded-full"
-            >
-              {animal}
-            </span>
-          ))}
-        </div>
-        
-        <div className="flex items-center justify-between text-sm text-forest/60">
-          <div className="flex items-center">
-            <Calendar className="w-4 h-4 mr-1" />
-            <span>{opportunity.duration.min}-{opportunity.duration.max || '+'} weeks</span>
-          </div>
-          <div className="flex items-center">
-            <span className="font-medium">
-              {opportunity.cost.amount === 0 ? 'Free' : `$${opportunity.cost.amount}`}
-            </span>
-            {opportunity.cost.amount > 0 && <span>/{opportunity.cost.period}</span>}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-    </Link>
-  );
-};
 
 // Helper function for country flags
 const getCountryFlag = (country: string): string => {
