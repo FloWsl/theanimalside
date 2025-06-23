@@ -68,7 +68,7 @@ const RelatedContentCard: React.FC<RelatedContentCardProps> = ({
         to={url}
         className="block h-full group"
       >
-        <Card className="h-full border-warm-beige/60 bg-white hover:shadow-lg hover:border-sage-green/30 transition-all duration-300">
+        <Card className="h-full bg-warm-beige/80 backdrop-blur-sm border border-warm-beige/60 hover:bg-warm-beige/90 hover:shadow-lg hover:border-sage-green/30 transition-all duration-300">
           <CardHeader className="section-padding-xs">
             <div className="flex items-start justify-between mb-2">
               {getIcon()}
@@ -76,7 +76,7 @@ const RelatedContentCard: React.FC<RelatedContentCardProps> = ({
                 {getTypeLabel()}
               </span>
             </div>
-            <CardTitle className="text-lg font-semibold text-deep-forest group-hover:text-rich-earth transition-colors duration-200 line-clamp-2">
+            <CardTitle className="text-subtitle font-semibold text-deep-forest group-hover:text-rich-earth transition-colors duration-200 line-clamp-2">
               {title}
             </CardTitle>
           </CardHeader>
@@ -141,7 +141,7 @@ const RelatedContentSection: React.FC<RelatedContentSectionProps> = ({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-xl font-semibold text-deep-forest mb-6 flex items-center"
+              className="text-subtitle font-semibold text-deep-forest mb-6 flex items-center"
             >
               <Leaf className="h-5 w-5 text-sage-green mr-3" />
               Animal Conservation Programs
@@ -168,7 +168,7 @@ const RelatedContentSection: React.FC<RelatedContentSectionProps> = ({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-xl font-semibold text-deep-forest mb-6 flex items-center"
+              className="text-subtitle font-semibold text-deep-forest mb-6 flex items-center"
             >
               <MapPin className="h-5 w-5 text-warm-sunset mr-3" />
               Regional Conservation Programs

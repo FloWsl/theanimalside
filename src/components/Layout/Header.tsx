@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Heart, ChevronDown, MapPin, Sparkles } from 'lucide-react';
+import { Menu, X, Leaf, ChevronDown, MapPin, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { animalCategories } from '../../data/animals';
@@ -90,7 +90,7 @@ const Header: React.FC = () => {
                   ? 'bg-[#8B4513] shadow-[#8B4513]/20' 
                   : 'bg-[#FEFDFA]/25 backdrop-blur-sm shadow-white/20'
               }`}>
-                <Heart className={`w-5 h-5 ${isScrolled || !isHomePage ? 'text-[#FEFDFA]' : 'text-white'}`} />
+                <Leaf className={`w-5 h-5 ${isScrolled || !isHomePage ? 'text-[#FEFDFA]' : 'text-white'}`} />
               </div>
               <span className={`text-xl md:text-2xl font-bold ${logoColor} transition-colors duration-500 tracking-tight drop-shadow-sm`}>
                 The Animal Side
@@ -251,9 +251,17 @@ const Header: React.FC = () => {
             <Button 
               size="sm" 
               className={`${buttonBg} rounded-full px-6 py-3 text-sm font-bold transition-all duration-300 hover:scale-105 shadow-lg`}
-              asChild
+              onClick={() => {
+                const wildlifeProgramsSection = document.getElementById('wildlife-programs');
+                if (wildlifeProgramsSection) {
+                  wildlifeProgramsSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  // Fallback to opportunities page if section not found
+                  window.location.href = '/opportunities';
+                }
+              }}
             >
-              <Link to="/register">Get Started</Link>
+              Get Started
             </Button>
           </div>
           
@@ -344,9 +352,18 @@ const Header: React.FC = () => {
                 </Link>
                 <Button 
                   className="w-full bg-rich-earth text-soft-cream hover:bg-deep-forest rounded-full py-3 font-bold shadow-lg hover:shadow-xl transition-all duration-300 min-h-[48px]"
-                  asChild
+                  onClick={() => {
+                    setIsMenuOpen(false); // Close mobile menu first
+                    const wildlifeProgramsSection = document.getElementById('wildlife-programs');
+                    if (wildlifeProgramsSection) {
+                      wildlifeProgramsSection.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                      // Fallback to opportunities page if section not found
+                      window.location.href = '/opportunities';
+                    }
+                  }}
                 >
-                  <Link to="/register">Get Started</Link>
+                  Get Started
                 </Button>
               </div>
             </nav>

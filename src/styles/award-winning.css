@@ -1,0 +1,454 @@
+/* 🏆 AWARD-WINNING DESIGN SYSTEM - ULTRA PREMIUM */
+
+/* ============================================================================
+   🎨 AWARD-WINNING GLASSMORPHISM SYSTEM
+   ============================================================================ */
+
+:root {
+  /* 💎 Premium Glass Foundation */
+  --glass-blur-subtle: blur(8px);
+  --glass-blur-medium: blur(16px);
+  --glass-blur-strong: blur(24px);
+  --glass-blur-dramatic: blur(40px);
+  
+  /* 🌟 Glass Opacity Layers */
+  --glass-opacity-whisper: 0.05;
+  --glass-opacity-subtle: 0.1;
+  --glass-opacity-medium: 0.15;
+  --glass-opacity-strong: 0.2;
+  
+  /* ✨ Glass Border System */
+  --glass-border-soft: rgba(255, 255, 255, 0.1);
+  --glass-border-medium: rgba(255, 255, 255, 0.2);
+  --glass-border-bold: rgba(255, 255, 255, 0.3);
+  
+  /* 🏗️ Golden Ratio Layout */
+  --golden-ratio: 1.618;
+  --golden-major: 61.8%;
+  --golden-minor: 38.2%;
+  
+  /* 🎯 Fibonacci Spacing */
+  --space-fib-1: 8px;
+  --space-fib-2: 13px;
+  --space-fib-3: 21px;
+  --space-fib-5: 34px;
+  --space-fib-8: 55px;
+  --space-fib-13: 89px;
+}
+
+/* ============================================================================
+   🏆 TIER 1: HERO GLASS (Maximum Impact)
+   ============================================================================ */
+
+.glass-hero {
+  backdrop-filter: var(--glass-blur-dramatic);
+  background: rgba(248, 243, 233, var(--glass-opacity-medium));
+  border: 1px solid var(--glass-border-medium);
+  border-radius: 24px;
+  box-shadow: 
+    0 8px 32px rgba(26, 46, 26, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  
+  /* Glass shimmer effect */
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: glass-shimmer 4s infinite;
+  pointer-events: none;
+}
+
+@keyframes glass-shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* ============================================================================
+   🎨 TIER 2: SECTION GLASS (Elegant Presence)
+   ============================================================================ */
+
+.glass-section {
+  backdrop-filter: var(--glass-blur-medium);
+  background: rgba(245, 232, 212, var(--glass-opacity-subtle));
+  border: 1px solid var(--glass-border-soft);
+  border-radius: 24px;
+  box-shadow: 
+    0 4px 24px rgba(26, 46, 26, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================================
+   💎 TIER 3: CARD GLASS (Subtle Enhancement)
+   ============================================================================ */
+
+.glass-card {
+  backdrop-filter: var(--glass-blur-subtle);
+  background: rgba(255, 255, 255, var(--glass-opacity-whisper));
+  border: 1px solid var(--glass-border-soft);
+  border-radius: 16px;
+  box-shadow: 
+    0 2px 16px rgba(26, 46, 26, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ⚡ Interactive Glass States */
+.glass-interactive {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.glass-interactive:hover {
+  background: rgba(248, 243, 233, var(--glass-opacity-strong));
+  border-color: var(--glass-border-bold);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px rgba(26, 46, 26, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.glass-interactive:active {
+  transform: translateY(0) scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* ============================================================================
+   🌈 AWARD-WINNING TYPOGRAPHY SYSTEM
+   ============================================================================ */
+
+.text-hero-responsive {
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  line-height: 0.85;
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.text-body-large-mobile {
+  font-size: clamp(1rem, 4vw, 1.25rem);
+  line-height: 1.7;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.text-gradient-nature {
+  background: linear-gradient(
+    135deg,
+    var(--golden-hour) 0%,
+    var(--warm-sunset) 50%,
+    var(--rich-earth) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradient-shift 6s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ============================================================================
+   🏗️ GOLDEN RATIO LAYOUT SYSTEM
+   ============================================================================ */
+
+.container-nature-wide {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 4vw, 4rem);
+}
+
+.grid-organic-golden {
+  display: grid;
+  grid-template-columns: var(--golden-major) var(--golden-minor);
+  gap: var(--space-fib-8);
+  align-items: center;
+}
+
+@media (max-width: 1024px) {
+  .grid-organic-golden {
+    grid-template-columns: 1fr;
+    gap: var(--space-fib-5);
+  }
+  
+  .grid-organic-golden > *:nth-child(2) {
+    order: -1; /* Stats appear above content on mobile */
+  }
+}
+
+/* ============================================================================
+   🎯 AWARD-WINNING SPACING SYSTEM
+   ============================================================================ */
+
+.space-nature-xs { margin-bottom: var(--space-fib-1); }
+.space-nature-sm { margin-bottom: var(--space-fib-2); }
+.space-nature-md { margin-bottom: var(--space-fib-3); }
+.space-nature-lg { margin-bottom: var(--space-fib-5); }
+.space-nature-xl { margin-bottom: var(--space-fib-8); }
+
+.gap-nature-xs { gap: var(--space-fib-1); }
+.gap-nature-sm { gap: var(--space-fib-2); }
+.gap-nature-md { gap: var(--space-fib-3); }
+.gap-nature-lg { gap: var(--space-fib-5); }
+.gap-nature-xl { gap: var(--space-fib-8); }
+
+/* ============================================================================
+   ⚡ PREMIUM BUTTON SYSTEM
+   ============================================================================ */
+
+.btn-nature-primary {
+  @apply bg-rich-earth text-white font-semibold rounded-xl;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 12px 24px;
+  touch-action: manipulation;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 16px rgba(139, 69, 19, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.btn-nature-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(139, 69, 19, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-nature-secondary {
+  @apply bg-transparent text-white border-2 border-white/30 font-semibold rounded-xl;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 12px 24px;
+  touch-action: manipulation;
+  backdrop-filter: var(--glass-blur-subtle);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-nature-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-touch-optimized {
+  /* Perfect touch targets */
+  min-height: 48px;
+  min-width: 48px;
+  
+  /* Touch feedback */
+  transition: transform 0.1s ease, box-shadow 0.3s ease;
+}
+
+.btn-touch-optimized:active {
+  transform: scale(0.98);
+}
+
+/* ============================================================================
+   🎬 CINEMATIC HERO EFFECTS
+   ============================================================================ */
+
+.hero-cinematic {
+  /* Cinematic aspect ratio */
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-cinematic::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ============================================================================
+   📱 MOBILE EXCELLENCE
+   ============================================================================ */
+
+@media (max-width: 640px) {
+  .text-hero-responsive {
+    font-size: clamp(2rem, 12vw, 3.5rem);
+    line-height: 0.9;
+  }
+  
+  .container-nature-wide {
+    padding: 0 1rem;
+  }
+  
+  .space-nature-lg { margin-bottom: var(--space-fib-3); }
+  .space-nature-xl { margin-bottom: var(--space-fib-5); }
+  
+  /* Mobile-specific glass adjustments */
+  .glass-hero {
+    border-radius: 16px;
+    padding: 1rem;
+  }
+  
+  .glass-section {
+    border-radius: 16px;
+    padding: 1rem;
+  }
+  
+  .glass-card {
+    border-radius: 12px;
+    padding: 0.75rem;
+  }
+  
+  /* Button optimizations for mobile */
+  .btn-nature-primary,
+  .btn-nature-secondary {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* 📱 Extra small screens optimization */
+@media (max-width: 375px) {
+  .text-hero-responsive {
+    font-size: clamp(1.75rem, 14vw, 3rem);
+  }
+  
+  .container-nature-wide {
+    padding: 0 0.75rem;
+  }
+  
+  .glass-hero,
+  .glass-section {
+    padding: 0.875rem;
+  }
+  
+  .btn-nature-primary,
+  .btn-nature-secondary {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* ============================================================================
+   ♿ ACCESSIBILITY EXCELLENCE
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-hero::before,
+  .text-gradient-nature {
+    animation: none !important;
+  }
+  
+  .glass-interactive:hover {
+    transform: none;
+  }
+  
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .glass-hero,
+  .glass-section,
+  .glass-card {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #000;
+    backdrop-filter: none;
+  }
+  
+  .text-gradient-nature {
+    background: none;
+    color: #000;
+    -webkit-text-fill-color: #000;
+  }
+}
+
+/* ============================================================================
+   🌟 PERFORMANCE OPTIMIZATION
+   ============================================================================ */
+
+.glass-hero,
+.glass-section,
+.glass-card {
+  /* Hardware acceleration */
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+
+/* Efficient backdrop filters */
+@supports (backdrop-filter: blur(1px)) {
+  .glass-hero { backdrop-filter: var(--glass-blur-dramatic); }
+  .glass-section { backdrop-filter: var(--glass-blur-medium); }
+  .glass-card { backdrop-filter: var(--glass-blur-subtle); }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-hero,
+  .glass-section,
+  .glass-card {
+    background: rgba(248, 243, 233, 0.8);
+  }
+}
+
+/* 🚀 LOADING OPTIMIZATION */
+.hero-cinematic {
+  contain: layout style paint;
+}
+
+.container-nature-wide {
+  contain: layout;
+}
+
+.glass-interactive {
+  contain: layout style;
+}
+
+/* Image performance optimization */
+.destination-card-premium img,
+.opportunity-card img {
+  object-fit: cover;
+  loading: lazy;
+  decoding: async;
+}
+
+/* Reduce paint on scroll */
+.glass-hero::before {
+  will-change: transform;
+  contain: strict;
+}
+
+/* Memory optimization for animations */
+@media (prefers-reduced-motion: no-preference) {
+  .glass-interactive {
+    will-change: transform;
+  }
+}
+
+/* Touch performance */
+.btn-touch-optimized {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}

@@ -1,20 +1,19 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowRight, Heart } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { ArrowRight, Leaf, Shield } from 'lucide-react';
 import { Container } from './Layout/Container';
 import Breadcrumb, { useBreadcrumbs } from './ui/Breadcrumb';
-import { Card, CardContent } from './ui/card';
 import ConservationSection from './ContentHub/ConservationSection';
 import CulturalContextSection from './ContentHub/CulturalContextSection';
 import RegionalWildlifeSection from './ContentHub/RegionalWildlifeSection';
 import ContentHubSEO from './ContentHub/ContentHubSEO';
 import OpportunityCard from './OpportunitiesPage/v2/OpportunityCard';
-import SEOInternalLinks from './CountryLandingPage/SEOInternalLinks';
+import SEOInternalLinks from './shared/SEOInternalLinks';
 import { generateCountryPageSEO, useSEO } from '../utils/seoUtils';
 import { useCountryData } from '../hooks/useCountryData';
 
 const CountryLandingPage: React.FC = () => {
+  const location = useLocation();
   const breadcrumbs = useBreadcrumbs();
 
   // Utility function to scroll to top on navigation
@@ -22,15 +21,20 @@ const CountryLandingPage: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Extract country from URL path
+  // Extract country from URL path - now reactive to route changes
   const countrySlug = React.useMemo(() => {
-    const pathname = window.location.pathname;
+    const pathname = location.pathname;
     if (pathname.startsWith('/volunteer-')) {
       const extracted = pathname.replace('/volunteer-', '');
       return extracted;
     }
     return '';
-  }, []);
+  }, [location.pathname]);
+
+  // Scroll to top when country page changes
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [countrySlug]);
 
   // Use centralized country data hook
   const {
@@ -206,450 +210,435 @@ const CountryLandingPage: React.FC = () => {
         </Container>
       </div>
 
-      {/* HERO SECTION - Photo-First Discovery */}
-      <div className="relative min-h-[85vh] flex items-center">
-        {/* Background Image with Parallax Effect */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-fixed transition-transform duration-700 ease-out"
-          style={{
-            backgroundImage: `url(${countryOpportunities[0]?.images?.[0] || 'https://images.unsplash.com/photo-1502780402662-acc01917cf4b?w=1920&h=1080&fit=crop'})`
-          }}
-        />
-
-        {/* Gradient Overlay for Readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-deep-forest/90 via-deep-forest/80 to-rich-earth/70" />
-
-        {/* Conservation Discovery Badge */}
-        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-20">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="glass-nature-hero text-sage-green radius-nature-full text-caption font-medium section-padding-xs shadow-lg hover:bg-white/20 transition-all duration-300"
-          >
-            🌿 Conservation Discovery Hub
-          </motion.div>
+      {/* 🏆 SIMPLIFIED HERO SECTION */}
+      <section className="relative py-20 lg:py-32 overflow-hidden bg-gradient-to-br from-deep-forest to-rich-earth">
+        {/* Simple Background */}
+        <div className="absolute inset-0 opacity-20">
+          <div
+            className="w-full h-full bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${countryOpportunities[0]?.images?.[0] || 'https://images.unsplash.com/photo-1502780402662-acc01917cf4b?w=1200&h=800&fit=crop&q=80'})`
+            }}
+          />
         </div>
 
-        <Container className="relative z-10 py-20">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-5xl mx-auto"
-          >
-            {/* Emotional Connection Header */}
-            <div className="text-center mb-12">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.3, duration: 0.6, type: "spring" }}
-                className="text-8xl mb-6"
-              >
-                {getCountryFlag(countryName)}
-              </motion.div>
-
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.8 }}
-                className="text-hero text-white mb-6"
-              >
-                Explore Wildlife Conservation in {countryName}
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.8 }}
-                className="text-body-large text-white/95 mb-8 max-w-4xl mx-auto"
-              >
-                Discover {countryName}'s remarkable conservation ecosystem, from marine turtle protection to rainforest preservation.
-                <span className="text-golden-hour font-semibold">Perfect for gap year students, career-breakers, and conservation enthusiasts (18+) seeking hands-on wildlife experience—no prior experience required.</span>
-              </motion.p>
+        <Container className="relative z-10">
+          <div className="text-center max-w-4xl mx-auto">
+            {/* Clean Title */}
+            <div className="mb-6">
+              <span className="text-6xl mb-4 block">{getCountryFlag(countryName)}</span>
+              <h1 className="text-4xl lg:text-6xl font-bold text-white mb-4 leading-tight">
+                Wildlife Conservation in {countryName}
+              </h1>
+              <p className="text-xl text-white/90 max-w-2xl mx-auto">
+                Discover wildlife conservation across {availableAnimals.length} species and {countryOpportunities.length} programs in {countryName}.
+              </p>
             </div>
 
-            {/* Real Data Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.8 }}
-              className="grid-nature-3 gap-nature-sm mb-12"
-            >
-              <div className="glass-nature-hero text-center border-nature-dark hover:bg-white/20 transition-all duration-300 group">
-                <div className="text-card-title text-golden-hour mb-1 group-hover:scale-105 transition-transform">{availableAnimals.length}</div>
-                <div className="text-white/90 text-caption font-medium">Conservation Focus Areas</div>
-                <div className="text-white/70 text-caption-small mt-1">Species & ecosystems</div>
-              </div>
-
-              <div className="glass-nature-hero text-center border-nature-dark hover:bg-white/20 transition-all duration-300 group">
-                <div className="text-card-title text-golden-hour mb-1 group-hover:scale-105 transition-transform">{[...new Set(countryOpportunities.map(opp => opp.location.city))].length}</div>
-                <div className="text-white/90 text-caption font-medium">Conservation Regions</div>
-                <div className="text-white/70 text-caption-small mt-1">From coast to mountains</div>
-              </div>
-
-              <div className="glass-nature-hero text-center border-nature-dark hover:bg-white/20 transition-all duration-300 group">
-                <div className="text-card-title text-golden-hour mb-1 group-hover:scale-105 transition-transform">{countryOpportunities.length}</div>
-                <div className="text-white/90 text-caption font-medium">Active Programs</div>
-                <div className="text-white/70 text-caption-small mt-1">Research & protection</div>
-              </div>
-            </motion.div>
-
-            {/* Discovery Navigation */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.8 }}
-              className="text-center"
-            >
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
-                  onClick={() => document.getElementById('conservation-areas')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="group glass-nature-hero text-white hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  🔍 Explore Conservation Areas
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </button>
-
-                <button
-                  onClick={() => document.getElementById('wildlife-programs')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="group glass-nature-hero text-white hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  📋 View All Programs
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-
-              <p className="text-white/80 text-caption mt-4">
-                Discover the diverse world of conservation in {countryName}
-              </p>
-            </motion.div>
-          </motion.div>
+            {/* Single CTA */}
+            <div className="mt-8">
+              <button
+                onClick={() => document.getElementById('wildlife-programs')?.scrollIntoView({ behavior: 'smooth' })}
+                className="bg-sage-green hover:bg-sage-green/90 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg"
+              >
+                <span>Explore Programs</span>
+                <ArrowRight className="w-5 h-5 ml-2 inline" />
+              </button>
+            </div>
+          </div>
         </Container>
-      </div>
+      </section>
 
-      <Container className="section-padding-lg">
-        {/* CONSERVATION AREAS - Consolidated Animal Focus Areas */}
-        <section id="conservation-areas" className="mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <span className="inline-block glass-nature-light text-sage-green rounded-full text-caption font-medium mb-4 border-nature-glass">
-              🌿 Conservation Ecosystem
-            </span>
-
-            <h2 className="text-section text-deep-forest mb-6">
-              {countryName}'s Conservation Focus Areas
-            </h2>
-
-            <p className="text-body-large text-forest/80 max-w-4xl mx-auto mb-12">
-              From pristine coastlines to misty cloud forests, {countryName} hosts diverse conservation efforts across multiple ecosystems.
-              Work in coastal turtle beaches, tropical rainforests, wildlife rehabilitation centers, and community conservation areas—explore the different focus areas where wildlife protection happens.
-            </p>
-          </motion.div>
-
-          {/* Conservation Focus Areas Grid - Real Data */}
-          <div className="grid-nature-3 gap-nature-lg mb-16">
-            {availableAnimals.map((animal, index) => {
-              const animalOpportunities = countryOpportunities.filter(opp =>
-                opp.animalTypes.some(type =>
-                  type.toLowerCase().includes(animal.name.toLowerCase().split(' ')[0])
-                )
-              );
-
-              return (
-                <motion.div
-                  key={animal.id}
-                  initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: 0.1 * index, duration: 0.7, type: "spring" }}
-                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                >
-                  <Link
-                    to={`/volunteer-${countrySlug}/${animal.id}`}
-                    onClick={handleNavigation}
-                  >
-                    <Card className="h-full group cursor-pointer glass-nature-light hover:bg-soft-cream/95 border-nature-glass">
-                      {/* Conservation Area Image */}
-                      <div className="relative h-48 overflow-hidden">
-                        <div
-                          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                          style={{ backgroundImage: `url(${animal.image})` }}
-                        />
-
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-
-                        {/* Real Program Count */}
-                        <div className="absolute top-4 right-4">
-                          <span className="glass-nature-dark text-white px-3 py-1 rounded-full text-caption-small font-medium shadow-lg">
-                            {animalOpportunities.length} Programs
-                          </span>
-                        </div>
-
-                        {/* Species Info with Glassmorphism */}
-                        <div className="absolute bottom-0 left-0 right-0 glass-nature-dark section-padding-xs text-white">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-2xl">
-                              {animal.name === 'Lions' ? '🦁' :
-                                animal.name === 'Elephants' ? '🐘' :
-                                  animal.name === 'Sea Turtles' ? '🐢' :
-                                    animal.name === 'Orangutans' ? '🦧' :
-                                      animal.name === 'Koalas' ? '🐨' : '🐾'}
-                            </span>
-                            <h3 className="text-feature text-white font-bold">{animal.name} Conservation</h3>
-                          </div>
-                          <p className="text-white/90 text-caption">
-                            {animal.name === 'Sea Turtles' ? 'Marine & coastal protection' :
-                              animal.name === 'Orangutans' ? 'Rainforest & primate research' :
-                                animal.name === 'Elephants' ? 'Wildlife sanctuary & habitat protection' :
-                                  `${animal.name.toLowerCase()} monitoring & protection`}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Exploration Content */}
-                      <CardContent className="section-padding-sm">
-                        <p className="text-body text-forest/80 mb-4">
-                          {animal.name === 'Sea Turtles' && countrySlug === 'costa-rica' ?
-                            'Explore beach patrol programs, nesting site monitoring, and marine research initiatives along both Pacific and Caribbean coastlines.' :
-                            animal.name === 'Orangutans' ?
-                              'Discover primate behavior studies, forest conservation projects, and rehabilitation programs in primary rainforest locations.' :
-                              animal.name === 'Elephants' ?
-                                'Join ethical elephant sanctuary programs focused on rescued elephant care, habitat restoration, and anti-poaching efforts.' :
-                                `Learn about ${animal.name.toLowerCase()} research, habitat protection, and conservation strategies across ${countryName}'s diverse regions.`}
-                        </p>
-
-                        {/* Real Location Data */}
-                        {animalOpportunities.length > 0 && (
-                          <div className="space-nature-xs mb-4">
-                            <div className="flex items-center justify-between text-caption">
-                              <span className="text-caption text-forest/60">Available Locations:</span>
-                              <span className="text-caption font-medium text-rich-earth">
-                                {[...new Set(animalOpportunities.map(opp => opp.location.city))].slice(0, 2).join(', ')}
-                                {animalOpportunities.length > 2 && ' +more'}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Exploration CTA */}
-                        <div className="flex items-center justify-between pt-3 border-t border-warm-beige/40">
-                          <span className="text-caption font-medium text-forest">Explore {animal.name} Programs</span>
-                          <ArrowRight className="w-5 h-5 text-rich-earth group-hover:translate-x-2 group-hover:text-warm-sunset transition-all duration-300" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          {/* Quick Navigation to Programs */}
-          <div className="text-center">
-            <button
-              onClick={() => document.getElementById('wildlife-programs')?.scrollIntoView({ behavior: 'smooth' })}
-              className="btn-nature-primary text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-            >
-              View All {countryOpportunities.length} Programs in Detail
-              <ArrowRight className="w-5 h-5 ml-3" />
-            </button>
-          </div>
-        </section>
-
+      <Container className="py-24">
         {/* WILDLIFE PROGRAMS - Complete Program Catalog */}
         <section id="wildlife-programs" className="mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <span className="inline-block glass-nature-light text-rich-earth rounded-full text-caption font-medium mb-6 border-nature-glass">
-              📋 Complete Program Catalog
-            </span>
+          <div className="text-center mb-16">
+            {/* Enhanced badge with gradient and better styling */}
+            <div className="bg-gradient-to-r from-rich-earth/20 via-white/80 to-rich-earth/20 backdrop-blur-sm border border-rich-earth/30 rounded-2xl inline-block px-8 py-4 mb-8 shadow-lg">
+              <div className="flex items-center justify-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-rich-earth to-warm-sunset rounded-xl flex items-center justify-center">
+                  <span className="text-white text-lg">📋</span>
+                </div>
+                <span className="text-rich-earth font-black text-lg tracking-wide">Wildlife Conservation Programs</span>
+              </div>
+            </div>
 
-            <h2 className="text-section text-deep-forest mb-6">
-              {countryName} Wildlife Conservation Programs
+            {/* Enhanced title with gradient text */}
+            <h2 className="text-3xl lg:text-5xl font-black text-deep-forest mb-6 leading-tight">
+              <span className="block">{countryName} Conservation</span>
+              <span className="block bg-gradient-to-r from-rich-earth via-warm-sunset to-golden-hour bg-clip-text text-transparent">
+                Programs
+              </span>
             </h2>
 
-            <p className="text-body-large text-forest/80 max-w-4xl mx-auto mb-4">
-              Explore the complete collection of wildlife conservation opportunities in {countryName}.
-              Each program offers unique perspectives on conservation science, biodiversity protection, and sustainable wildlife management.
-            </p>
-
-            <div className="glass-nature-light section-padding-xs max-w-3xl mx-auto mb-12 border-nature-glass">
-              <p className="text-body-small text-forest/80">
-                <strong>Why these programs?</strong> All programs are verified for legitimate conservation impact and transparent costs. We provide neutral exposure to quality opportunities—the choice is yours to make wisely.
+            {/* Enhanced description with visual hierarchy */}
+            <div className="max-w-4xl mx-auto">
+              <p className="text-lg lg:text-xl text-forest/80 leading-relaxed mb-4">
+                Explore {countryOpportunities.length} verified wildlife conservation programs in {countryName}.
+              </p>
+              <p className="text-base text-rich-earth font-semibold">
+                Each program offers authentic conservation impact and meaningful volunteer experiences.
               </p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Program Grid - Real Opportunity Cards */}
-          <div className="grid-nature-2 gap-nature-lg mb-12">
+          <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
             {countryOpportunities.map((opportunity, index) => (
-              <motion.div
-                key={opportunity.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index, duration: 0.7 }}
-                className="card-nature-hover overflow-hidden transition-all duration-500 group"
-              >
+              <div key={opportunity.id} className="card-nature-hover overflow-hidden transition-all duration-500 group">
                 <OpportunityCard
                   opportunity={opportunity}
                   index={index}
                 />
-              </motion.div>
+              </div>
             ))}
           </div>
 
-          {/* Decision Support */}
-          <div className="glass-nature-light section-padding-md mb-8 border-nature-glass hover:bg-soft-cream/95 transition-all duration-300">
-            <h3 className="text-feature text-deep-forest mb-6 text-center">🤔 How to Choose Your Program</h3>
-            <p className="text-body-small text-forest/80 text-center max-w-3xl mx-auto">
-              Consider your interests: hands-on animal care vs. research vs. community work. Match duration to your availability (programs range {Math.min(...countryOpportunities.map(o => o.duration?.min || 4))}-{Math.max(...countryOpportunities.map(o => o.duration?.max || 24))} weeks). All programs welcome beginners—choose based on your conservation interests, not experience level.
-            </p>
-          </div>
-
-          {/* Explore More */}
-          <div className="text-center">
-            <Link
-              to="/opportunities"
-              onClick={handleNavigation}
-              className="btn-nature-secondary text-lg"
-            >
-              Compare Programs Worldwide
-              <ArrowRight className="w-5 h-5 ml-3" />
-            </Link>
-          </div>
+          {/* CTA to View All */}
+          {countryOpportunities.length > 0 && (
+            <div className="text-center mt-16">
+              <Link
+                to="/opportunities"
+                className="bg-sage-green hover:bg-sage-green/90 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg inline-flex items-center"
+              >
+                <span className="font-semibold">Compare Programs Worldwide</span>
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Link>
+            </div>
+          )}
         </section>
       </Container>
 
-      {/* CONSERVATION EXPERTISE SECTION - Integrated & Database-Ready */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2, duration: 0.8 }}
-        className="section-savannah section-padding-lg"
-      >
-        <Container>
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <span className="inline-block glass-nature-light text-sage-green rounded-full text-caption font-medium mb-6 border-nature-glass">
-                🌿 Conservation Expertise & Impact
-              </span>
+      <section className="py-24 bg-gradient-to-br from-soft-cream via-warm-beige/50 to-gentle-lemon/20">
+        <div className="container-nature">
+          {/* CONSERVATION AREAS - Consolidated Animal Focus Areas */}
+          <div id="conservation-areas" className="mb-20">
+            <div className="text-center mb-16">
+              {/* Enhanced badge with gradient and better styling */}
+              <div className="bg-gradient-to-r from-sage-green/20 via-white/80 to-sage-green/20 backdrop-blur-sm border border-sage-green/30 rounded-2xl inline-block px-8 py-4 mb-8 shadow-lg">
+                <div className="flex items-center justify-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-sage-green to-deep-forest rounded-xl flex items-center justify-center">
+                    <span className="text-white text-lg">🌿</span>
+                  </div>
+                  <span className="text-sage-green font-black text-lg tracking-wide">Conservation Focus Areas</span>
+                </div>
+              </div>
 
-              <h2 className="text-section text-deep-forest mb-6">
-                {countryName} Conservation Context & Volunteer Impact
+              {/* Enhanced title with gradient text */}
+              <h2 className="text-3xl lg:text-5xl font-black text-deep-forest mb-6 leading-tight">
+                <span className="block">{countryName}'s Wildlife</span>
+                <span className="block bg-gradient-to-r from-sage-green via-rich-earth to-warm-sunset bg-clip-text text-transparent">
+                  Conservation Ecosystem
+                </span>
               </h2>
 
-              <p className="text-body-large text-forest/80 max-w-4xl mx-auto mb-8">
-                Understand the conservation landscape, cultural context, and your role in protecting {countryName}'s biodiversity.
-              </p>
+              {/* Enhanced description with visual hierarchy */}
+              <div className="max-w-4xl mx-auto">
+                <p className="text-lg lg:text-xl text-forest/80 leading-relaxed mb-4">
+                  From pristine coastlines to cloud forests, {countryName} hosts diverse conservation efforts across multiple ecosystems.
+                </p>
+                <p className="text-base text-rich-earth font-semibold">
+                  Explore different focus areas where wildlife protection creates lasting impact.
+                </p>
+              </div>
             </div>
 
-            {/* Integrated Conservation Content */}
-            {contentHub && (
-              <div className="space-nature-lg">
-                {/* Conservation Overview */}
-                <ConservationSection
-                  content={contentHub.conservation}
-                  className="glass-nature-light"
-                />
+            {/* Conservation Focus Areas Grid - Award-Winning Design */}
+            <div className="grid md:grid-cols-2 gap-8 mb-16">
+              {availableAnimals.map((animal, index) => {
+                const animalOpportunities = countryOpportunities.filter(opp =>
+                  opp.animalTypes.some(type =>
+                    type.toLowerCase().includes(animal.name.toLowerCase().split(' ')[0])
+                  )
+                );
 
-                {/* Regional Wildlife Section */}
-                {contentHub.keySpecies && (
-                  <RegionalWildlifeSection
-                    keySpecies={contentHub.keySpecies}
-                    countryName={countryName}
-                    className="glass-nature-light"
-                  />
-                )}
+                const colors = [
+                  { gradient: 'from-sage-green to-deep-forest', accent: 'sage-green', bg: 'sage-green/10' },
+                  { gradient: 'from-golden-hour to-warm-sunset', accent: 'golden-hour', bg: 'golden-hour/10' },
+                  { gradient: 'from-rich-earth to-warm-sunset', accent: 'rich-earth', bg: 'rich-earth/10' }
+                ];
+                const colorScheme = colors[index % colors.length];
 
-                {/* Cultural Context Section */}
-                {contentHub.culturalContext && (
-                  <CulturalContextSection
-                    culturalContext={contentHub.culturalContext}
-                    countryName={countryName}
-                    className="glass-nature-light"
-                  />
-                )}
+                return (
+                  <Link
+                    key={animal.id}
+                    to={`/volunteer-${countrySlug}/${animal.id}`}
+                    onClick={handleNavigation}
+                    className="group block"
+                  >
+                    <div className="relative h-[360px] rounded-2xl overflow-hidden group-hover:scale-[1.02] transition-all duration-500 shadow-lg">
+                      {/* Background Cover Image */}
+                      <div className="absolute inset-0">
+                        <img
+                          src={animal.image}
+                          alt={`${animal.name} conservation`}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/20 group-hover:from-black/60 group-hover:via-black/20 group-hover:to-black/10 transition-all duration-300"></div>
+                      </div>
 
-                {/* Volunteer Impact Highlight */}
-                <div className="glass-nature-light section-padding-md border-nature-glass hover:bg-soft-cream/95 transition-all duration-300">
-                  <div className="flex items-center mb-6">
-                    <Heart className="w-10 h-10 text-warm-sunset mr-4" />
-                    <h3 className="text-feature text-deep-forest">Your Impact as a Wildlife Volunteer</h3>
-                  </div>
-
-                  <div className="grid-nature-2 gap-nature-lg">
-                    <div>
-                      <p className="text-body text-forest/80 mb-4">
-                        {contentHub.conservation.solution}
-                      </p>
-                      <p className="text-body-small glass-nature-light rounded-lg section-padding-xs border-l-4 border-rich-earth">
-                        <strong>Unlike eco-tourism:</strong> You contribute meaningful work to conservation research and animal care, not just observation. Programs offer flexible {Math.min(...countryOpportunities.map(o => o.duration?.min || 4))}-{Math.max(...countryOpportunities.map(o => o.duration?.max || 24))} week commitments.
-                      </p>
-                    </div>
-
-                    <div>
-                      <div className="glass-nature-light rounded-lg p-4 border-nature-glass">
-                        <h4 className="text-card-title text-deep-forest mb-3">Real Impact Outcomes:</h4>
-                        <p className="text-body-small text-forest/80 mb-3">{contentHub.conservation.impact}</p>
-                        <div className="space-nature-xs">
-                          <div className="flex items-start">
-                            <div className="w-2 h-2 bg-sage-green rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                            <p className="text-caption-small text-forest/70">Professional development in conservation methodologies</p>
+                      {/* Content Overlay */}
+                      <div className="relative z-10 h-full flex flex-col">
+                        {/* Top Section - Programs Badge */}
+                        <div className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl px-3 py-2">
+                              <span className="text-white text-sm font-medium drop-shadow-md">
+                                {animalOpportunities.length} Programs
+                              </span>
+                            </div>
+                            <div className={`w-10 h-10 bg-gradient-to-br ${colorScheme.gradient} rounded-xl flex items-center justify-center shadow-lg`}>
+                              <span className="text-white text-lg filter drop-shadow-lg">
+                                {animal.name === 'Lions' ? '🦁' :
+                                  animal.name === 'Elephants' ? '🐘' :
+                                    animal.name === 'Sea Turtles' ? '🐢' :
+                                      animal.name === 'Orangutans' ? '🦧' :
+                                        animal.name === 'Koalas' ? '🐨' : '🐾'}
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex items-start">
-                            <div className="w-2 h-2 bg-warm-sunset rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                            <p className="text-caption-small text-forest/70">Cultural immersion with conservation communities</p>
-                          </div>
-                          <div className="flex items-start">
-                            <div className="w-2 h-2 bg-rich-earth rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                            <p className="text-caption-small text-forest/70">Hands-on field experience with modern technology</p>
+                        </div>
+
+                        {/* Spacer to push content to bottom */}
+                        <div className="flex-1"></div>
+
+                        {/* Bottom Section - Main Content */}
+                        <div className="p-4">
+                          <div className="bg-white/20 backdrop-blur-md border border-white/25 rounded-xl p-4 group-hover:bg-white/25 transition-all duration-300">
+                            {/* Title */}
+                            <div className="mb-3">
+                              <h3 className="text-xl font-black text-white mb-1 drop-shadow-md">{animal.name} Conservation</h3>
+                              <p className="text-white/90 text-sm font-medium drop-shadow-sm">
+                                {animal.name === 'Sea Turtles' ? 'Marine & Coastal Protection' :
+                                  animal.name === 'Orangutans' ? 'Rainforest & Primate Research' :
+                                    animal.name === 'Elephants' ? 'Wildlife Sanctuary & Habitat' :
+                                      `${animal.name} Research & Protection`}
+                              </p>
+                            </div>
+
+                            {/* Key Info - Compact */}
+                            <div className="space-y-2 mb-3">
+                              <p className="text-white/90 text-sm leading-relaxed">
+                                Hands-on {animal.name.toLowerCase()} research & habitat protection across {countryName}'s ecosystems.
+                              </p>
+
+                              {animalOpportunities.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  {[...new Set(animalOpportunities.map(opp => opp.location.city))].slice(0, 2).map((city, idx) => (
+                                    <span key={idx} className="px-2 py-1 bg-white/20 text-white text-sm rounded-full">
+                                      {city}
+                                    </span>
+                                  ))}
+                                  {animalOpportunities.length > 2 && (
+                                    <span className="px-2 py-1 bg-white/20 text-white text-sm rounded-full">
+                                      +{animalOpportunities.length - 2}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Call to Action */}
+                            <div className="flex items-center justify-between pt-2 border-t border-white/20">
+                              <span className="text-white font-medium text-sm">Explore Programs</span>
+                              <ArrowRight className="w-3 h-3 text-white group-hover:translate-x-1 transition-transform duration-300" />
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Why These Programs Excel - Inspired by animal page */}
+            <div className="bg-white/60 backdrop-blur-sm border border-warm-beige/40 rounded-2xl p-8 mb-12">
+              <h3 className="text-2xl font-black text-deep-forest mb-8 text-center">
+                🌟 Why {countryName} Programs Excel
+              </h3>
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="text-center space-y-3">
+                  <div className="w-16 h-16 bg-gradient-to-br from-sage-green to-deep-forest rounded-full flex items-center justify-center mx-auto">
+                    <Shield className="w-8 h-8 text-white" />
+                  </div>
+                  <h4 className="font-bold text-deep-forest text-lg">Verified Impact</h4>
+                  <p className="text-base text-forest/80">All programs verified for legitimate conservation outcomes in {countryName}</p>
+                </div>
+                <div className="text-center space-y-3">
+                  <div className="w-16 h-16 bg-gradient-to-br from-warm-sunset to-golden-hour rounded-full flex items-center justify-center mx-auto">
+                    <Leaf className="w-8 h-8 text-white" />
+                  </div>
+                  <h4 className="font-bold text-deep-forest text-lg">Local Partnership</h4>
+                  <p className="text-base text-forest/80">Deep partnerships with {countryName} communities and scientists</p>
+                </div>
+                <div className="text-center space-y-3">
+                  <div className="w-16 h-16 bg-gradient-to-br from-rich-earth to-warm-sunset rounded-full flex items-center justify-center mx-auto">
+                    <Leaf className="w-8 h-8 text-white" />
+                  </div>
+                  <h4 className="font-bold text-deep-forest text-lg">Biodiversity Focus</h4>
+                  <p className="text-base text-forest/80">Science-based approaches across {countryName}'s unique ecosystems</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Navigation to Programs */}
+            <div className="text-center">
+              <button
+                onClick={() => document.getElementById('wildlife-programs')?.scrollIntoView({ behavior: 'smooth' })}
+                className="bg-sage-green hover:bg-sage-green/90 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg inline-flex items-center"
+              >
+                View All {countryOpportunities.length} Programs
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CONSERVATION EXPERTISE SECTION - Compact */}
+      <section className="py-16 bg-gradient-to-br from-deep-forest via-rich-earth to-warm-sunset">
+        <div className="container-nature">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              {/* Enhanced badge with gradient and better styling */}
+              <div className="bg-gradient-to-r from-white/30 via-white/20 to-white/30 backdrop-blur-md border border-white/40 rounded-2xl inline-block px-8 py-4 mb-8 shadow-lg">
+                <div className="flex items-center justify-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-golden-hour to-warm-sunset rounded-xl flex items-center justify-center">
+                    <span className="text-white text-lg">🌿</span>
+                  </div>
+                  <span className="text-white font-black text-lg tracking-wide drop-shadow-md">Conservation Expertise & Impact</span>
+                </div>
+              </div>
+
+              {/* Enhanced title with gradient text effect */}
+              <h2 className="text-3xl lg:text-5xl font-black text-white mb-6 leading-tight drop-shadow-lg">
+                <span className="block">{countryName} Conservation Context</span>
+                <span className="block bg-gradient-to-r from-golden-hour via-warm-sunset to-sage-green bg-clip-text text-transparent drop-shadow-none">
+                  & Volunteer Impact
+                </span>
+              </h2>
+
+              {/* Enhanced description with visual hierarchy */}
+              <div className="max-w-4xl mx-auto">
+                <p className="text-lg lg:text-xl text-white/90 leading-relaxed mb-4 drop-shadow-sm">
+                  Understand the conservation landscape, cultural context, and your role in protecting {countryName}'s biodiversity.
+                </p>
+                <p className="text-base text-golden-hour font-semibold drop-shadow-sm">
+                  Discover how your volunteer work creates lasting conservation impact.
+                </p>
+              </div>
+            </div>
+
+            {/* Content Sections - Compact Layout */}
+            {contentHub && (
+              <div className="space-y-6">
+                {/* Conservation Overview */}
+                <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
+                  <ConservationSection
+                    content={contentHub.conservation}
+                    className="text-white"
+                  />
+                </div>
+
+                {/* Regional Wildlife */}
+                {contentHub.keySpecies && (
+                  <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
+                    <RegionalWildlifeSection
+                      keySpecies={contentHub.keySpecies}
+                      countryName={countryName}
+                      className="text-white"
+                    />
+                  </div>
+                )}
+
+                {/* Cultural Context */}
+                {contentHub.culturalContext && (
+                  <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
+                    <CulturalContextSection
+                      culturalContext={contentHub.culturalContext}
+                      countryName={countryName}
+                      className="text-white"
+                    />
+                  </div>
+                )}
+
+                {/* Volunteer Impact */}
+                <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6">
+                  <div className="flex items-center mb-6">
+                    <Leaf className="w-6 h-6 text-golden-hour mr-3" />
+                    <h3 className="text-xl font-bold text-white">Your Impact as a Wildlife Volunteer</h3>
+                  </div>
+
+                  <p className="text-white/90 mb-6 leading-relaxed">
+                    {contentHub.conservation.solution}
+                  </p>
+
+                  <p className="text-white/90 mb-6 leading-relaxed">
+                    <strong className="text-golden-hour">Unlike eco-tourism:</strong> You contribute meaningful work to conservation research and animal care, not just observation. Programs offer flexible {Math.min(...countryOpportunities.map(o => o.duration?.min || 4))}-{Math.max(...countryOpportunities.map(o => o.duration?.max || 24))} week commitments.
+                  </p>
+
+                  <div>
+                    <h4 className="text-subtitle font-semibold text-white mb-3">Real Impact Outcomes:</h4>
+                    <p className="text-white/80 mb-4">{contentHub.conservation.impact}</p>
+
+                    <ul className="space-y-2 text-white/80">
+                      <li>• Professional development in conservation methodologies</li>
+                      <li>• Cultural immersion with conservation communities</li>
+                      <li>• Hands-on field experience with modern technology</li>
+                    </ul>
                   </div>
                 </div>
               </div>
             )}
           </div>
-        </Container>
-      </motion.section>
+        </div>
+      </section>
 
       {/* Planning Your Conservation Volunteer Experience */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4, duration: 0.8 }}
-        className="section-jungle section-padding-lg"
-      >
-        <Container>
+      <section className="py-24 bg-gradient-to-br from-gentle-lemon/20 via-soft-cream to-warm-beige/50">
+        <div className="container-nature">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-section text-deep-forest mb-6">
-                Planning Your Wildlife Conservation Volunteer Trip to {countryName}
+            <div className="text-center mb-16">
+              {/* Enhanced badge with gradient and better styling */}
+              <div className="bg-gradient-to-r from-warm-sunset/20 via-white/80 to-warm-sunset/20 backdrop-blur-sm border border-warm-sunset/30 rounded-2xl inline-block px-8 py-4 mb-8 shadow-lg">
+                <div className="flex items-center justify-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-warm-sunset to-golden-hour rounded-xl flex items-center justify-center">
+                    <span className="text-white text-lg">🗺️</span>
+                  </div>
+                  <span className="text-warm-sunset font-black text-lg tracking-wide">Planning Your Adventure</span>
+                </div>
+              </div>
+
+              {/* Enhanced title with gradient text */}
+              <h2 className="text-3xl lg:text-5xl font-black text-deep-forest mb-6 leading-tight">
+                <span className="block">Planning Your Wildlife Conservation</span>
+                <span className="block bg-gradient-to-r from-warm-sunset via-golden-hour to-rich-earth bg-clip-text text-transparent">
+                  Volunteer Trip to {countryName}
+                </span>
               </h2>
-              <p className="text-body-large text-forest/80">
-                Everything you need to know about volunteering with wildlife conservation programs in {countryName}
-              </p>
+
+              {/* Enhanced description with visual hierarchy */}
+              <div className="max-w-4xl mx-auto">
+                <p className="text-lg lg:text-xl text-forest/80 leading-relaxed mb-4">
+                  Everything you need to know about volunteering with wildlife conservation programs in {countryName}.
+                </p>
+                <p className="text-base text-warm-sunset font-semibold">
+                  From practical logistics to cultural preparation - your complete guide.
+                </p>
+              </div>
             </div>
 
-            <div className="grid-nature-2 gap-nature-lg">
+            <div className="grid md:grid-cols-2 gap-8">
               {/* Practical Information */}
-              <div className="glass-nature-light section-padding-md border-nature-glass hover:bg-soft-cream/95 transition-all duration-300">
-                <h3 className="text-feature text-deep-forest mb-6">Essential Planning Information</h3>
+              <div className="bg-white/60 backdrop-blur-sm border border-warm-beige/40 rounded-xl p-8 hover:bg-white/80 transition-all duration-300">
+                <h3 className="text-lg font-bold text-deep-forest mb-6">Essential Planning Information</h3>
 
-                <div className="space-nature-md">
+                <div className="space-y-6">
                   <div>
-                    <h4 className="text-card-title text-deep-forest mb-2">Best Time to Volunteer</h4>
-                    <p className="text-body-small text-forest/80">
+                    <h4 className="text-lg font-bold text-deep-forest mb-3">Best Time to Volunteer</h4>
+                    <p className="text-sm text-forest/80">
                       {countrySlug === 'costa-rica' ?
                         'Costa Rica offers year-round volunteering opportunities. Dry season (December-April) is ideal for wildlife observation, while green season (May-November) offers lush landscapes and sea turtle nesting season.' :
                         `${countryName} conservation programs operate year-round, with optimal wildlife observation periods varying by species and region. Contact programs directly for seasonal recommendations.`}
@@ -657,15 +646,15 @@ const CountryLandingPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <h4 className="text-card-title text-deep-forest mb-2">Visa Requirements</h4>
-                    <p className="text-body-small text-forest/80">
+                    <h4 className="text-lg font-bold text-deep-forest mb-3">Visa Requirements</h4>
+                    <p className="text-sm text-forest/80">
                       Most volunteers can enter {countryName} on a tourist visa for short-term conservation programs. Longer commitments may require specific volunteer visas. Check current requirements with {countryName} consulates.
                     </p>
                   </div>
 
                   <div>
-                    <h4 className="text-card-title text-deep-forest mb-2">Health & Safety</h4>
-                    <p className="text-body-small text-forest/80">
+                    <h4 className="text-lg font-bold text-deep-forest mb-3">Health & Safety</h4>
+                    <p className="text-sm text-forest/80">
                       Conservation work in {countryName} is generally safe with proper precautions. Recommended vaccinations and health insurance requirements vary by program and region.
                     </p>
                   </div>
@@ -673,16 +662,16 @@ const CountryLandingPage: React.FC = () => {
               </div>
 
               {/* What to Expect */}
-              <div className="glass-nature-light section-padding-md border-nature-glass hover:bg-soft-cream/95 transition-all duration-300">
-                <h3 className="text-feature text-deep-forest mb-6">What to Expect</h3>
+              <div className="bg-white/60 backdrop-blur-sm border border-warm-beige/40 rounded-xl p-8 hover:bg-white/80 transition-all duration-300">
+                <h3 className="text-lg font-bold text-deep-forest mb-6">What to Expect</h3>
 
-                <div className="space-nature-md">
+                <div className="space-y-6">
                   <div>
-                    <h4 className="text-card-title text-deep-forest mb-2">Daily Activities</h4>
-                    <p className="text-body-small text-forest/80 mb-2">
+                    <h4 className="text-lg font-bold text-deep-forest mb-3">Daily Activities</h4>
+                    <p className="text-sm text-forest/80 mb-3">
                       Wildlife conservation volunteers typically engage in field research, data collection, habitat maintenance, and educational activities. Work schedules vary by program and species.
                     </p>
-                    <ul className="text-caption-small text-forest/70 space-y-1">
+                    <ul className="text-sm text-forest/70 space-y-1">
                       <li>• Early morning wildlife monitoring</li>
                       <li>• Data recording and analysis</li>
                       <li>• Habitat restoration activities</li>
@@ -692,29 +681,28 @@ const CountryLandingPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <h4 className="text-card-title text-deep-forest mb-2">Accommodation & Meals</h4>
-                    <p className="text-body-small text-forest/80">
+                    <h4 className="text-lg font-bold text-deep-forest mb-3">Accommodation & Meals</h4>
+                    <p className="text-sm text-forest/80">
                       Most programs provide shared accommodation in research stations, eco-lodges, or homestays. Meals typically feature local cuisine and dietary restrictions can usually be accommodated.
                     </p>
                   </div>
 
                   <div>
-                    <h4 className="text-card-title text-deep-forest mb-2">Skills Development</h4>
-                    <p className="text-body-small text-forest/80">
+                    <h4 className="text-lg font-bold text-deep-forest mb-3">Skills Development</h4>
+                    <p className="text-sm text-forest/80">
                       Gain valuable experience in wildlife research methodologies, conservation technology, data analysis, and cross-cultural communication while contributing to meaningful conservation outcomes.
                     </p>
                   </div>
-
                 </div>
               </div>
             </div>
 
             {/* Call to Action */}
-            <div className="mt-12 text-center glass-nature-light section-padding-md border-nature-glass hover:bg-soft-cream/95 transition-all duration-300 group">
-              <h3 className="text-feature text-deep-forest mb-6 group-hover:text-rich-earth transition-colors">
+            <div className="mt-16 text-center bg-white/60 backdrop-blur-sm border border-warm-beige/40 rounded-xl p-8 hover:bg-white/80 transition-all duration-300">
+              <h3 className="text-2xl font-bold text-deep-forest mb-6">
                 Ready to Start Your Conservation Journey in {countryName}?
               </h3>
-              <p className="text-body text-forest/80 mb-6 max-w-2xl mx-auto">
+              <p className="text-base text-forest/80 mb-8 max-w-2xl mx-auto">
                 Browse our carefully selected {countryOpportunities.length} conservation programs in {countryName} and find the perfect opportunity to make a meaningful impact on wildlife protection.
               </p>
 
@@ -722,20 +710,21 @@ const CountryLandingPage: React.FC = () => {
                 <Link
                   to="/opportunities"
                   onClick={handleNavigation}
-                  className="btn-nature-primary"
+                  className="bg-sage-green hover:bg-sage-green/90 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg inline-flex items-center"
                 >
                   Explore Other Conservation Destinations
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </Link>
               </div>
             </div>
           </div>
-        </Container>
-      </motion.section>
+        </div>
+      </section>
 
 
       {/* Strategic SEO Internal Links - Cross-Navigation */}
       <SEOInternalLinks
+        type="country"
         countryName={countryName}
         countrySlug={countrySlug}
         availableAnimals={availableAnimals}

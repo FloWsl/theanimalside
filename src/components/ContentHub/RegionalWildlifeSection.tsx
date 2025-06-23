@@ -70,16 +70,16 @@ const RegionalWildlifeSection: React.FC<RegionalWildlifeSectionProps> = ({
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-section text-deep-forest mb-6">
+          <h2 className="text-section text-white mb-6">
             Wildlife Conservation Focus
           </h2>
-          <p className="text-body text-forest/80 max-w-3xl mx-auto">
+          <p className="text-body text-white/80 max-w-3xl mx-auto">
             Learn about the key species that define {countryName}'s conservation priorities 
             and how volunteer efforts contribute to protecting these vital ecosystems.
           </p>
         </motion.div>
 
-        <div className="grid-nature-3 gap-nature-lg">
+        <div className="grid-nature-2 gap-nature-lg">
           {wildlifeCards.map((card, index) => (
             <motion.div
               key={card.title}
@@ -87,12 +87,12 @@ const RegionalWildlifeSection: React.FC<RegionalWildlifeSectionProps> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * index, duration: 0.6 }}
             >
-              <Card className="h-full border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+              <Card className="h-full bg-warm-beige/80 backdrop-blur-sm border border-warm-beige/60 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                 <div className={`h-1 bg-gradient-to-r ${card.color}`} />
                 <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center text-deep-forest">
-                    <div className={`w-10 h-10 radius-nature-sm bg-gradient-to-br ${card.color} flex items-center justify-center mr-3`}>
-                      <card.icon className="w-5 h-5 text-white" />
+                  <CardTitle className="flex items-center text-lg font-bold text-deep-forest">
+                    <div className={`w-8 h-8 radius-nature-sm bg-gradient-to-br ${card.color} flex items-center justify-center mr-3 flex-shrink-0`}>
+                      <card.icon className="w-4 h-4 text-white" />
                     </div>
                     {card.title}
                   </CardTitle>
@@ -101,14 +101,14 @@ const RegionalWildlifeSection: React.FC<RegionalWildlifeSectionProps> = ({
                   {card.type === 'species' ? (
                     <div>
                       {/* Species grid */}
-                      <div className="grid-nature-2 gap-nature-sm mb-4">
+                      <div className="space-y-1 mb-3">
                         {card.content.map((species, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center section-padding-xs bg-soft-cream radius-nature-sm border-nature-light"
+                            className="flex items-center px-2 py-1 bg-soft-cream rounded-lg"
                           >
-                            <span className="text-2xl mr-2">{getAnimalEmoji(species)}</span>
-                            <span className="text-body-small font-medium text-deep-forest">{species}</span>
+                            <span className="text-lg mr-2">{getAnimalEmoji(species)}</span>
+                            <span className="text-sm font-medium text-deep-forest">{species}</span>
                           </div>
                         ))}
                       </div>

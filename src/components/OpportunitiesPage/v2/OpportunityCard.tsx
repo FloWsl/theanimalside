@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Users, Shield, ExternalLink, Heart } from 'lucide-react';
@@ -138,6 +138,30 @@ interface CardContentProps {
 }
 
 const CardContent: React.FC<CardContentProps> = ({ opportunity, costInfo, disabled, index }) => {
+  const [isFavorited, setIsFavorited] = useState(() => {
+    // Check localStorage for favorited opportunities
+    const favorites = JSON.parse(localStorage.getItem('favoriteOpportunities') || '[]');
+    return favorites.includes(opportunity.id);
+  });
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation when clicking favorite button
+    e.stopPropagation();
+    
+    const favorites = JSON.parse(localStorage.getItem('favoriteOpportunities') || '[]');
+    let newFavorites;
+    
+    if (isFavorited) {
+      // Remove from favorites
+      newFavorites = favorites.filter((id: string) => id !== opportunity.id);
+    } else {
+      // Add to favorites
+      newFavorites = [...favorites, opportunity.id];
+    }
+    
+    localStorage.setItem('favoriteOpportunities', JSON.stringify(newFavorites));
+    setIsFavorited(!isFavorited);
+  };
   return (
     <>
       {/* Optimized image section with responsive overlays */}
@@ -183,12 +207,30 @@ const CardContent: React.FC<CardContentProps> = ({ opportunity, costInfo, disabl
         {/* Enhanced gradient with storytelling overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         
-        {/* Heart icon for emotional connection */}
-        <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-          <div className="glass-nature-hero text-warm-sunset section-padding-xs">
-            <Heart className="w-4 h-4" />
+        {/* Interactive favorite button */}
+        <motion.button
+          onClick={handleFavoriteClick}
+          className={`absolute bottom-3 right-3 transition-all duration-300 transform ${
+            isFavorited 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0'
+          }`}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          <div className={`glass-nature-hero transition-all duration-200 section-padding-xs ${
+            isFavorited 
+              ? 'text-red-500 bg-white/90' 
+              : 'text-warm-sunset hover:text-red-500'
+          }`}>
+            <Heart 
+              className={`w-4 h-4 transition-all duration-200 ${
+                isFavorited ? 'fill-current' : ''
+              }`} 
+            />
           </div>
-        </div>
+        </motion.button>
       </div>
       
       {/* Optimized content section with compact spacing */}

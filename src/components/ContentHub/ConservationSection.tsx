@@ -38,13 +38,13 @@ const ConservationCard: React.FC<ConservationCardProps> = ({
     transition={{ duration: 0.6, delay }}
     className="h-full"
   >
-    <Card className="h-full bg-soft-cream">
+    <Card className="h-full bg-warm-beige/80 backdrop-blur-sm border border-warm-beige/60">
       <CardHeader className="section-padding-xs">
         <div className="flex items-center gap-nature-sm">
-          <div className={`p-3 rounded-lg ${iconColor}`}>
-            <Icon className="h-5 w-5 text-white" />
+          <div className={`p-2 rounded-lg ${iconColor} flex-shrink-0`}>
+            <Icon className="h-4 w-4 text-white" />
           </div>
-          <CardTitle className="text-feature text-deep-forest">
+          <CardTitle className="text-lg font-bold text-deep-forest">
             {title}
           </CardTitle>
         </div>
@@ -63,24 +63,24 @@ const ConservationSection: React.FC<ConservationSectionProps> = ({
   className = ''
 }) => {
   return (
-    <section className={`section-padding-md space-nature-md ${className}`}>
+    <section className={`section-padding-sm space-nature-sm ${className}`}>
       {/* Section Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-center max-w-3xl mx-auto space-nature-sm"
+        className="text-center max-w-3xl mx-auto mb-6"
       >
-        <h2 className="text-section text-deep-forest mb-6">
+        <h2 className="text-section text-white mb-3">
           Conservation Impact
         </h2>
-        <p className="text-body-large text-forest/70">
+        <p className="text-body-large text-white/80">
           Understand the conservation challenges and how your volunteer work creates real, measurable impact
         </p>
       </motion.div>
 
       {/* Conservation Cards Grid */}
-      <div className="grid gap-nature-md lg:grid-cols-3 max-w-6xl mx-auto">
+      <div className="grid gap-4 lg:grid-cols-2 max-w-4xl mx-auto">
         <ConservationCard
           title="The Challenge"
           content={content.challenge}
@@ -138,7 +138,7 @@ const ConservationSection: React.FC<ConservationSectionProps> = ({
 
       {/* Last Updated Information */}
       <div className="mt-6 text-center">
-        <p className="text-xs text-forest/50">
+        <p className="text-sm text-forest/50">
           Conservation information last updated: {new Date(content.lastReviewed).toLocaleDateString()}
         </p>
       </div>
