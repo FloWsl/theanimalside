@@ -8,12 +8,22 @@
  * Primary goal: SEO ranking for high-value conservation volunteer keywords
  */
 
+// Enhanced source interface for better structure
+export interface ContentSource {
+  url: string;
+  organization_name?: string;
+  source_type?: 'organization' | 'research' | 'government' | 'academic';
+  description?: string;
+  credibility_score?: number;
+  verified?: boolean;
+}
+
 // Core content hub interfaces
 export interface ConservationContent {
   challenge: string;        // Conservation problem (2-3 sentences)
   solution: string;         // How volunteers help (2-3 sentences)  
   impact: string;          // Real outcomes (1-2 sentences)
-  sources?: string[];      // Reference URLs for fact-checking
+  sources?: (string | ContentSource)[];  // Enhanced source support
   lastReviewed: string;    // ISO date string
   reviewedBy: string;      // Content reviewer identifier
 }

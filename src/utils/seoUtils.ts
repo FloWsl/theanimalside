@@ -200,6 +200,9 @@ export const generateCombinedPageSEO = (country: string, animal: string, related
   const formattedAnimal = formatAnimalName(animal);
   const opportunityCount = relatedOpportunities.length;
   
+  // Generate canonical URL - prefer country-animal format for SEO consistency
+  const canonicalUrl = `${window.location.origin}/volunteer-${country}/${animal}`;
+  
   return {
     title: `${formattedAnimal} Conservation Volunteer in ${formattedCountry} | ${opportunityCount} Programs | The Animal Side`,
     description: `${opportunityCount} ${formattedAnimal.toLowerCase()} conservation volunteer programs in ${formattedCountry}. Work directly with ${formattedAnimal.toLowerCase()}s while supporting local conservation efforts. Apply today.`,
@@ -211,6 +214,7 @@ export const generateCombinedPageSEO = (country: string, animal: string, related
       'conservation volunteer abroad',
       'wildlife rescue volunteer'
     ],
+    canonicalUrl,
     ogTitle: `${formattedAnimal} Conservation Volunteer Programs in ${formattedCountry}`,
     ogDescription: `Join ${opportunityCount} specialized ${formattedAnimal.toLowerCase()} conservation programs in ${formattedCountry}`,
     ogImage: relatedOpportunities[0]?.images?.[0] || 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&h=630&fit=crop',
@@ -219,7 +223,7 @@ export const generateCombinedPageSEO = (country: string, animal: string, related
       '@type': 'CollectionPage',
       name: `${formattedAnimal} Conservation Volunteers in ${formattedCountry}`,
       description: `${formattedAnimal} conservation volunteer opportunities in ${formattedCountry}`,
-      url: window.location.href,
+      url: canonicalUrl,
       spatialCoverage: {
         '@type': 'Country',
         name: formattedCountry
@@ -230,6 +234,14 @@ export const generateCombinedPageSEO = (country: string, animal: string, related
       }
     }
   };
+};
+
+/**
+ * Determine canonical URL for combined pages to prevent duplicate content
+ * Always use /volunteer-{country}/{animal} format as canonical
+ */
+export const generateCanonicalCombinedUrl = (country: string, animal: string): string => {
+  return `${window.location.origin}/volunteer-${country}/${animal}`;
 };
 
 export const generateOrganizationPageSEO = (organization: OrganizationDetail): SEOMetadata => {

@@ -209,13 +209,47 @@ function App() {
               </Suspense>
             } />
             
-            {/* Animal + Country combinations */}
+            {/* Indonesia + Animals */}
+            <Route path="volunteer-indonesia/orangutans" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="country-animal" />
+              </Suspense>
+            } />
+            <Route path="volunteer-indonesia/elephants" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="country-animal" />
+              </Suspense>
+            } />
+            
+            {/* Kenya + Animals */}
+            <Route path="volunteer-kenya/elephants" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="country-animal" />
+              </Suspense>
+            } />
+            <Route path="volunteer-kenya/lions" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="country-animal" />
+              </Suspense>
+            } />
+            
+            {/* Animal + Country combinations (for canonical URL testing) */}
             <Route path="sea-turtles-volunteer/costa-rica" element={
               <Suspense fallback={<PageLoader />}>
                 <CombinedPage type="animal-country" />
               </Suspense>
             } />
             <Route path="elephants-volunteer/thailand" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="animal-country" />
+              </Suspense>
+            } />
+            <Route path="elephants-volunteer/kenya" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="animal-country" />
+              </Suspense>
+            } />
+            <Route path="orangutans-volunteer/indonesia" element={
               <Suspense fallback={<PageLoader />}>
                 <CombinedPage type="animal-country" />
               </Suspense>

@@ -43,6 +43,33 @@ CREATE TABLE organizations (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Content sources table for all conservation information
+CREATE TABLE content_sources (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  
+  -- Source identification
+  organization_name VARCHAR(255) NOT NULL, -- "World Wildlife Fund"
+  url TEXT NOT NULL, -- "https://www.worldwildlife.org/species/sea-turtle"
+  
+  -- Source metadata
+  source_type VARCHAR(50) DEFAULT 'organization' CHECK (source_type IN ('organization', 'research', 'government', 'academic')),
+  credibility_score INTEGER DEFAULT 100 CHECK (credibility_score >= 0 AND credibility_score <= 100),
+  specialization JSONB, -- {"animals": ["sea-turtles"], "regions": ["costa-rica"]}
+  
+  -- Verification
+  verified BOOLEAN DEFAULT false,
+  verified_at TIMESTAMP WITH TIME ZONE,
+  verified_by VARCHAR(255),
+  
+  -- Content tracking
+  description TEXT, -- Brief description of what this source provides
+  coverage_scope VARCHAR(100), -- "Global", "Regional", "Species-specific"
+  
+  -- Timestamps
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 CREATE TABLE organization_certifications (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -655,6 +682,41 @@ CREATE TRIGGER trigger_ensure_primary_program
     BEFORE INSERT OR UPDATE ON programs
     FOR EACH ROW EXECUTE FUNCTION ensure_primary_program();
 
+-- Content hub source linking tables
+CREATE TABLE animal_content_sources (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  animal_slug VARCHAR(100) NOT NULL, -- "lions", "sea-turtles", etc.
+  content_source_id UUID NOT NULL REFERENCES content_sources(id) ON DELETE CASCADE,
+  
+  -- Relevance and context
+  relevance_score INTEGER DEFAULT 100 CHECK (relevance_score >= 0 AND relevance_score <= 100),
+  content_type VARCHAR(50) DEFAULT 'general' CHECK (content_type IN ('general', 'threats', 'conservation', 'behavior', 'habitat')),
+  notes TEXT, -- Why this source is relevant for this animal
+  
+  -- Timestamps
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  UNIQUE(animal_slug, content_source_id)
+);
+
+CREATE TABLE country_content_sources (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  country_slug VARCHAR(100) NOT NULL, -- "costa-rica", "thailand", etc.
+  content_source_id UUID NOT NULL REFERENCES content_sources(id) ON DELETE CASCADE,
+  
+  -- Relevance and context
+  relevance_score INTEGER DEFAULT 100 CHECK (relevance_score >= 0 AND relevance_score <= 100),
+  content_type VARCHAR(50) DEFAULT 'general' CHECK (content_type IN ('general', 'wildlife', 'conservation', 'culture', 'government')),
+  notes TEXT, -- Why this source is relevant for this country
+  
+  -- Timestamps
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  UNIQUE(country_slug, content_source_id)
+);
+
 -- ==================== USEFUL VIEWS ====================
 
 -- View for complete organization data (for API responses)
@@ -686,3 +748,21 @@ SELECT
 FROM testimonials 
 WHERE moderation_status = 'approved'
 GROUP BY organization_id;
+
+-- ==================== INDEXES FOR SOURCE TABLES ====================
+
+-- Content sources indexes
+CREATE INDEX idx_content_sources_url ON content_sources(url);
+CREATE INDEX idx_content_sources_type ON content_sources(source_type);
+CREATE INDEX idx_content_sources_verified ON content_sources(verified);
+CREATE INDEX idx_content_sources_specialization ON content_sources USING gin(specialization);
+
+-- Animal content sources indexes  
+CREATE INDEX idx_animal_content_sources_animal ON animal_content_sources(animal_slug);
+CREATE INDEX idx_animal_content_sources_source ON animal_content_sources(content_source_id);
+CREATE INDEX idx_animal_content_sources_type ON animal_content_sources(content_type);
+
+-- Country content sources indexes
+CREATE INDEX idx_country_content_sources_country ON country_content_sources(country_slug);
+CREATE INDEX idx_country_content_sources_source ON country_content_sources(content_source_id);
+CREATE INDEX idx_country_content_sources_type ON country_content_sources(content_type);

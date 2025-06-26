@@ -8,6 +8,7 @@ import CulturalContextSection from './ContentHub/CulturalContextSection';
 import RegionalWildlifeSection from './ContentHub/RegionalWildlifeSection';
 import ContentHubSEO from './ContentHub/ContentHubSEO';
 import OpportunityCard from './OpportunitiesPage/v2/OpportunityCard';
+import SourcesSection from './ui/SourcesSection';
 import SEOInternalLinks from './shared/SEOInternalLinks';
 import { generateCountryPageSEO, useSEO } from '../utils/seoUtils';
 import { useCountryData } from '../hooks/useCountryData';
@@ -721,6 +722,19 @@ const CountryLandingPage: React.FC = () => {
         </div>
       </section>
 
+
+      {/* Sources & References Section */}
+      {contentHub?.conservation?.sources && (
+        <Container className="section-padding-sm">
+          <SourcesSection
+            sources={contentHub.conservation.sources}
+            title="Regional Conservation Sources & References"
+            contentType={`${countryName} Conservation Information`}
+            variant="detailed"
+            showVerification={true}
+          />
+        </Container>
+      )}
 
       {/* Strategic SEO Internal Links - Cross-Navigation */}
       <SEOInternalLinks

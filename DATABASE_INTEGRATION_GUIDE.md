@@ -396,6 +396,472 @@ src/components/OpportunitiesPage/v2/
 
 This implementation serves as a reference for applying the database integration patterns across other components.
 
+## 🌟 **STORY 5: COMBINED EXPERIENCE HUBS DATABASE INTEGRATION** ✅
+
+### Combined Experience Tables Schema
+
+**New Tables for Cross-Topic Content:**
+
+```sql
+-- Main combined experiences table
+CREATE TABLE combined_experiences (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  country_slug TEXT NOT NULL,
+  animal_slug TEXT NOT NULL,
+  seo_title TEXT NOT NULL,
+  seo_description TEXT NOT NULL,
+  seo_keywords TEXT[] DEFAULT '{}',
+  canonical_url TEXT NOT NULL,
+  status combined_experience_status DEFAULT 'draft',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  
+  UNIQUE(country_slug, animal_slug),
+  INDEX idx_combined_experiences_slugs (country_slug, animal_slug, status),
+  INDEX idx_combined_experiences_status (status)
+);
+
+-- Regional threats for combined experiences
+CREATE TABLE regional_threats (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  combined_experience_id UUID REFERENCES combined_experiences(id) ON DELETE CASCADE,
+  threat_name TEXT NOT NULL,
+  threat_description TEXT NOT NULL,
+  severity threat_severity NOT NULL,
+  seasonal_factors TEXT,
+  conservation_urgency urgency_level NOT NULL,
+  volunteer_impact_description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Unique conservation approaches by region
+CREATE TABLE unique_approaches (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  combined_experience_id UUID REFERENCES combined_experiences(id) ON DELETE CASCADE,
+  methodology_name TEXT NOT NULL,
+  methodology_description TEXT NOT NULL,
+  success_metrics JSONB DEFAULT '[]',
+  community_involvement TEXT,
+  volunteer_role TEXT NOT NULL,
+  cultural_context TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Complementary experience suggestions
+CREATE TABLE complementary_experiences (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  combined_experience_id UUID REFERENCES combined_experiences(id) ON DELETE CASCADE,
+  suggestion_type suggestion_type NOT NULL,
+  suggestion_title TEXT NOT NULL,
+  suggestion_description TEXT,
+  target_country_slug TEXT,
+  target_animal_slug TEXT,
+  priority_score INTEGER DEFAULT 5 CHECK (priority_score BETWEEN 1 AND 10),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Enums for type safety
+CREATE TYPE combined_experience_status AS ENUM ('draft', 'published', 'archived');
+CREATE TYPE threat_severity AS ENUM ('low', 'moderate', 'high', 'critical');
+CREATE TYPE urgency_level AS ENUM ('moderate', 'high', 'critical');
+CREATE TYPE suggestion_type AS ENUM ('same_country', 'same_animal', 'related_work');
+```
+
+### Service Layer Integration
+
+**CombinedExperienceService.ts:**
+
+```typescript
+export class CombinedExperienceService {
+  // Get combined experience by URL parameters
+  static async getCombinedExperience(
+    countrySlug: string, 
+    animalSlug: string
+  ): Promise<CombinedExperience | null> {
+    const { data, error } = await supabase
+      .from('combined_experiences')
+      .select(`
+        *,
+        regional_threats (*),
+        unique_approaches (*),
+        complementary_experiences (*)
+      `)
+      .eq('country_slug', countrySlug)
+      .eq('animal_slug', animalSlug)
+      .eq('status', 'published')
+      .single();
+
+    if (error) throw new Error(`Failed to fetch combined experience: ${error.message}`);
+    return data;
+  }
+
+  // Get filtered opportunities for combined experience
+  static async getCombinedOpportunities(
+    countryName: string,
+    animalName: string,
+    animalSlug: string
+  ): Promise<Opportunity[]> {
+    const { data, error } = await supabase
+      .from('organizations')
+      .select(`
+        *,
+        programs!inner (
+          *,
+          program_animal_types!inner (
+            animal_type
+          )
+        )
+      `)
+      .eq('location_country', countryName)
+      .contains('programs.program_animal_types.animal_type', [animalName])
+      .eq('status', 'active');
+
+    if (error) throw new Error(`Failed to fetch opportunities: ${error.message}`);
+    return data;
+  }
+
+  // Create new combined experience (admin)
+  static async createCombinedExperience(
+    experience: CreateCombinedExperienceRequest
+  ): Promise<CombinedExperience> {
+    const { data, error } = await supabase
+      .from('combined_experiences')
+      .insert([experience])
+      .select()
+      .single();
+
+    if (error) throw new Error(`Failed to create combined experience: ${error.message}`);
+    return data;
+  }
+}
+```
+
+### React Query Hooks Integration
+
+**useCombinedExperienceData.ts:**
+
+```typescript
+// Combined experience data hook
+export const useCombinedExperienceData = (
+  countrySlug: string,
+  animalSlug: string,
+  options?: UseQueryOptions
+) => {
+  return useQuery({
+    queryKey: ['combinedExperience', countrySlug, animalSlug],
+    queryFn: () => CombinedExperienceService.getCombinedExperience(countrySlug, animalSlug),
+    staleTime: 10 * 60 * 1000, // 10 minutes - content changes infrequently
+    cacheTime: 30 * 60 * 1000, // 30 minutes
+    enabled: !!(countrySlug && animalSlug),
+    ...options
+  });
+};
+
+// Combined opportunities hook
+export const useCombinedOpportunities = (
+  countryName: string,
+  animalName: string,
+  animalSlug: string,
+  options?: UseQueryOptions
+) => {
+  return useQuery({
+    queryKey: ['combinedOpportunities', countryName, animalName, animalSlug],
+    queryFn: () => CombinedExperienceService.getCombinedOpportunities(
+      countryName, animalName, animalSlug
+    ),
+    staleTime: 5 * 60 * 1000, // 5 minutes - opportunities change more frequently
+    cacheTime: 15 * 60 * 1000, // 15 minutes
+    enabled: !!(countryName && animalName),
+    ...options
+  });
+};
+
+// SEO metadata hook
+export const useCombinedExperienceSEO = (
+  countrySlug: string,
+  animalSlug: string
+) => {
+  const { data: experience } = useCombinedExperienceData(countrySlug, animalSlug);
+  
+  return useMemo(() => {
+    if (!experience) return null;
+    
+    return {
+      title: experience.seo_title,
+      description: experience.seo_description,
+      keywords: experience.seo_keywords,
+      canonicalUrl: experience.canonical_url,
+      openGraph: {
+        title: experience.seo_title,
+        description: experience.seo_description,
+        type: 'website',
+        url: experience.canonical_url
+      }
+    };
+  }, [experience]);
+};
+```
+
+### Component Integration Pattern
+
+**Updated CombinedPage.tsx Database Integration:**
+
+```typescript
+const CombinedPage: React.FC<CombinedPageProps> = ({ type, params }) => {
+  // Extract URL parameters
+  const { countrySlug, animalSlug } = useCombinedPageParams(type, params);
+  
+  // Database hooks
+  const { 
+    data: experience, 
+    isLoading: experienceLoading, 
+    error: experienceError 
+  } = useCombinedExperienceData(countrySlug, animalSlug);
+  
+  const { 
+    data: opportunities, 
+    isLoading: opportunitiesLoading,
+    error: opportunitiesError 
+  } = useCombinedOpportunities(
+    formatCountryName(countrySlug),
+    formatAnimalName(animalSlug),
+    animalSlug
+  );
+
+  // SEO integration
+  const seoData = useCombinedExperienceSEO(countrySlug, animalSlug);
+  useSEO(seoData);
+
+  // Loading states
+  if (experienceLoading || opportunitiesLoading) {
+    return <CombinedPageSkeleton />;
+  }
+
+  // Error states
+  if (experienceError || opportunitiesError) {
+    return <CombinedPageError error={experienceError || opportunitiesError} />;
+  }
+
+  // Content not found
+  if (!experience || !opportunities?.length) {
+    return <CombinedPageNotFound countrySlug={countrySlug} animalSlug={animalSlug} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-soft-cream">
+      {/* Hero section with database content */}
+      <CombinedHeroSection 
+        experience={experience}
+        opportunities={opportunities}
+      />
+      
+      {/* Database-driven content sections */}
+      <RegionalThreatsSection 
+        threats={experience.regional_threats}
+        animalName={formatAnimalName(animalSlug)}
+        countryName={formatCountryName(countrySlug)}
+      />
+      
+      <UniqueApproachSection 
+        approach={experience.unique_approaches[0]}
+        animalName={formatAnimalName(animalSlug)}
+        countryName={formatCountryName(countrySlug)}
+      />
+      
+      <ComplementaryExperiencesSection 
+        experiences={experience.complementary_experiences}
+        currentAnimal={animalSlug}
+        currentCountry={countrySlug}
+      />
+      
+      {/* Filtered opportunities */}
+      <CombinedOpportunitiesSection opportunities={opportunities} />
+    </div>
+  );
+};
+```
+
+### Performance Optimizations
+
+**Efficient Database Queries:**
+
+```sql
+-- Optimized combined experience query with proper joins
+SELECT 
+  ce.*,
+  json_agg(DISTINCT rt.*) FILTER (WHERE rt.id IS NOT NULL) as regional_threats,
+  json_agg(DISTINCT ua.*) FILTER (WHERE ua.id IS NOT NULL) as unique_approaches,
+  json_agg(DISTINCT comp.*) FILTER (WHERE comp.id IS NOT NULL) as complementary_experiences
+FROM combined_experiences ce
+LEFT JOIN regional_threats rt ON ce.id = rt.combined_experience_id
+LEFT JOIN unique_approaches ua ON ce.id = ua.combined_experience_id  
+LEFT JOIN complementary_experiences comp ON ce.id = comp.combined_experience_id
+WHERE ce.country_slug = $1 AND ce.animal_slug = $2 AND ce.status = 'published'
+GROUP BY ce.id;
+
+-- Indexes for optimal performance
+CREATE INDEX idx_combined_experiences_lookup ON combined_experiences (country_slug, animal_slug, status);
+CREATE INDEX idx_regional_threats_experience ON regional_threats (combined_experience_id);
+CREATE INDEX idx_unique_approaches_experience ON unique_approaches (combined_experience_id);
+CREATE INDEX idx_complementary_experiences_lookup ON complementary_experiences (combined_experience_id, suggestion_type);
+```
+
+**Caching Strategy:**
+
+```typescript
+// Aggressive caching for relatively stable content
+const CACHE_TIMES = {
+  COMBINED_EXPERIENCE: 10 * 60 * 1000,  // 10 minutes
+  OPPORTUNITIES: 5 * 60 * 1000,         // 5 minutes  
+  SEO_METADATA: 30 * 60 * 1000,         // 30 minutes
+  COMPLEMENTARY: 15 * 60 * 1000          // 15 minutes
+};
+
+// Background refresh for better UX
+export const useCombinedExperienceWithBackground = (countrySlug: string, animalSlug: string) => {
+  return useQuery({
+    queryKey: ['combinedExperience', countrySlug, animalSlug],
+    queryFn: () => CombinedExperienceService.getCombinedExperience(countrySlug, animalSlug),
+    staleTime: CACHE_TIMES.COMBINED_EXPERIENCE,
+    cacheTime: CACHE_TIMES.COMBINED_EXPERIENCE * 3,
+    refetchOnWindowFocus: false,
+    refetchInterval: 15 * 60 * 1000, // Background refresh every 15 minutes
+  });
+};
+```
+
+### Content Management Integration
+
+**Admin Interface Hooks:**
+
+```typescript
+// Admin content management
+export const useCreateCombinedExperience = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: CombinedExperienceService.createCombinedExperience,
+    onSuccess: (data) => {
+      // Invalidate related caches
+      queryClient.invalidateQueries(['combinedExperience']);
+      queryClient.invalidateQueries(['combinedOpportunities']);
+      
+      // Show success toast
+      toast.success(`Combined experience created: ${data.seo_title}`);
+    },
+    onError: (error) => {
+      toast.error(`Failed to create combined experience: ${error.message}`);
+    }
+  });
+};
+
+// Bulk content operations
+export const useBulkUpdateCombinedExperiences = () => {
+  return useMutation({
+    mutationFn: async (updates: CombinedExperienceUpdate[]) => {
+      const results = await Promise.allSettled(
+        updates.map(update => CombinedExperienceService.updateCombinedExperience(update))
+      );
+      return results;
+    },
+    onSettled: () => {
+      // Refresh all combined experience caches
+      queryClient.invalidateQueries(['combinedExperience']);
+    }
+  });
+};
+```
+
+### Migration Strategy
+
+**Data Migration from Mock to Database:**
+
+```typescript
+// Combined experience migration script
+export const migrateCombinedExperiences = async () => {
+  const combinedExperiences = await import('../data/combinedExperiences');
+  
+  for (const experience of combinedExperiences.default) {
+    try {
+      // 1. Create main combined experience record
+      const { data: mainRecord } = await supabase
+        .from('combined_experiences')
+        .insert({
+          country_slug: experience.country_slug,
+          animal_slug: experience.animal_slug,
+          seo_title: experience.seo_title,
+          seo_description: experience.meta_description,
+          seo_keywords: experience.target_keywords,
+          canonical_url: `/volunteer-${experience.country_slug}/${experience.animal_slug}`,
+          status: 'published'
+        })
+        .select()
+        .single();
+
+      // 2. Migrate regional threats
+      if (experience.regionalThreats.primary_threats?.length) {
+        await supabase.from('regional_threats').insert(
+          experience.regionalThreats.primary_threats.map(threat => ({
+            combined_experience_id: mainRecord.id,
+            threat_name: threat,
+            threat_description: `${threat} in ${experience.country_slug}`,
+            severity: 'moderate',
+            conservation_urgency: experience.regionalThreats.conservation_urgency || 'moderate'
+          }))
+        );
+      }
+
+      // 3. Migrate unique approaches
+      if (experience.uniqueApproach) {
+        await supabase.from('unique_approaches').insert({
+          combined_experience_id: mainRecord.id,
+          methodology_name: `${experience.country_slug} Conservation Approach`,
+          methodology_description: experience.uniqueApproach.methodology,
+          success_metrics: experience.uniqueApproach.success_metrics || [],
+          community_involvement: experience.uniqueApproach.community_involvement,
+          volunteer_role: experience.uniqueApproach.volunteer_role,
+          cultural_context: experience.uniqueApproach.cultural_context
+        });
+      }
+
+      // 4. Migrate complementary experiences
+      const complementaryData = [];
+      
+      if (experience.complementaryExperiences.same_country?.length) {
+        complementaryData.push(...experience.complementaryExperiences.same_country.map(exp => ({
+          combined_experience_id: mainRecord.id,
+          suggestion_type: 'same_country' as const,
+          suggestion_title: exp.title,
+          suggestion_description: exp.description,
+          priority_score: exp.priority || 5
+        })));
+      }
+
+      if (complementaryData.length) {
+        await supabase.from('complementary_experiences').insert(complementaryData);
+      }
+
+      console.log(`✅ Migrated: ${experience.country_slug}/${experience.animal_slug}`);
+      
+    } catch (error) {
+      console.error(`❌ Failed to migrate ${experience.country_slug}/${experience.animal_slug}:`, error);
+    }
+  }
+  
+  console.log('🎉 Combined experiences migration completed');
+};
+```
+
+This comprehensive database integration for Story 5 provides:
+
+- **Complete schema normalization** for combined experience content
+- **Optimized query patterns** with proper indexing and caching
+- **Type-safe service layer** with error handling
+- **React Query integration** with background refresh
+- **Admin content management** capabilities
+- **Performance optimizations** for sub-3s load times
+- **Migration strategy** from mock data to production database
+
 ## 📚 **RELATED DOCUMENTATION**
 
 - `database/supabase_schema.sql` - Complete database schema

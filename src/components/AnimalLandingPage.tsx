@@ -6,6 +6,7 @@ import { Container } from './Layout/Container';
 import Breadcrumb, { useBreadcrumbs } from './ui/Breadcrumb';
 import ContentHubSEO from './ContentHub/ContentHubSEO';
 import OpportunityCard from './OpportunitiesPage/v2/OpportunityCard';
+import SourcesSection from './ui/SourcesSection';
 import { generateAnimalPageSEO, useSEO } from '../utils/seoUtils';
 import { useAnimalData } from '../hooks/useAnimalData';
 import SEOInternalLinks from './shared/SEOInternalLinks';
@@ -1326,6 +1327,19 @@ const AnimalLandingPage: React.FC<AnimalLandingPageProps> = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* Sources & References Section */}
+      {contentHub?.conservation?.sources && (
+        <Container className="section-padding-sm">
+          <SourcesSection
+            sources={contentHub.conservation.sources}
+            title="Conservation Sources & References"
+            contentType={`${animalName} Conservation Information`}
+            variant="detailed"
+            showVerification={true}
+          />
+        </Container>
+      )}
 
       {/* 🌟 STRATEGIC SEO INTERNAL LINKS */}
       <SEOInternalLinks

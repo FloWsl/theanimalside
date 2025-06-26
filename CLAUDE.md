@@ -116,6 +116,11 @@ src/
 │   │   ├── HeroSection.tsx     # 92% Complete - Immersive wildlife photography
 │   │   ├── TestimonialSection.tsx # 90% Complete - Sophisticated carousel
 │   │   └── [3 unused components] # 0% - Ready for removal (~900 lines dead code)
+│   ├── CombinedPage.tsx    # 100% Complete - STORY 5: Cross-Topic Combined Hubs ✅
+│   ├── ContentHub/         # 100% Complete - STORY 5: Specialized content components ✅
+│   │   ├── RegionalThreatsSection.tsx     # 100% Complete - Species-specific threats
+│   │   ├── UniqueApproachSection.tsx      # 100% Complete - Country conservation methods
+│   │   └── ComplementaryExperiencesSection.tsx # 100% Complete - Related suggestions
 │   ├── OrganizationDetail/ # 95% Complete - PRODUCTION READY (490+ lines architecture)
 │   │   ├── tabs/              # 95% Complete - 6 content tabs, 708+ lines consolidated
 │   │   ├── TabNavigation.tsx  # 95% Complete - Cross-device state persistence
@@ -134,17 +139,21 @@ src/
 │   │   └── Footer.tsx         # Design system compliance, corrected branding
 │   └── ui/                 # 90% Complete - shadcn/ui + custom components
 ├── data/                   # 85% Complete - Mock data ready for database migration
+│   └── combinedExperiences.ts  # 100% Complete - STORY 5: Combined experience data ✅
 ├── types/                  # 85% Complete - Database.ts normalized for Supabase
 ├── services/              # 85% Complete - OrganizationService with React Query
+│   └── combinedExperienceService.ts # 100% Complete - STORY 5: Service layer ✅
 ├── hooks/                  # 85% Complete - React hooks and state management
 │   ├── useSmartNavigation.ts   # 95% Complete - Performance-optimized generation
-│   └── useOrganizationData.ts  # 85% Complete - React Query with caching
+│   ├── useOrganizationData.ts  # 85% Complete - React Query with caching
+│   └── useCombinedExperience.ts # 100% Complete - STORY 5: Combined experience hooks ✅
 └── utils/                  # 85% Complete - Performance monitoring and optimization
     ├── routeUtils.ts          # 96% Complete - SEO route generation
     └── performance/           # 83% Complete - Core Web Vitals monitoring
 ```
 
 ### Production-Ready Systems
+- **Story 5: Combined Experience Hubs**: 430+ line CombinedPage with ultra-precise filtering ✅
 - **Organization Detail**: 490+ lines of sophisticated responsive architecture
 - **V2 Opportunities Page**: 274-line OpportunityCard with award-winning performance
 - **Primary Navigation**: Discovery-focused dropdowns with ultra-compact spacing
@@ -517,18 +526,22 @@ Level 3 (Two Taps): Comprehensive documentation
 ### Core Architecture & Design
 - `DISCOVERY_FIRST_PHILOSOPHY.md` - Core design principles
 - `DESIGN_SYSTEM.md` - Complete visual and component guidelines
-- `COMPONENTS.md` - Detailed component documentation and patterns (includes Smart Navigation)
+- `COMPONENTS.md` - Detailed component documentation and patterns (includes Smart Navigation & Story 5)
 - `PHOTO_FIRST_STRATEGY.md` - Complete photo-first implementation guide and strategy
 - `MODAL_IMPLEMENTATION_VERIFICATION.md` - Full-screen modal technical documentation
+- `STORY5_IMPLEMENTATION_GUIDE.md` - Complete Story 5: Combined Experience Hubs documentation ✅
 
 ### Database Integration (NEW - December 2024)
-- `DATABASE_INTEGRATION_GUIDE.md` - Complete guide to normalized architecture and Supabase integration
+- `DATABASE_INTEGRATION_GUIDE.md` - Complete guide to normalized architecture and Supabase integration (includes Story 5 schema)
 - `SUPABASE_INTEGRATION_CHECKLIST.md` - Step-by-step integration checklist
 - `database/supabase_schema.sql` - Complete PostgreSQL schema with RLS policies
+- `database/story5_combined_experiences_schema.sql` - Story 5 specialized tables ✅
 - `src/types/database.ts` - Normalized TypeScript interfaces for database tables
 - `src/services/organizationService.ts` - Main service layer for organization data
+- `src/services/combinedExperienceService.ts` - Story 5 service layer for combined experiences ✅
 - `src/services/contactService.ts` - Form submission and application handling
 - `src/hooks/useOrganizationData.ts` - React Query hooks with caching strategies
+- `src/hooks/useCombinedExperience.ts` - Story 5 React Query hooks for combined experiences ✅
 - `src/components/ui/LoadingStates.tsx` - Comprehensive loading and error states
 - `src/components/OrganizationDetail/EssentialInfoSidebar_Database.tsx` - Example database-ready component
 
@@ -537,6 +550,10 @@ Level 3 (Two Taps): Comprehensive documentation
 - `src/data/` - Mock data objects (ready for database migration)
 
 ### Component Examples
+- `src/components/CombinedPage.tsx` - Story 5: Cross-topic combined experience hub with ultra-precise filtering ✅
+- `src/components/ContentHub/RegionalThreatsSection.tsx` - Story 5: Species-specific regional conservation threats ✅
+- `src/components/ContentHub/UniqueApproachSection.tsx` - Story 5: Country-specific conservation methodologies ✅
+- `src/components/ContentHub/ComplementaryExperiencesSection.tsx` - Story 5: Related experience suggestions ✅
 - `src/components/OpportunitiesPage/v2/OpportunityCard.tsx` - Award-winning card design with navigation
 - `src/components/OpportunitiesPage/v2/ScalableMultiSelect.tsx` - Reusable filter component for 50+ options
 - `src/components/OpportunitiesPage/v2/OpportunityFilters.tsx` - Responsive filter system
@@ -577,6 +594,7 @@ Level 3 (Two Taps): Comprehensive documentation
 ## Integration Readiness Status
 
 ### ✅ Ready for Immediate Integration
+- **Story 5: Combined Experience Hubs** - Production-ready cross-topic content system with database integration ✅
 - **V2 Opportunities Page** - Production-ready with performance optimization
 - **Database Integration** - Complete Supabase architecture with normalized schema, service layers, and React Query hooks
 - **Form Submissions** - Contact forms and volunteer applications with database persistence
