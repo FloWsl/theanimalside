@@ -17,10 +17,10 @@ import {
   ConnectTab 
 } from './tabs';
 
-// Import header and program selector
+// Import header and navigation
 import OrganizationHeader from './OrganizationHeader';
 import SmartNavigation from '../SmartNavigation';
-import ProgramSelector from './ProgramSelector';
+import OtherProgramsSection from './OtherProgramsSection';
 
 // Import layout components for responsive architecture
 import { Layout } from '../Layout/Container';
@@ -100,8 +100,14 @@ const useCrossDeviceState = () => {
 };
 
 const OrganizationDetail: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, programSlug } = useParams<{ slug: string; programSlug?: string }>();
   const breadcrumbs = useBreadcrumbs();
+  
+  // Check if we're on the programs list page
+  const isAllProgramsPage = window.location.pathname.endsWith('/programs');
+  
+  // Check if we're viewing a specific program
+  const isSpecificProgramPage = !!programSlug;
   
   // Query organization data by slug
   const { data: organization, isLoading, error } = useQuery({
@@ -119,38 +125,25 @@ const OrganizationDetail: React.FC = () => {
       const overview = await OrganizationService.getOverview(organization.id);
       return overview.primary_program;
     },
-    enabled: !!organization?.id,
+    enabled: !!organization?.id && !isSpecificProgramPage,
     staleTime: 5 * 60 * 1000,
   });
 
-  // Query all programs for the organization (for ProgramSelector)
-  const { data: allPrograms = [] } = useQuery({
-    queryKey: ['organization-all-programs', organization?.id],
+  // Query specific program if we're on a program-specific page
+  const { data: specificProgram } = useQuery({
+    queryKey: ['organization-specific-program', organization?.id, programSlug],
     queryFn: async () => {
-      if (!organization?.id) return [];
+      if (!organization?.id || !programSlug) return null;
       const experience = await OrganizationService.getExperience(organization.id);
-      return experience.programs;
+      return experience.programs.find(p => p.slug === programSlug) || null;
     },
-    enabled: !!organization?.id,
-    staleTime: 10 * 60 * 1000, // Programs change less frequently
+    enabled: !!organization?.id && isSpecificProgramPage && !!programSlug,
+    staleTime: 5 * 60 * 1000,
   });
-  
-  // State for selected program (defaults to primary program)
-  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
-  
-  // Update selected program when programs load
-  useEffect(() => {
-    if (allPrograms.length > 0 && !selectedProgram) {
-      // Find primary program in the list, or default to first program
-      const primary = allPrograms.find(p => p.is_primary) || allPrograms[0];
-      setSelectedProgram(primary);
-    }
-  }, [allPrograms, selectedProgram]);
 
-  // Program change handler
-  const handleProgramChange = (program: Program) => {
-    setSelectedProgram(program);
-  };
+  // Current program is either the specific program or the primary program
+  const currentProgram = isSpecificProgramPage ? specificProgram : primaryProgram;
+
   
   // Enhanced cross-device state management
   const {
@@ -244,7 +237,7 @@ const OrganizationDetail: React.FC = () => {
   
   // Enhanced content rendering with desktop optimization
   const renderOptimizedTabContent = () => {
-    if (!organization || !selectedProgram) return null;
+    if (!organization || !currentProgram) return null;
     
     const commonProps = {
       organization,
@@ -351,11 +344,15 @@ const OrganizationDetail: React.FC = () => {
               
               {/* Continue Your Discovery Section - Below tab content, within left column */}
               {organization && (
-                <div className="mt-12 pt-8 border-t border-warm-beige/30">
+                <div className="mt-12 pt-8 border-t border-warm-beige/30 space-y-8">
                   <SmartNavigation
                     organization={organization}
                     currentTab={activeTab}
                     variant="inline"
+                  />
+                  <OtherProgramsSection
+                    organization={organization}
+                    currentProgramId={currentProgram?.id}
                   />
                 </div>
               )}
@@ -371,7 +368,7 @@ const OrganizationDetail: React.FC = () => {
             }`}
           >
             {/* Conditionally wrap sidebar in Suspense for performance */}
-            {organization && selectedProgram && (
+            {organization && currentProgram && (
               performanceConfig.lazyLoad ? (
                 <React.Suspense 
                   fallback={
@@ -384,7 +381,7 @@ const OrganizationDetail: React.FC = () => {
                 >
                   <EssentialInfoSidebar 
                     organizationId={organization.id}
-                    selectedProgramId={selectedProgram?.id}
+                    selectedProgramId={currentProgram?.id}
                     isDesktop={isDesktop}
                     className="lg:space-y-4"
                   />
@@ -392,7 +389,7 @@ const OrganizationDetail: React.FC = () => {
               ) : (
                 <EssentialInfoSidebar 
                   organizationId={organization.id}
-                  selectedProgramId={selectedProgram?.id}
+                  selectedProgramId={currentProgram?.id}
                   isDesktop={isDesktop}
                   className="lg:space-y-4"
                 />
@@ -420,11 +417,15 @@ const OrganizationDetail: React.FC = () => {
         
         {/* Continue Your Discovery Section - Below tab content on mobile */}
         {organization && (
-          <div className="mt-12 pt-8 border-t border-warm-beige/30">
+          <div className="mt-12 pt-8 border-t border-warm-beige/30 space-y-8">
             <SmartNavigation
               organization={organization}
               currentTab={activeTab}
               variant="inline"
+            />
+            <OtherProgramsSection
+              organization={organization}
+              currentProgramId={currentProgram?.id}
             />
           </div>
         )}
@@ -492,7 +493,7 @@ const OrganizationDetail: React.FC = () => {
     );
   }
 
-  if (!selectedProgram) {
+  if (!currentProgram) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -537,14 +538,6 @@ const OrganizationDetail: React.FC = () => {
         <div className="container-nature-wide section-padding-sm">
           <div className="max-w-7xl mx-auto px-4">
             
-            {/* Program Selector (only shows if multiple programs) */}
-            {allPrograms.length > 1 && selectedProgram && (
-              <ProgramSelector
-                programs={allPrograms}
-                selectedProgram={selectedProgram}
-                onProgramChange={handleProgramChange}
-              />
-            )}
             
             {/* Responsive Layout - Desktop two-column + Mobile tabs */}
             <DesktopLayout />
