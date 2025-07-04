@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Leaf, ChevronDown, MapPin, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { animalCategories } from '../../data/animals';
+import { useAnimalCategoriesFromStats } from '../../hooks/useStatistics';
 import { generateAnimalRoute, generateCountryRoute } from '../../utils/routeUtils';
 
 const Header: React.FC = () => {
@@ -11,6 +11,9 @@ const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<'animals' | 'destinations' | null>(null);
   const location = useLocation();
+
+  // Get dynamic animal data from database with React Query caching
+  const animalCategories = useAnimalCategoriesFromStats();
 
   useEffect(() => {
     const handleScroll = () => {

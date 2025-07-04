@@ -52,7 +52,36 @@ function App() {
               </Suspense>
             } />
             
-            {/* Level 1 - Main category pages (MUST come before catch-all routes) */}
+            {/* Individual program routes */}
+            <Route path="organization/:slug/program/:programSlug" element={
+              <Suspense fallback={<PageLoader />}>
+                <OrganizationDetail />
+              </Suspense>
+            } />
+            
+            {/* All programs list for an organization */}
+            <Route path="organization/:slug/programs" element={
+              <Suspense fallback={<PageLoader />}>
+                <OrganizationDetail />
+              </Suspense>
+            } />
+            
+            {/* Level 1 - Dynamic Combined Routes (MUST come before explicit routes) */}
+            {/* Country-first pattern: volunteer-{country}/{animal} */}
+            <Route path="volunteer-:country/:animal" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="country-animal" />
+              </Suspense>
+            } />
+            
+            {/* Animal-first pattern: {animal}-volunteer/{country} */}
+            <Route path=":animalvolunteer/:country" element={
+              <Suspense fallback={<PageLoader />}>
+                <CombinedPage type="animal-country" />
+              </Suspense>
+            } />
+
+            {/* Level 2 - Main category pages (explicit routes) */}
             {/* Country routes - use explicit country list to avoid pattern conflicts */}
             <Route path="volunteer-costa-rica" element={
               <Suspense fallback={<PageLoader />}>
@@ -174,88 +203,9 @@ function App() {
               </Suspense>
             } />
             
-            {/* Level 2 - Combined category pages (explicit routes for main combinations) */}
-            {/* Costa Rica + Animals */}
-            <Route path="volunteer-costa-rica/sea-turtles" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="country-animal" />
-              </Suspense>
-            } />
-            <Route path="volunteer-costa-rica/orangutans" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="country-animal" />
-              </Suspense>
-            } />
-            <Route path="volunteer-costa-rica/lions" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="country-animal" />
-              </Suspense>
-            } />
-            <Route path="volunteer-costa-rica/elephants" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="country-animal" />
-              </Suspense>
-            } />
+            {/* Dynamic Combined Routes moved to Level 1 above */}
             
-            {/* Thailand + Animals */}
-            <Route path="volunteer-thailand/elephants" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="country-animal" />
-              </Suspense>
-            } />
-            <Route path="volunteer-thailand/orangutans" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="country-animal" />
-              </Suspense>
-            } />
-            
-            {/* Indonesia + Animals */}
-            <Route path="volunteer-indonesia/orangutans" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="country-animal" />
-              </Suspense>
-            } />
-            <Route path="volunteer-indonesia/elephants" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="country-animal" />
-              </Suspense>
-            } />
-            
-            {/* Kenya + Animals */}
-            <Route path="volunteer-kenya/elephants" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="country-animal" />
-              </Suspense>
-            } />
-            <Route path="volunteer-kenya/lions" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="country-animal" />
-              </Suspense>
-            } />
-            
-            {/* Animal + Country combinations (for canonical URL testing) */}
-            <Route path="sea-turtles-volunteer/costa-rica" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="animal-country" />
-              </Suspense>
-            } />
-            <Route path="elephants-volunteer/thailand" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="animal-country" />
-              </Suspense>
-            } />
-            <Route path="elephants-volunteer/kenya" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="animal-country" />
-              </Suspense>
-            } />
-            <Route path="orangutans-volunteer/indonesia" element={
-              <Suspense fallback={<PageLoader />}>
-                <CombinedPage type="animal-country" />
-              </Suspense>
-            } />
-            
-            {/* Level 3 - Flat organization pages (CATCH-ALL - must be last) */}
+            {/* Level 3 - Organization pages (CATCH-ALL - must be last) */}
             <Route path=":orgSlug" element={
               <Suspense fallback={<PageLoader />}>
                 <FlatOrganizationPage />

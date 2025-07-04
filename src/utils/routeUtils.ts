@@ -1,7 +1,6 @@
-import { opportunities } from '../data/opportunities';
-import { organizationDetails, getOrganizationBySlug } from '../data/organizationDetails';
 import { animalCategories } from '../data/animals';
-import type { Opportunity, OrganizationDetail } from '../types';
+import { OrganizationService } from '../services/organizationService';
+import type { Organization } from '../types/database';
 
 /**
  * Route Generation Utilities
@@ -94,150 +93,73 @@ export const generateCombinedRoute = (
  * @param organization - Organization data or slug
  * @returns Route like "/toucan-rescue-ranch-costa-rica"
  */
-export const generateOrganizationRoute = (organization: OrganizationDetail | string): string => {
+export const generateOrganizationRoute = (organization: Organization | string): string => {
   const slug = typeof organization === 'string' ? organization : organization.slug;
   return `/${slug}`;
 };
 
 /**
- * Generate the best SEO route for an opportunity
- * @param opportunity - Opportunity data
- * @returns Most SEO-friendly route for this opportunity
+ * Generate the best SEO route for an opportunity (organization slug)
+ * @param organizationSlug - Organization slug
+ * @returns SEO-friendly route for this organization
  */
-export const generateOpportunityRoute = (opportunity: Opportunity): string => {
-  // Priority: Find organization first, then fall back to country/animal combination
-  
-  // Try to find the organization for this opportunity
-  const organization = organizationDetails.find(org => 
-    org.name === opportunity.organization ||
-    org.programs.some(program => program.title === opportunity.title)
-  );
-  
-  if (organization) {
-    return generateOrganizationRoute(organization);
-  }
-  
-  // Fall back to combined country/animal route
-  const primaryAnimal = opportunity.animalTypes[0];
-  if (primaryAnimal) {
-    return generateCombinedRoute(opportunity.location.country, primaryAnimal, 'country-first');
-  }
-  
-  // Last resort: country route
-  return generateCountryRoute(opportunity.location.country);
+export const generateOpportunityRoute = (organizationSlug: string): string => {
+  return generateOrganizationRoute(organizationSlug);
 };
 
 // Route validation functions
 
 /**
- * Check if a slug is a valid organization slug
+ * Check if a slug is a valid organization slug (async)
  * @param slug - Potential organization slug
- * @returns True if slug matches a real organization
+ * @returns Promise<True> if slug matches a real organization
  */
-export const isValidOrganizationSlug = (slug: string): boolean => {
-  return getOrganizationBySlug(slug) !== undefined;
+export const isValidOrganizationSlugAsync = async (slug: string): Promise<boolean> => {
+  return await OrganizationService.isValidOrganizationSlug(slug);
 };
 
 /**
  * Check if a country slug is valid
  * @param countrySlug - Country slug (e.g., "costa-rica")
- * @returns True if country exists in opportunities data
+ * @returns True if country exists in database
  */
 export const isValidCountrySlug = (countrySlug: string): boolean => {
-  const countryName = formatCountryName(countrySlug);
-  return opportunities.some(opp => opp.location.country === countryName);
+  // For now, use a hardcoded list of supported countries
+  // In the future, this could query the database for available countries
+  const supportedCountries = [
+    'costa-rica', 'thailand', 'south-africa', 'australia', 
+    'indonesia', 'kenya', 'ecuador', 'peru', 'brazil', 'india'
+  ];
+  
+  return supportedCountries.includes(countrySlug);
 };
 
 /**
  * Check if an animal slug is valid
  * @param animalSlug - Animal slug (e.g., "lions")
- * @returns True if animal exists in categories or opportunities
+ * @returns True if animal exists in categories or database
  */
 export const isValidAnimalSlug = (animalSlug: string): boolean => {
   // Check against animal categories
   const inCategories = animalCategories.some(cat => cat.id === animalSlug);
   if (inCategories) return true;
   
-  // Check against opportunity animal types
-  const animalName = formatAnimalName(animalSlug);
-  return opportunities.some(opp => 
-    opp.animalTypes.some(type => 
-      type.toLowerCase().includes(animalName.toLowerCase()) ||
-      animalName.toLowerCase().includes(type.toLowerCase())
-    )
-  );
+  // For now, use a hardcoded list of supported animals
+  // In the future, this could query the database for available animal types
+  const supportedAnimals = [
+    'lions', 'elephants', 'sea-turtles', 'orangutans', 'koalas', 
+    'tigers', 'pandas', 'rhinos', 'whales', 'dolphins', 'primates',
+    'marine', 'birds', 'reptiles', 'big-cats'
+  ];
+  
+  return supportedAnimals.includes(animalSlug);
 };
 
 // Reverse mapping functions (URL → Data)
 
-/**
- * Get opportunities for a country route
- * @param countrySlug - Country slug from URL
- * @returns Opportunities in that country
- */
-export const getOpportunitiesForCountry = (countrySlug: string): Opportunity[] => {
-  const countryName = formatCountryName(countrySlug);
-  return opportunities.filter(opp => opp.location.country === countryName);
-};
-
-/**
- * Get opportunities for an animal route
- * @param animalSlug - Animal slug from URL
- * @returns Opportunities with that animal type
- */
-export const getOpportunitiesForAnimal = (animalSlug: string): Opportunity[] => {
-  const animalName = formatAnimalName(animalSlug);
-  return opportunities.filter(opp => 
-    opp.animalTypes.some(type => {
-      const normalizedType = type.toLowerCase();
-      const normalizedAnimal = animalName.toLowerCase();
-      
-      // Direct match
-      if (normalizedType === normalizedAnimal) return true;
-      
-      // Partial matches for related terms
-      if (animalSlug === 'lions' && (normalizedType.includes('lion') || normalizedType.includes('big cat'))) return true;
-      if (animalSlug === 'elephants' && normalizedType.includes('elephant')) return true;
-      if (animalSlug === 'sea-turtles' && (normalizedType.includes('turtle') || normalizedType.includes('marine'))) return true;
-      if (animalSlug === 'orangutans' && (normalizedType.includes('orangutan') || normalizedType.includes('primate'))) return true;
-      if (animalSlug === 'primates' && normalizedType.includes('primate')) return true;
-      if (animalSlug === 'marine' && normalizedType.includes('marine')) return true;
-      if (animalSlug === 'big-cats' && (normalizedType.includes('lion') || normalizedType.includes('leopard') || normalizedType.includes('cheetah') || normalizedType.includes('cat'))) return true;
-      
-      return false;
-    })
-  );
-};
-
-/**
- * Get opportunities for a combined country + animal route
- * @param countrySlug - Country slug from URL
- * @param animalSlug - Animal slug from URL  
- * @returns Opportunities matching both criteria
- */
-export const getOpportunitiesForCombined = (countrySlug: string, animalSlug: string): Opportunity[] => {
-  const countryOpportunities = getOpportunitiesForCountry(countrySlug);
-  const animalName = formatAnimalName(animalSlug);
-  
-  return countryOpportunities.filter(opp => 
-    opp.animalTypes.some(type => {
-      const normalizedType = type.toLowerCase();
-      const normalizedAnimal = animalName.toLowerCase();
-      
-      // Same matching logic as getOpportunitiesForAnimal
-      if (normalizedType === normalizedAnimal) return true;
-      if (animalSlug === 'lions' && (normalizedType.includes('lion') || normalizedType.includes('big cat'))) return true;
-      if (animalSlug === 'elephants' && normalizedType.includes('elephant')) return true;
-      if (animalSlug === 'sea-turtles' && (normalizedType.includes('turtle') || normalizedType.includes('marine'))) return true;
-      if (animalSlug === 'orangutans' && (normalizedType.includes('orangutan') || normalizedType.includes('primate'))) return true;
-      if (animalSlug === 'primates' && normalizedType.includes('primate')) return true;
-      if (animalSlug === 'marine' && normalizedType.includes('marine')) return true;
-      if (animalSlug === 'big-cats' && (normalizedType.includes('lion') || normalizedType.includes('leopard') || normalizedType.includes('cheetah') || normalizedType.includes('cat'))) return true;
-      
-      return false;
-    })
-  );
-};
+// Note: Opportunity filtering functions have been removed
+// as they relied on mock data. These will be replaced with
+// database queries in the OrganizationService.
 
 // Helper functions for name formatting
 
@@ -360,9 +282,9 @@ export const parseRoute = (pathname: string): {
     }
     
     // Organization route: {orgSlug}
-    if (isValidOrganizationSlug(segment)) {
-      return { type: 'organization', params: { orgSlug: segment } };
-    }
+    // Note: Organization validation is now async, so we'll assume it's an organization
+    // and validate later in the component with React Query
+    return { type: 'organization', params: { orgSlug: segment } };
     
     return { type: 'unknown', params: {} };
   }

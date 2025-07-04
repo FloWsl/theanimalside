@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { animalCategories } from '../data/animals';
 import type { Opportunity, OrganizationDetail } from '../types';
+import type { Organization } from '../types/database';
 
 // SEO Metadata Interface
 export interface SEOMetadata {
@@ -92,24 +93,24 @@ const addStructuredData = (data: Record<string, any>) => {
 
 export const generateCountryPageSEO = (country: string, relatedOpportunities: Opportunity[]): SEOMetadata => {
   const formattedCountry = formatCountryName(country);
-  const opportunityCount = relatedOpportunities.length;
-  const animalTypes = [...new Set(relatedOpportunities.flatMap(opp => opp.animalTypes))];
+  const opportunityCount = relatedOpportunities?.length || 0;
+  const animalTypes = [...new Set((relatedOpportunities || []).flatMap(opp => opp.animalTypes || []))];
   
   return {
     title: `Volunteer with Wildlife in ${formattedCountry} | ${opportunityCount}+ Conservation Programs | The Animal Side`,
-    description: `Discover ${opportunityCount} wildlife conservation volunteer opportunities in ${formattedCountry}. Work with ${animalTypes.slice(0, 3).join(', ')} and more. Find your perfect conservation mission today.`,
+    description: `Discover ${opportunityCount} wildlife conservation volunteer opportunities in ${formattedCountry}. ${animalTypes.length > 0 ? `Work with ${animalTypes.slice(0, 3).join(', ')} and more.` : 'Join conservation efforts across diverse wildlife programs.'} Find your perfect conservation mission today.`,
     keywords: [
       `wildlife volunteer ${formattedCountry.toLowerCase()}`,
       `conservation volunteer ${formattedCountry.toLowerCase()}`,
       `animal rescue ${formattedCountry.toLowerCase()}`,
-      ...animalTypes.map(type => `${type.toLowerCase()} volunteer`),
+      ...animalTypes.filter(type => type).map(type => `${type.toLowerCase()} volunteer`),
       'wildlife conservation',
       'volunteer abroad',
       'conservation programs'
     ],
     ogTitle: `Wildlife Volunteer Opportunities in ${formattedCountry}`,
-    ogDescription: `Join ${opportunityCount} conservation programs working with ${animalTypes.slice(0, 2).join(' and ')} in ${formattedCountry}`,
-    ogImage: relatedOpportunities[0]?.images?.[0] || 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&h=630&fit=crop',
+    ogDescription: `Join ${opportunityCount} conservation programs ${animalTypes.length > 0 ? `working with ${animalTypes.slice(0, 2).join(' and ')} ` : ''}in ${formattedCountry}`,
+    ogImage: relatedOpportunities.length > 0 ? relatedOpportunities[0]?.images?.[0] || 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&h=630&fit=crop' : 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&h=630&fit=crop',
     structuredData: {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
@@ -129,11 +130,13 @@ export const generateCountryPageSEO = (country: string, relatedOpportunities: Op
             location: {
               '@type': 'Place',
               name: `${opp.location.city}, ${opp.location.country}`,
-              geo: {
-                '@type': 'GeoCoordinates',
-                latitude: opp.location.coordinates[0],
-                longitude: opp.location.coordinates[1]
-              }
+              ...(opp.location.coordinates && {
+                geo: {
+                  '@type': 'GeoCoordinates',
+                  latitude: opp.location.coordinates[0],
+                  longitude: opp.location.coordinates[1]
+                }
+              })
             }
           }
         }))
@@ -244,6 +247,7 @@ export const generateCanonicalCombinedUrl = (country: string, animal: string): s
   return `${window.location.origin}/volunteer-${country}/${animal}`;
 };
 
+// Legacy function for OrganizationDetail (mock data)
 export const generateOrganizationPageSEO = (organization: OrganizationDetail): SEOMetadata => {
   const primaryProgram = organization.programs?.[0];
   const animalTypes = organization.animalTypes?.map(at => at.animalType) || [];
@@ -255,7 +259,7 @@ export const generateOrganizationPageSEO = (organization: OrganizationDetail): S
       organization.name.toLowerCase(),
       `volunteer ${organization.location.country.toLowerCase()}`,
       `wildlife volunteer ${organization.location.city.toLowerCase()}`,
-      ...animalTypes.map(type => `${type.toLowerCase()} volunteer`),
+      ...animalTypes.filter(type => type).map(type => `${type.toLowerCase()} volunteer`),
       ...organization.tags || []
     ],
     ogTitle: `${organization.name} - ${organization.tagline}`,
@@ -304,8 +308,54 @@ export const generateOrganizationPageSEO = (organization: OrganizationDetail): S
   };
 };
 
+// Database-compatible function for Organization (Supabase data)
+export const generateDatabaseOrganizationPageSEO = (organization: Organization): SEOMetadata => {
+  return {
+    title: `${organization.name} | ${organization.tagline} | Volunteer in ${organization.country} | The Animal Side`,
+    description: `${organization.mission} Located in ${organization.city}, ${organization.country}. ${organization.verified ? 'Verified organization.' : ''} Join our wildlife conservation programs.`,
+    keywords: [
+      organization.name.toLowerCase(),
+      `volunteer ${organization.country.toLowerCase()}`,
+      `wildlife volunteer ${organization.city.toLowerCase()}`,
+      'wildlife conservation',
+      'volunteer abroad',
+      organization.country.toLowerCase()
+    ],
+    ogTitle: `${organization.name} - ${organization.tagline}`,
+    ogDescription: organization.mission,
+    ogImage: organization.hero_image,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'NGO',
+      name: organization.name,
+      description: organization.mission,
+      url: organization.website,
+      logo: organization.logo,
+      foundingDate: organization.year_founded?.toString(),
+      location: {
+        '@type': 'Place',
+        name: `${organization.city}, ${organization.country}`,
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: organization.city,
+          addressRegion: organization.region,
+          addressCountry: organization.country
+        }
+      },
+      contactPoint: {
+        '@type': 'ContactPoint',
+        email: organization.email,
+        telephone: organization.phone,
+        contactType: 'Volunteer Inquiries'
+      }
+    }
+  };
+};
+
 // Helper functions for formatting names
 const formatCountryName = (segment: string): string => {
+  if (!segment) return 'Unknown Country';
+  
   if (segment.startsWith('volunteer-')) {
     segment = segment.replace('volunteer-', '');
   }
@@ -323,12 +373,15 @@ const formatCountryName = (segment: string): string => {
     'india': 'India'
   };
   
-  return countryMap[segment] || segment.split('-').map(word => 
-    word.charAt(0).toUpperCase() + word.slice(1)
-  ).join(' ');
+  return countryMap[segment] || segment.split('-')
+    .filter(word => word.length > 0)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ') || 'Unknown Country';
 };
 
 const formatAnimalName = (segment: string): string => {
+  if (!segment) return 'Wildlife';
+  
   if (segment.endsWith('-volunteer')) {
     segment = segment.replace('-volunteer', '');
   }
@@ -353,7 +406,8 @@ const formatAnimalName = (segment: string): string => {
     'reptiles': 'Reptile'
   };
   
-  return animalMap[segment] || segment.split('-').map(word => 
-    word.charAt(0).toUpperCase() + word.slice(1)
-  ).join(' ');
+  return animalMap[segment] || segment.split('-')
+    .filter(word => word.length > 0)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ') || 'Wildlife';
 };

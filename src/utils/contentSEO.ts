@@ -211,8 +211,8 @@ export const generateStructuredData = (
             "addressLocality": opportunity.location.city
           }
         },
-        "qualifications": opportunity.requirements.join(', '),
-        "skills": opportunity.animalTypes.join(', '),
+        "qualifications": opportunity.requirements?.join(', ') || '',
+        "skills": opportunity.animalTypes?.join(', ') || '',
         "timeCommitment": `${opportunity.duration.min}-${opportunity.duration.max} weeks`,
         "incentiveCompensation": opportunity.cost.amount === 0 ? "Free program" : `${opportunity.cost.currency} ${opportunity.cost.amount}/${opportunity.cost.period}`
       });

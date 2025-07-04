@@ -1,10 +1,13 @@
 import React from 'react';
 import { useParams, Navigate } from 'react-router-dom';
-import { getOrganizationBySlug } from '../data/organizationDetails';
-import { generateOrganizationPageSEO, useSEO } from '../utils/seoUtils';
-import { isValidOrganizationSlug, parseRoute } from '../utils/routeUtils';
-import { OrganizationDetail as OrganizationDetailType } from '../types';
-import OrganizationDetail from './OrganizationDetail';
+import { useQuery } from '@tanstack/react-query';
+import { OrganizationService } from '../services/organizationService';
+import { generateDatabaseOrganizationPageSEO, useSEO } from '../utils/seoUtils';
+import { parseRoute, isValidAnimalSlug, isValidCountrySlug } from '../utils/routeUtils';
+import type { Organization } from '../types/database';
+
+// Lazy load CombinedPage for dynamic routing
+const CombinedPage = React.lazy(() => import('./CombinedPage'));
 
 /**
  * FlatOrganizationPage - Handler for direct organization access routes
@@ -19,60 +22,116 @@ import OrganizationDetail from './OrganizationDetail';
  */
 
 const FlatOrganizationPage: React.FC = () => {
-  console.log('🏢 DEBUG: FlatOrganizationPage component rendering');
-  console.log('🏢 DEBUG: Current URL:', window.location.pathname);
-  const { orgSlug } = useParams<{ orgSlug: string }>();
-  console.log('🏢 DEBUG: orgSlug param:', orgSlug);
+  const { orgSlug, firstSegment, secondSegment } = useParams<{ 
+    orgSlug?: string;
+    firstSegment?: string; 
+    secondSegment?: string;
+  }>();
 
-  // Validate organization route
+  // Validate route - could be organization or combined animal-country route
   const routeValidation = React.useMemo(() => {
-    if (!orgSlug) return { isValid: false, shouldRedirect: true, redirectTo: '/opportunities' };
+    // Handle two-segment routes (animal-country combinations)
+    if (firstSegment && secondSegment) {
+      // Parse the full pathname to check for combined routes like /orangutans-volunteer/costa-rica
+      const fullPath = window.location.pathname;
+      const parsedRoute = parseRoute(fullPath);
 
-    // Check if it's a valid organization slug
-    const isValidOrg = isValidOrganizationSlug(orgSlug);
-    console.log('🏢 DEBUG: Organization validation result:', isValidOrg);
-    
-    return {
-      isValid: isValidOrg,
-      shouldRedirect: !isValidOrg,
-      redirectTo: isValidOrg ? null : '/opportunities'
-    };
-  }, [orgSlug]);
-
-  // Find organization by slug (only if route is valid)
-  const organization = React.useMemo(() => {
-    if (!orgSlug || !routeValidation.isValid) return null;
-    return getOrganizationBySlug(orgSlug);
-  }, [orgSlug, routeValidation.isValid]);
-
-  // Generate and apply SEO metadata for flat organization URL
-  const seoMetadata = React.useMemo(() => {
-    if (!organization) {
+      if (parsedRoute.type === 'combined' && parsedRoute.params.animal && parsedRoute.params.country) {
+        // Validate both animal and country
+        const isValidAnimal = isValidAnimalSlug(parsedRoute.params.animal);
+        const isValidCountry = isValidCountrySlug(parsedRoute.params.country);
+        
+        if (isValidAnimal && isValidCountry) {
+          return { 
+            type: 'combined', 
+            isValid: true, 
+            shouldRedirect: false, 
+            redirectTo: null,
+            animal: parsedRoute.params.animal,
+            country: parsedRoute.params.country
+          };
+        }
+      }
+      
       return {
-        title: 'Organization Not Found | The Animal Side',
-        description: 'The organization you are looking for could not be found. Browse our directory of verified wildlife conservation organizations.',
-        keywords: ['wildlife organizations', 'conservation', 'volunteer opportunities']
+        type: 'invalid',
+        isValid: false,
+        shouldRedirect: true,
+        redirectTo: '/opportunities'
+      };
+    }
+
+    // Handle single-segment routes (organization slugs)
+    if (!orgSlug) return { type: 'invalid', isValid: false, shouldRedirect: true, redirectTo: '/opportunities' };
+
+    // For organization routes, we'll validate asynchronously with React Query
+    // so return organization type to enable the query
+    return { type: 'organization', isValid: true, shouldRedirect: false, redirectTo: null };
+  }, [orgSlug, firstSegment, secondSegment]);
+
+  // Query organization by slug (only if route is organization type)
+  const { data: organization, isLoading: isOrgLoading, error: orgError } = useQuery({
+    queryKey: ['organization', orgSlug],
+    queryFn: () => OrganizationService.getOrganizationBySlug(orgSlug!),
+    enabled: !!orgSlug && routeValidation.type === 'organization',
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Query organization slug validation
+  const { data: isValidOrg = false, isLoading: isValidationLoading } = useQuery({
+    queryKey: ['organization-validation', orgSlug],
+    queryFn: () => OrganizationService.isValidOrganizationSlug(orgSlug!),
+    enabled: !!orgSlug && routeValidation.type === 'organization',
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+
+  // Generate and apply SEO metadata 
+  const seoMetadata = React.useMemo(() => {
+    if (routeValidation.type === 'organization' && organization) {
+      return generateDatabaseOrganizationPageSEO(organization);
+    }
+    
+    if (routeValidation.type === 'combined') {
+      // Generate SEO for combined route
+      const animal = routeValidation.animal || '';
+      const country = routeValidation.country || '';
+      return {
+        title: `${animal.charAt(0).toUpperCase() + animal.slice(1)} Volunteer Programs in ${country.charAt(0).toUpperCase() + country.slice(1)} | The Animal Side`,
+        description: `Discover ${animal} conservation volunteer opportunities in ${country}. Find verified programs and make a difference in wildlife conservation.`,
+        keywords: [animal, 'volunteer', country, 'conservation', 'wildlife']
       };
     }
     
-    return generateOrganizationPageSEO(organization);
-  }, [organization]);
+    return {
+      title: 'Page Not Found | The Animal Side',
+      description: 'The page you are looking for could not be found. Browse our directory of verified wildlife conservation organizations.',
+      keywords: ['wildlife organizations', 'conservation', 'volunteer opportunities']
+    };
+  }, [organization, routeValidation]);
 
   useSEO(seoMetadata);
 
   // Handle invalid organization routes
   if (routeValidation.shouldRedirect && routeValidation.redirectTo) {
-    console.log('🏢 DEBUG: Redirecting to:', routeValidation.redirectTo);
     return <Navigate to={routeValidation.redirectTo} replace />;
   }
 
-  // Handle missing orgSlug parameter
-  if (!orgSlug) {
-    return <Navigate to="/opportunities" replace />;
+  // Show loading state while validating organization
+  if (routeValidation.type === 'organization' && (isValidationLoading || isOrgLoading)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-soft-cream">
+        <div className="text-center">
+          <div className="w-8 h-8 border-3 border-sage-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-forest/70 text-sm">Loading organization...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Handle invalid organization slug
-  if (!routeValidation.isValid || !organization) {
+
+  // Handle organization validation error or invalid organization (only after loading completes)
+  if (routeValidation.type === 'organization' && !isValidationLoading && !isOrgLoading && (!isValidOrg || !organization || orgError)) {
     return (
       <div className="min-h-screen bg-soft-cream flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-6">
@@ -112,14 +171,40 @@ const FlatOrganizationPage: React.FC = () => {
     );
   }
 
-  // Render the full organization detail component
-  // We pass the organization data directly to avoid re-fetching
-  return (
-    <OrganizationDetailWrapper 
-      organization={organization} 
-      flatUrl={true}
-    />
-  );
+  // Handle missing orgSlug parameter
+  if (!orgSlug) {
+    return <Navigate to="/opportunities" replace />;
+  }
+
+  // Render combined page for animal-country routes
+  if (routeValidation.type === 'combined' && routeValidation.isValid) {
+    return (
+      <React.Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center bg-soft-cream">
+          <div className="text-center">
+            <div className="w-8 h-8 border-3 border-sage-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-forest/70 text-sm">Loading...</p>
+          </div>
+        </div>
+      }>
+        <CombinedPage type="animal-country" />
+      </React.Suspense>
+    );
+  }
+
+
+  // Render the full organization detail component (only if we have valid organization)
+  if (organization) {
+    return (
+      <OrganizationDetailWrapper 
+        organization={organization} 
+        flatUrl={true}
+      />
+    );
+  }
+
+  // This should not happen due to validation above, but provide fallback
+  return <Navigate to="/opportunities" replace />;
 };
 
 /**
@@ -127,7 +212,7 @@ const FlatOrganizationPage: React.FC = () => {
  * This ensures the component receives the organization without needing to refetch
  */
 interface OrganizationDetailWrapperProps {
-  organization: OrganizationDetailType;
+  organization: Organization;
   flatUrl?: boolean;
 }
 
@@ -135,9 +220,9 @@ const OrganizationDetailWrapper: React.FC<OrganizationDetailWrapperProps> = ({
   organization,
   flatUrl = false 
 }) => {
-  // The OrganizationDetail component expects to fetch data via useParams
-  // Since we already have the organization, we'll render it directly
-  // but still let the component handle its own internal state management
+  // Extract the slug from the current URL since we need to maintain the slug-based routing
+  const currentPath = window.location.pathname;
+  const urlSlug = currentPath.replace('/', ''); // Remove leading slash to get the slug
   
   return (
     <div className="organization-detail-flat-wrapper">
@@ -148,8 +233,8 @@ const OrganizationDetailWrapper: React.FC<OrganizationDetailWrapperProps> = ({
         </div>
       )}
       
-      {/* Render the existing OrganizationDetail component */}
-      <OrganizationDetail />
+      {/* Redirect to the legacy route format that OrganizationDetail expects */}
+      <Navigate to={`/organization/${urlSlug}${window.location.search}`} replace />
     </div>
   );
 };

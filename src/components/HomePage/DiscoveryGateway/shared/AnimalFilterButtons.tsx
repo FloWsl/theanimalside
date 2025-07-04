@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { animalCategories } from '@/data/animals';
+import { useAnimalCategoriesFromStats } from '@/hooks/useStatistics';
 // import { Link } from 'react-router-dom';
 import { Star, TrendingUp } from 'lucide-react';
 
@@ -94,6 +94,9 @@ const AnimalFilterButtons: React.FC<AnimalFilterButtonsProps> = ({
   const handleImageError = (animalId: string) => {
     setImageLoadErrors(prev => new Set(prev).add(animalId));
   };
+
+  // Get dynamic animal data from database with React Query caching
+  const animalCategories = useAnimalCategoriesFromStats();
 
   // Enhanced animal selection with visual feedback
   const handleAnimalClick = (animal: typeof animalCategories[0]) => {

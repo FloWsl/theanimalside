@@ -40,44 +40,79 @@ const CountryLandingPage: React.FC = () => {
   // Use centralized country data hook
   const {
     countryName,
-    opportunities: countryOpportunities,
+    organizations: countryOrganizations,
     contentHub,
     availableAnimals,
     isLoading: dataLoading,
     error: dataError
   } = useCountryData(countrySlug);
 
+  // Convert organizations to opportunities format for UI compatibility
+  const countryOpportunities = React.useMemo(() => {
+    return countryOrganizations.map(org => {
+      // Get actual animal types for this organization from the merged data
+      const orgAnimalTypes = (org as any).animal_types || [];
+      const animalTypeNames = orgAnimalTypes.length > 0 
+        ? orgAnimalTypes // Already array of strings from the merge
+        : ['Wildlife']; // Fallback only if no animal types found
+      
+
+      return {
+        id: org.id,
+        title: org.name,
+        organization: org.name,
+        description: org.tagline || org.mission || 'Wildlife conservation program',
+        location: { country: org.country, city: org.city || '', region: org.region || '' },
+        images: [org.hero_image || 'https://images.unsplash.com/photo-1502780402662-acc01917cf4b'],
+        cost: { amount: null, currency: 'USD', period: 'total' },
+        slug: org.slug,
+        animalTypes: animalTypeNames, // Use actual animal types from database
+        duration: { min: 2, max: 12 } // Default duration
+      };
+    });
+  }, [countryOrganizations]);
+
 
   // SEO & Performance Optimization
   const seoMetadata = React.useMemo(() => {
-    const metadata = generateCountryPageSEO(countrySlug || '', countryOpportunities);
+    // Convert organizations to opportunities format for generateCountryPageSEO
+    const opportunitiesForSEO = countryOrganizations.map(org => ({
+      title: org.name,
+      description: org.tagline || org.mission || 'Wildlife conservation program',
+      organization: org.name,
+      location: { country: org.country, city: org.city || '', region: org.region || '' },
+      images: [org.hero_image || 'https://images.unsplash.com/photo-1502780402662-acc01917cf4b'],
+      cost: { amount: null, currency: 'USD', period: 'total' },
+      slug: org.slug,
+      animalTypes: ['Wildlife'] // Default animal type for SEO generation
+    }));
+
+    const metadata = generateCountryPageSEO(countrySlug || '', opportunitiesForSEO);
 
     const enhancedStructuredData = {
       "@context": "https://schema.org",
       "@type": "TouristDestination",
       "name": `${countryName} Wildlife Volunteer Programs`,
-      "description": `Discover ${countryOpportunities.length} conservation programs in ${countryName}. Join hands-on wildlife protection efforts.`,
+      "description": `Discover ${countryOrganizations.length} conservation organizations in ${countryName}. Join hands-on wildlife protection efforts.`,
       "url": `https://theanimalside.com/volunteer-${countrySlug}`,
-      "image": countryOpportunities[0]?.images?.[0] || "https://images.unsplash.com/photo-1502780402662-acc01917cf4b",
+      "image": countryOrganizations[0]?.hero_image || "https://images.unsplash.com/photo-1502780402662-acc01917cf4b",
       "geo": {
         "@type": "Country",
         "name": countryName
       },
       "touristType": "Wildlife Conservation Volunteers",
       "availableLanguage": "en",
-      "offers": countryOpportunities.map(opp => ({
+      "offers": countryOrganizations.map(org => ({
         "@type": "Offer",
-        "name": opp.title,
-        "description": opp.description,
-        "price": opp.cost.amount,
-        "priceCurrency": opp.cost.currency,
+        "name": org.name,
+        "description": org.tagline || org.mission,
         "availability": "InStock",
         "category": "Wildlife Conservation Volunteer Program"
       })),
       "hasOfferCatalog": {
         "@type": "OfferCatalog",
         "name": `${countryName} Wildlife Programs`,
-        "numberOfItems": countryOpportunities.length
+        "numberOfItems": countryOrganizations.length
       }
     };
 
@@ -85,18 +120,18 @@ const CountryLandingPage: React.FC = () => {
       ...metadata,
       structuredData: enhancedStructuredData
     };
-  }, [countrySlug, countryOpportunities, countryName]);
+  }, [countrySlug, countryOrganizations, countryName]);
 
   useSEO(seoMetadata);
 
   // Performance optimization: Preload critical images
   React.useEffect(() => {
-    if (countryOpportunities.length > 0) {
-      const preloadImages = countryOpportunities.slice(0, 3).map(opp => {
-        if (opp.images?.[0]) {
+    if (countryOrganizations.length > 0) {
+      const preloadImages = countryOrganizations.slice(0, 3).map(org => {
+        if (org.hero_image) {
           const link = document.createElement('link');
           link.rel = 'preload';
-          link.href = opp.images[0];
+          link.href = org.hero_image;
           link.as = 'image';
           document.head.appendChild(link);
           return link;
@@ -112,7 +147,7 @@ const CountryLandingPage: React.FC = () => {
         });
       };
     }
-  }, [countryOpportunities]);
+  }, [countryOrganizations]);
 
   // Handle data loading and errors
   if (dataLoading) {
@@ -147,20 +182,20 @@ const CountryLandingPage: React.FC = () => {
     );
   }
 
-  if (!countrySlug || countryOpportunities.length === 0) {
+  if (!countrySlug || countryOrganizations.length === 0) {
     return (
       <Container className="min-h-screen bg-soft-cream">
         <div className="section-padding-lg text-center">
           <h1 className="text-hero text-deep-forest mb-4">Country Not Found</h1>
           <p className="text-body text-forest/80 mb-8">
-            We don't have any volunteer opportunities in this location yet.
+            We don't have any conservation organizations in this location yet.
           </p>
           <Link
             to="/opportunities"
             onClick={handleNavigation}
             className="btn-nature-primary"
           >
-            Browse All Opportunities
+            Browse All Organizations
             <ArrowRight className="w-4 h-4 ml-2" />
           </Link>
         </div>
@@ -275,28 +310,47 @@ const CountryLandingPage: React.FC = () => {
             {/* Enhanced description with visual hierarchy */}
             <div className="max-w-4xl mx-auto">
               <p className="text-lg lg:text-xl text-forest/80 leading-relaxed mb-4">
-                Explore {countryOpportunities.length} verified wildlife conservation programs in {countryName}.
+                Explore {countryOrganizations.length} verified wildlife conservation organizations in {countryName}.
               </p>
               <p className="text-base text-rich-earth font-semibold">
-                Each program offers authentic conservation impact and meaningful volunteer experiences.
+                Each organization offers authentic conservation impact and meaningful volunteer experiences.
               </p>
             </div>
           </div>
 
-          {/* Program Grid - Real Opportunity Cards */}
+          {/* Organization Grid - Real Organization Cards */}
           <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
-            {countryOpportunities.map((opportunity, index) => (
-              <div key={opportunity.id} className="card-nature-hover overflow-hidden transition-all duration-500 group">
-                <OpportunityCard
-                  opportunity={opportunity}
-                  index={index}
-                />
-              </div>
-            ))}
+            {countryOrganizations.map((organization, index) => {
+              // Convert organization to opportunity format for OpportunityCard
+              const opportunityFormat = {
+                id: organization.id,
+                title: organization.name,
+                organization: organization.name,
+                description: organization.tagline || organization.mission || 'Wildlife conservation organization',
+                location: { country: organization.country, city: organization.city || '', region: organization.region || '' },
+                images: [organization.hero_image || '/images/default-wildlife.jpg'],
+                animalTypes: ['Wildlife'],
+                duration: { min: 2, max: 12 },
+                cost: { amount: null, currency: 'USD', period: 'total' },
+                featured: organization.featured || false,
+                datePosted: organization.created_at || new Date().toISOString(),
+                slug: organization.slug,
+                tags: []
+              };
+              
+              return (
+                <div key={organization.id} className="card-nature-hover overflow-hidden transition-all duration-500 group">
+                  <OpportunityCard
+                    opportunity={opportunityFormat}
+                    index={index}
+                  />
+                </div>
+              );
+            })}
           </div>
 
           {/* CTA to View All */}
-          {countryOpportunities.length > 0 && (
+          {countryOrganizations.length > 0 && (
             <div className="text-center mt-16">
               <Link
                 to="/opportunities"
@@ -346,7 +400,17 @@ const CountryLandingPage: React.FC = () => {
 
             {/* Conservation Focus Areas Grid - Award-Winning Design */}
             <div className="grid md:grid-cols-2 gap-8 mb-16">
-              {availableAnimals.map((animal, index) => {
+              {availableAnimals
+                .filter(animal => {
+                  // Critical UX Fix: Only show animals with available programs
+                  const animalOpportunities = countryOpportunities.filter(opp =>
+                    opp.animalTypes.some(type =>
+                      type.toLowerCase().includes(animal.name.toLowerCase().split(' ')[0])
+                    )
+                  );
+                  return animalOpportunities.length > 0; // ✅ Only show if programs exist
+                })
+                .map((animal, index) => {
                 const animalOpportunities = countryOpportunities.filter(opp =>
                   opp.animalTypes.some(type =>
                     type.toLowerCase().includes(animal.name.toLowerCase().split(' ')[0])

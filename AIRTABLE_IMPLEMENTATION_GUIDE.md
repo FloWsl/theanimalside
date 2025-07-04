@@ -29,7 +29,7 @@ This guide translates The Animal Side's PostgreSQL schema into **Airtable's no-c
 Base Name: "The Animal Side - Wildlife Conservation Platform"
 ├── 📊 Core Tables (6 tables)
 ├── 🐾 Content & Media (4 tables)  
-├── 🌍 Story 5: Combined Experiences (6 tables)
+├── 🌍 Combined Experiences (6 tables)
 ├── 📝 Applications & Communication (4 tables)
 ├── ⚙️ Configuration & Admin (3 tables)
 └── 📈 Analytics & Reporting (Views & Dashboards)

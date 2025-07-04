@@ -757,4 +757,4 @@ if (require.main === module) {
   runMigration();
 }
 
-export { DataMigrator, type MigrationStats };
+export type { MigrationStats };

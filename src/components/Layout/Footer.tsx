@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Facebook, Instagram, Twitter, Mail, MapPin, Sparkles } from 'lucide-react';
-import { animalCategories } from '../../data/animals';
+import { useAnimalCategoriesFromStats } from '../../hooks/useStatistics';
 import { generateAnimalRoute, generateCountryRoute } from '../../utils/routeUtils';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
+
+  // Get dynamic animal data from database with React Query caching
+  const animalCategories = useAnimalCategoriesFromStats();
 
   // Popular destinations for footer
   const popularDestinations = [

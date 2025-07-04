@@ -2,10 +2,11 @@ import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Compass, Star } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import OpportunityPortalCard from '@/components/ui/OpportunityPortalCard';
-import { opportunities } from '@/data/opportunities';
-import type { Opportunity } from '@/types';
+import { OrganizationService } from '@/services/organizationService';
+import type { Organization } from '@/types/database';
 
 // Check for reduced motion preference
 const prefersReducedMotion = typeof window !== 'undefined' 
@@ -21,21 +22,55 @@ const prefersReducedMotion = typeof window !== 'undefined'
 
 interface ConservationDiscoveryFeedProps {
   className?: string;
-  onOpportunitySelect?: (opportunity: Opportunity) => void;
+  onOrganizationSelect?: (organization: Organization) => void;
 }
 
 const ConservationDiscoveryFeed: React.FC<ConservationDiscoveryFeedProps> = ({
   className = '',
-  onOpportunitySelect
+  onOrganizationSelect
 }) => {
   const [activeCard, setActiveCard] = useState<string | null>(null);
   const [exploredCards, setExploredCards] = useState<Set<string>>(new Set());
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-30px' });
 
-  const handleCardExplore = (opportunity: Opportunity) => {
-    setExploredCards(prev => new Set([...prev, opportunity.id]));
-    onOpportunitySelect?.(opportunity);
+  // Query featured organizations for the discovery feed
+  const { data: organizationsResponse, isLoading } = useQuery({
+    queryKey: ['homepage-organizations'],
+    queryFn: () => OrganizationService.searchOrganizations({ featured_only: true }, { page: 1, limit: 6 }),
+    staleTime: 10 * 60 * 1000, // 10 minutes for homepage
+  });
+
+  const organizations = organizationsResponse?.data || [];
+
+  // Convert organization to opportunity-like format for the card component
+  const organizationsAsOpportunities = organizations.map(org => ({
+    id: org.id,
+    title: org.name,
+    organization: org.name,
+    description: org.tagline || org.mission || 'Join us in wildlife conservation',
+    location: {
+      country: org.country,
+      city: org.city || '',
+      region: org.region || ''
+    },
+    images: [org.hero_image || '/images/default-wildlife.jpg'],
+    animalTypes: ['Wildlife'],
+    duration: { min: 2, max: 12 },
+    cost: { amount: null, currency: 'USD', period: 'total' },
+    featured: org.featured || false,
+    datePosted: org.created_at || new Date().toISOString(),
+    slug: org.slug,
+    tags: []
+  }));
+
+  const handleCardExplore = (opportunity: any) => {
+    // Find the original organization
+    const organization = organizations.find(org => org.id === opportunity.id);
+    if (organization) {
+      setExploredCards(prev => new Set([...prev, organization.id]));
+      onOrganizationSelect?.(organization);
+    }
   };
 
   // Optimized container animation - respects reduced motion
@@ -70,13 +105,13 @@ const ConservationDiscoveryFeed: React.FC<ConservationDiscoveryFeedProps> = ({
     })
   };
 
-  if (!opportunities || opportunities.length === 0) {
+  if (isLoading || !organizations || organizations.length === 0) {
     return (
       <div className="py-20 text-center">
         <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-warm-beige to-gentle-lemon rounded-full flex items-center justify-center">
           <Compass className="w-10 h-10 text-rich-earth" />
         </div>
-        <p className="text-forest/60">New worlds are being discovered...</p>
+        <p className="text-forest/60">{isLoading ? 'Discovering conservation opportunities...' : 'New worlds are being discovered...'}</p>
       </div>
     );
   }
@@ -165,7 +200,7 @@ const ConservationDiscoveryFeed: React.FC<ConservationDiscoveryFeedProps> = ({
           role="grid"
           aria-label="Conservation volunteer opportunities"
         >
-          {opportunities.map((opportunity, index) => (
+          {organizationsAsOpportunities.map((opportunity, index) => (
             <OpportunityPortalCard
               key={opportunity.id}
               opportunity={opportunity}

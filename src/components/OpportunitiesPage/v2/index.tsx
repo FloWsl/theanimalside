@@ -1,9 +1,11 @@
 import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { opportunities } from '../../../data/opportunities';
-import { SearchFilters } from '../../../types';
+import { useQuery } from '@tanstack/react-query';
+import { OrganizationService } from '../../../services/organizationService';
+import type { OrganizationFilters } from '../../../types/database';
 import OpportunitiesPageHero from './OpportunitiesPageHero';
 import Breadcrumb, { useBreadcrumbs } from '../../ui/Breadcrumb';
+import { organizationDetails } from '../../../data/organizationDetails';
 
 // Lazy load heavy components
 const OpportunityFilters = lazy(() => import('./OpportunityFilters'));
@@ -36,101 +38,89 @@ const GridLoader = () => (
 );
 
 // Enhanced search filters for v2
-export interface V2SearchFilters extends SearchFilters {
+export interface V2SearchFilters extends OrganizationFilters {
   costRange?: 'free' | 'under-500' | 'under-1000' | 'any';
   locations?: string[]; // Multi-select locations
 }
 
 const OpportunitiesPageV2: React.FC = () => {
   const [filters, setFilters] = useState<V2SearchFilters>({});
+  const [page, setPage] = useState(1);
   const breadcrumbs = useBreadcrumbs();
   
-  // Smart filtering logic with performance optimization
-  const filteredOpportunities = useMemo(() => {
-    // Early return if no filters
-    if (Object.keys(filters).length === 0) return opportunities;
+  // Query organizations with filters
+  const { data: organizationsResponse, isLoading, error } = useQuery({
+    queryKey: ['organizations', filters, page],
+    queryFn: () => OrganizationService.searchOrganizations(filters, { page, limit: 12 }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Add fallback to mock data when database is empty
+  const organizations = useMemo(() => {
+    const dbOrganizations = organizationsResponse?.data || [];
     
-    let filtered = opportunities;
-    
-    // Multi-location filtering
-    if (filters.locations && filters.locations.length > 0) {
-      filtered = filtered.filter(opp => 
-        filters.locations!.some(location => 
-          opp.location.country.toLowerCase().includes(location.toLowerCase()) || 
-          opp.location.city.toLowerCase().includes(location.toLowerCase())
-        )
-      );
-    }
-    
-    // Animal type filtering
-    if (filters.animalTypes && filters.animalTypes.length > 0) {
-      filtered = filtered.filter(opp => 
-        filters.animalTypes!.some(type => 
-          opp.animalTypes.some(oppType => 
-            oppType.toLowerCase().includes(type.toLowerCase())
-          )
-        )
-      );
-    }
-    
-    // Cost range filtering
-    if (filters.costRange) {
-      switch (filters.costRange) {
-        case 'free':
-          filtered = filtered.filter(opp => opp.cost.amount === 0);
-          break;
-        case 'under-500':
-          filtered = filtered.filter(opp => 
-            opp.cost.amount === 0 || (opp.cost.amount && opp.cost.amount <= 500)
-          );
-          break;
-        case 'under-1000':
-          filtered = filtered.filter(opp => 
-            opp.cost.amount === 0 || (opp.cost.amount && opp.cost.amount <= 1000)
-          );
-          break;
-        default:
-          // 'any' - no filtering
-          break;
+    // If database has no results, fall back to mock data
+    if (dbOrganizations.length === 0) {
+      
+      // Filter mock data based on current filters
+      let filteredMock = organizationDetails;
+      
+      if (filters.country) {
+        filteredMock = filteredMock.filter((org: any) => 
+          org.location.country === filters.country
+        );
       }
-    }
-    
-    // Duration filtering
-    if (filters.durationMin !== undefined) {
-      filtered = filtered.filter(opp => opp.duration.min >= filters.durationMin!);
-    }
-    
-    if (filters.durationMax !== undefined) {
-      filtered = filtered.filter(opp => 
-        opp.duration.max === null || opp.duration.max <= filters.durationMax!
-      );
-    }
-    
-    // Search term filtering
-    if (filters.searchTerm) {
-      const searchLower = filters.searchTerm.toLowerCase();
-      filtered = filtered.filter(opp => 
-        opp.title.toLowerCase().includes(searchLower) || 
-        opp.description.toLowerCase().includes(searchLower) ||
-        opp.organization.toLowerCase().includes(searchLower) ||
-        opp.animalTypes.some(animal => animal.toLowerCase().includes(searchLower))
-      );
-    }
-    
-    // Smart sorting: FREE first, then featured, then by date
-    return filtered.sort((a, b) => {
-      // Free opportunities first
-      if (a.cost.amount === 0 && b.cost.amount !== 0) return -1;
-      if (a.cost.amount !== 0 && b.cost.amount === 0) return 1;
       
-      // Then featured
-      if (a.featured && !b.featured) return -1;
-      if (!a.featured && b.featured) return 1;
+      if (filters.locations && filters.locations.length > 0) {
+        filteredMock = filteredMock.filter((org: any) => 
+          filters.locations!.includes(org.location.country)
+        );
+      }
       
-      // Finally by date
-      return new Date(b.datePosted).getTime() - new Date(a.datePosted).getTime();
-    });
-  }, [filters]);
+      // Convert to opportunity format for UI compatibility
+      return filteredMock.map((org: any) => ({
+        id: org.id,
+        title: org.name,
+        organization: org.name,
+        description: org.tagline || org.mission || `Wildlife conservation opportunities`,
+        location: { 
+          country: org.location.country, 
+          city: org.location.city || '', 
+          coordinates: org.location.coordinates || [0, 0]
+        },
+        images: [org.heroImage || '/images/default-wildlife.jpg'],
+        animalTypes: org.animalTypes || ['Wildlife'], 
+        duration: { min: 2, max: 12 },
+        cost: { amount: null, currency: 'USD', period: 'total', includes: [] },
+        requirements: org.requirements || [],
+        featured: org.featured || false,
+        datePosted: new Date().toISOString(),
+        slug: org.slug
+      }));
+    }
+    
+    // Convert database organizations to opportunity format
+    return dbOrganizations.map(org => ({
+      id: org.id,
+      title: org.name,
+      organization: org.name,
+      description: org.tagline || org.mission || `Wildlife conservation opportunities`,
+      location: { 
+        country: org.country, 
+        city: org.city || '', 
+        coordinates: [0, 0] // Default coordinates
+      },
+      images: [org.hero_image || '/images/default-wildlife.jpg'],
+      animalTypes: ['Wildlife'], // Default animal type - could be enhanced with actual data
+      duration: { min: 2, max: 12 },
+      cost: { amount: null, currency: 'USD', period: 'total', includes: [] },
+      requirements: [],
+      featured: org.featured || false,
+      datePosted: org.created_at || new Date().toISOString(),
+      slug: org.slug
+    }));
+  }, [organizationsResponse, filters]);
+  const hasMore = organizationsResponse?.has_more || false;
   
   const handleFilterChange = (newFilters: V2SearchFilters) => {
     setFilters(newFilters);
@@ -158,8 +148,8 @@ const OpportunitiesPageV2: React.FC = () => {
   };
   
   const generatePageDescription = () => {
-    const count = filteredOpportunities.length;
-    let description = `Discover ${count} verified wildlife conservation volunteer opportunities worldwide. `;
+    const count = organizationsResponse?.count || 0;
+    let description = `Discover ${count} verified wildlife conservation organizations worldwide. `;
     
     if (filters.locations && filters.locations.length > 0) {
       description += `Work with wildlife in ${filters.locations.join(', ')}. `;
@@ -205,17 +195,29 @@ const OpportunitiesPageV2: React.FC = () => {
             filters={filters}
             onFilterChange={handleFilterChange}
             onClearFilters={handleClearFilters}
-            resultCount={filteredOpportunities.length}
-            totalCount={opportunities.length}
+            resultCount={organizations.length}
+            totalCount={organizationsResponse?.count || 0}
           />
         </Suspense>
         
         {/* Results Grid */}
         <Suspense fallback={<GridLoader />}>
-          <OpportunityGrid 
-            opportunities={filteredOpportunities}
-            filters={filters}
-          />
+          {isLoading ? (
+            <GridLoader />
+          ) : error ? (
+            <div className="py-8">
+              <div className="container mx-auto px-6 text-center">
+                <div className="text-6xl mb-4">⚠️</div>
+                <h2 className="text-section text-deep-forest mb-2">Unable to Load Organizations</h2>
+                <p className="text-body text-forest/70">Please try again later.</p>
+              </div>
+            </div>
+          ) : (
+            <OpportunityGrid 
+              opportunities={organizations}
+              filters={filters}
+            />
+          )}
         </Suspense>
       </div>
     </>

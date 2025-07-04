@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Users, Shield, ExternalLink, Heart } from 'lucide-react';
 import { Opportunity } from '../../../types';
-import { getOpportunityRoute, hasValidOpportunityRoute } from '../../../utils/organizationMapping';
+import { generateOrganizationRoute } from '../../../utils/routeUtils';
 
 interface OpportunityCardProps {
   opportunity: Opportunity;
@@ -65,6 +65,15 @@ const getAnimalEmoji = (animalType: string): string => {
 
 // Format cost display
 const formatCost = (cost: Opportunity['cost']): { display: string; color: string; bgColor: string } => {
+  // Safety check for undefined cost
+  if (!cost) {
+    return { 
+      display: 'Contact', 
+      color: 'text-forest', 
+      bgColor: 'bg-warm-beige'
+    };
+  }
+  
   if (cost.amount === 0) {
     return { 
       display: 'FREE', 
@@ -92,8 +101,10 @@ const formatCost = (cost: Opportunity['cost']): { display: string; color: string
 
 const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, index }) => {
   const costInfo = formatCost(opportunity.cost);
-  const opportunityRoute = getOpportunityRoute(opportunity.id);
-  const hasValidRoute = hasValidOpportunityRoute(opportunity.id);
+  
+  // Use slug directly from opportunity object (generated from database)
+  const opportunityRoute = opportunity.slug ? generateOrganizationRoute(opportunity.slug) : null;
+  const hasValidRoute = Boolean(opportunityRoute);
   
   // If no valid route, render as non-clickable card
   if (!hasValidRoute || !opportunityRoute) {

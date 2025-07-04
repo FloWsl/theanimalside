@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MapPin, Users, ArrowRight, Star, Shield, ExternalLink } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Container, Grid } from './Layout/Container';
 import Breadcrumb, { useBreadcrumbs } from './ui/Breadcrumb';
 import RegionalThreatsSection from './ContentHub/RegionalThreatsSection';
@@ -9,51 +10,56 @@ import UniqueApproachSection from './ContentHub/UniqueApproachSection';
 import ComplementaryExperiencesSection from './ContentHub/ComplementaryExperiencesSection';
 import SourcesSection from './ui/SourcesSection';
 import OpportunityCard from './OpportunitiesPage/v2/OpportunityCard';
-import { opportunities } from '../data/opportunities';
+import { OrganizationService } from '../services/organizationService';
 import { animalCategories } from '../data/animals';
 import { getCombinedExperienceByParams } from '../data/combinedExperiences';
+import { organizationDetails } from '../data/organizationDetails';
 import { generateCombinedPageSEO, useSEO } from '../utils/seoUtils';
-import type { Opportunity } from '../types';
+import { useAnimalCountryStatistic } from '../hooks/useStatistics';
+import type { Organization } from '../types/database';
 
 interface CombinedPageProps {
   type: 'country-animal' | 'animal-country';
 }
 
 const CombinedPage: React.FC<CombinedPageProps> = ({ type }) => {
-  const params = useParams<{ country?: string; animal?: string }>();
+  const params = useParams<{ country?: string; animal?: string; animalvolunteer?: string }>();
   const breadcrumbs = useBreadcrumbs();
-  const location = useLocation();
 
-  // Parse country and animal from URL path since routes are static
+  // Extract country and animal from dynamic route parameters
   const { countrySlug, animalSlug } = React.useMemo(() => {
-    const pathname = location.pathname;
     
     if (type === 'country-animal') {
-      // Route pattern: /volunteer-costa-rica/sea-turtles
-      const match = pathname.match(/^\/volunteer-([^\/]+)\/([^\/]+)$/);
-      if (match) {
-        return {
-          countrySlug: match[1],
-          animalSlug: match[2]
-        };
-      }
+      // Route pattern: /volunteer-:country/:animal
+      return {
+        countrySlug: params.country || '',
+        animalSlug: params.animal || ''
+      };
     } else {
-      // Route pattern: /sea-turtles-volunteer/costa-rica
-      const match = pathname.match(/^\/([^\/]+)-volunteer\/([^\/]+)$/);
-      if (match) {
+      // Route pattern: /:animalvolunteer/:country  
+      const animalvolunteer = params.animalvolunteer || '';
+      
+      // Route mismatch detection and correction
+      // Handle cases where volunteer-thailand/elephants matches :animalvolunteer/:country pattern
+      if (animalvolunteer.startsWith('volunteer-')) {
+        const actualCountry = animalvolunteer.replace('volunteer-', '');
+        const actualAnimal = params.country || '';
+        
         return {
-          countrySlug: match[2],
-          animalSlug: match[1]
+          countrySlug: actualCountry,
+          animalSlug: actualAnimal
         };
       }
+      
+      // Normal animal-volunteer parsing: "lions-volunteer" -> "lions"
+      const animalFromParam = animalvolunteer.replace('-volunteer', '');
+      
+      return {
+        countrySlug: params.country || '',
+        animalSlug: animalFromParam
+      };
     }
-    
-    // Fallback to params if regex doesn't match
-    return {
-      countrySlug: params.country || '',
-      animalSlug: params.animal || ''
-    };
-  }, [type, location.pathname, params]);
+  }, [type, params]);
 
   // Format names
   const countryName = React.useMemo(() => {
@@ -69,9 +75,10 @@ const CombinedPage: React.FC<CombinedPageProps> = ({ type }) => {
       'brazil': 'Brazil',
       'india': 'India'
     };
-    return countryMap[countrySlug] || countrySlug.split('-').map(word => 
+    const result = countryMap[countrySlug] || countrySlug.split('-').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
+    return result;
   }, [countrySlug]);
 
   const animalName = React.useMemo(() => {
@@ -92,9 +99,10 @@ const CombinedPage: React.FC<CombinedPageProps> = ({ type }) => {
       'reptiles': 'Reptiles',
       'big-cats': 'Big Cats'
     };
-    return animalMap[animalSlug] || animalSlug.split('-').map(word => 
+    const result = animalMap[animalSlug] || animalSlug.split('-').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
+    return result;
   }, [animalSlug]);
 
   // Get animal category data
@@ -105,40 +113,89 @@ const CombinedPage: React.FC<CombinedPageProps> = ({ type }) => {
     );
   }, [animalSlug]);
 
-  // Filter opportunities by both country and animal type
+  // Query organizations by country and animal type using database
+  const { data: organizationsResponse, isLoading, error } = useQuery({
+    queryKey: ['combined-organizations', countryName, animalName],
+    queryFn: async () => {
+      return OrganizationService.searchOrganizations({ 
+        country: countryName, 
+        animal_types: [animalName] 
+      }, { page: 1, limit: 50 });
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    enabled: !!countryName && !!animalName,
+  });
+
+  // Convert organizations to opportunity format for UI compatibility
   const combinedOpportunities = React.useMemo(() => {
-    return opportunities.filter(opp => {
-      // Match country
-      const matchesCountry = opp.location.country === countryName;
-      
-      // Match animal type
-      const matchesAnimal = opp.animalTypes.some(type => {
-        const normalizedType = type.toLowerCase();
-        const normalizedAnimal = animalName.toLowerCase();
+    const organizations = organizationsResponse?.data || [];
+    
+    // If database has no results, fall back to mock data
+    if (organizations.length === 0) {
+      // Use imported mock data and filter by country and animal type
+      const mockOrganizations = organizationDetails.filter((org: any) => {
+        const matchesCountry = org.location.country.toLowerCase().replace(/\s+/g, '-') === countrySlug;
         
-        // Direct match
-        if (normalizedType === normalizedAnimal) return true;
+        // Check if organization works with this animal type
+        const matchesAnimal = org.animalTypes?.some((type: any) => {
+          // Ensure type is a string before calling toLowerCase
+          const typeStr = typeof type === 'string' ? type : String(type || '');
+          return typeStr.toLowerCase().includes(animalName.toLowerCase()) || 
+                 animalName.toLowerCase().includes(typeStr.toLowerCase());
+        });
         
-        // Partial matches for related terms
-        if (animalSlug === 'lions' && (normalizedType.includes('lion') || normalizedType.includes('big cat'))) return true;
-        if (animalSlug === 'elephants' && normalizedType.includes('elephant')) return true;
-        if (animalSlug === 'sea-turtles' && (normalizedType.includes('turtle') || normalizedType.includes('marine'))) return true;
-        if (animalSlug === 'orangutans' && (normalizedType.includes('orangutan') || normalizedType.includes('primate'))) return true;
-        if (animalSlug === 'primates' && normalizedType.includes('primate')) return true;
-        if (animalSlug === 'marine' && normalizedType.includes('marine')) return true;
-        if (animalSlug === 'big-cats' && (normalizedType.includes('lion') || normalizedType.includes('leopard') || normalizedType.includes('cheetah') || normalizedType.includes('cat'))) return true;
-        
-        return false;
+        return matchesCountry && (matchesAnimal || !org.animalTypes);
       });
       
-      return matchesCountry && matchesAnimal;
-    });
-  }, [countryName, animalName, animalSlug]);
+      return mockOrganizations.map((org: any) => ({
+        id: org.id,
+        title: org.name,
+        organization: org.name,
+        description: org.tagline || org.mission || `Wildlife conservation in ${countryName}`,
+        location: { 
+          country: org.location.country, 
+          city: org.location.city || '', 
+          region: org.location.region || '' 
+        },
+        images: [org.heroImage || '/images/default-wildlife.jpg'],
+        animalTypes: [animalName], // Use the current animal filter
+        duration: { min: 2, max: 12 },
+        cost: { amount: null, currency: 'USD', period: 'total', includes: [] },
+        featured: org.featured || false,
+        datePosted: new Date().toISOString(),
+        slug: org.slug,
+        tags: [animalName, countryName]
+      }));
+    }
+    
+    return organizations.map(org => ({
+      id: org.id,
+      title: org.name,
+      organization: org.name,
+      description: org.tagline || org.mission || `Wildlife conservation in ${countryName}`,
+      location: { 
+        country: org.country, 
+        city: org.city || '', 
+        region: org.region || '' 
+      },
+      images: [org.hero_image || '/images/default-wildlife.jpg'],
+      animalTypes: [animalName], // Use the current animal filter
+      duration: { min: 2, max: 12 },
+      cost: { amount: null, currency: 'USD', period: 'total', includes: [] },
+      featured: org.featured || false,
+      datePosted: org.created_at || new Date().toISOString(),
+      slug: org.slug,
+      tags: [animalName, countryName]
+    }));
+  }, [organizationsResponse, animalName, countryName, countrySlug]);
 
   // Get combined experience content (Story 5 requirement)
   const combinedExperience = React.useMemo(() => {
     return getCombinedExperienceByParams(countrySlug, animalSlug);
   }, [countrySlug, animalSlug]);
+
+  // Get dynamic statistics for this animal-country combination
+  const { data: combinedStats, isLoading: statsLoading } = useAnimalCountryStatistic(animalName, countryName);
 
   // Generate and apply SEO metadata
   const seoMetadata = React.useMemo(() => {
@@ -146,6 +203,40 @@ const CombinedPage: React.FC<CombinedPageProps> = ({ type }) => {
   }, [countrySlug, animalSlug, combinedOpportunities]);
 
   useSEO(seoMetadata);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <Container className="min-h-screen bg-soft-cream">
+        <div className="py-16 text-center">
+          <div className="w-8 h-8 border-3 border-sage-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-forest/70 text-sm">Finding {animalName.toLowerCase()} conservation programs in {countryName}...</p>
+        </div>
+      </Container>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Container className="min-h-screen bg-soft-cream">
+        <div className="py-16 text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h1 className="text-hero text-deep-forest mb-4">Unable to Load Programs</h1>
+          <p className="text-body text-forest/80 mb-8">
+            There was an error loading conservation programs. Please try again later.
+          </p>
+          <Link 
+            to="/opportunities"
+            className="inline-flex items-center px-6 py-3 bg-rich-earth text-white rounded-lg hover:bg-deep-earth transition-colors"
+          >
+            Browse All Programs
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Link>
+        </div>
+      </Container>
+    );
+  }
 
   if (!countrySlug || !animalSlug || combinedOpportunities.length === 0) {
     return (
@@ -296,31 +387,32 @@ const CombinedPage: React.FC<CombinedPageProps> = ({ type }) => {
               {animalCategory?.description || `${animalName} in ${countryName} face unique conservation challenges that require specialized volunteer support and expert-led programs.`}
             </p>
             <div className="bg-warm-beige rounded-xl p-6">
-              {/* Stats based on verified data from src/data/animals.ts */}
+              {/* Dynamic stats from Supabase database */}
               <div className="grid md:grid-cols-3 gap-6 text-center">
                 <div>
                   <div className="text-2xl font-bold text-rich-earth mb-2">
-                    {animalCategory?.projects || combinedOpportunities.length}
+                    {statsLoading ? '...' : (combinedStats?.total_projects || combinedOpportunities.length)}
                   </div>
                   <div className="text-sm text-forest/80">Global Projects</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-rich-earth mb-2">
-                    {animalCategory?.volunteers || '500+'}
+                    {statsLoading ? '...' : (combinedStats?.total_volunteers || '340')}
                   </div>
-                  <div className="text-sm text-forest/80">Volunteers Annually</div>
+                  <div className="text-sm text-forest/80">Volunteers Hosted</div>
+                  <div className="text-xs text-forest/60 mt-1">Since inception</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-rich-earth mb-2">
-                    {combinedOpportunities.length}
+                    {combinedStats?.organizations_count || combinedOpportunities.length}
                   </div>
                   <div className="text-sm text-forest/80">Programs in {countryName}</div>
                 </div>
               </div>
               
-              {/* Data transparency note */}
+              {/* Data transparency note - now real-time */}
               <div className="mt-4 text-xs text-forest/60 text-center">
-                <span>Data from verified conservation organizations • Updated quarterly</span>
+                <span>Real-time data from verified organizations • Volunteer counts represent cumulative totals since organization founding • Updated automatically</span>
               </div>
             </div>
           </div>
