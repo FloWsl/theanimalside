@@ -1,23 +1,21 @@
-// src/components/OrganizationDetail/QuickInfoCards.tsx
+// src/components/OrganizationDetail/QuickInfoCards.tsx - Database-Integrated Version
 import React from 'react';
 import { 
   Heart, 
   MapPin, 
   DollarSign, 
-  Clock, 
   ChevronRight, 
   Star,
-  Users,
   Shield,
   Camera
 } from 'lucide-react';
-import { OrganizationDetail, Program } from '../../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import CardMetadata from '../ui/CardMetadata';
+import { useOrganizationOverview, useOrganizationPractical, useOrganizationLocation, useOrganizationStories, useOrganizationMedia } from '../../hooks/useOrganizationData';
 
 interface QuickInfoCardsProps {
-  organization: OrganizationDetail;
-  selectedProgram?: Program;
+  organizationId: string;
+  selectedProgramId?: string;
   currentTab?: string;
   onTabChange?: (tabId: string) => void;
   variant?: 'compact' | 'default' | 'detailed';
@@ -27,12 +25,13 @@ interface QuickInfoCardsProps {
 
 /**
  * Enhanced QuickInfoCards component using CardMetadata patterns
+ * Database-integrated version using React Query hooks for data fetching.
  * 
  * Displays contextual information cards with flexible variant system
  * and consistent styling following ui component architecture.
  * 
- * @param organization - Organization data
- * @param selectedProgram - Currently selected program
+ * @param organizationId - Organization UUID
+ * @param selectedProgramId - Currently selected program UUID
  * @param currentTab - Current active tab to avoid duplication
  * @param onTabChange - Function to handle tab navigation
  * @param variant - Display variant: 'compact' | 'default' | 'detailed'
@@ -40,15 +39,28 @@ interface QuickInfoCardsProps {
  * @param className - Additional CSS classes
  */
 const QuickInfoCards: React.FC<QuickInfoCardsProps> = ({ 
-  organization, 
-  selectedProgram, 
+  organizationId, 
+  selectedProgramId, 
   currentTab,
   onTabChange,
   variant = 'default',
   maxCards = 4,
   className = ''
 }) => {
-  const program = selectedProgram || organization.programs[0];
+  // Database hooks for different data sets
+  const { data: overviewData, isLoading: overviewLoading } = useOrganizationOverview(organizationId);
+  const { data: practicalData, isLoading: practicalLoading } = useOrganizationPractical(organizationId);
+  const { data: locationData } = useOrganizationLocation(organizationId);
+  const { data: storiesData } = useOrganizationStories(organizationId, { limit: 1 });
+  const { data: mediaData } = useOrganizationMedia(organizationId, { category: 'gallery', limit: 3 });
+
+  // Get the selected program or primary program
+  const selectedProgram = selectedProgramId 
+    ? practicalData?.primary_program // Need to extend this to get specific program by ID
+    : overviewData?.primary_program || practicalData?.primary_program;
+
+  // Loading state for any critical data
+  const isLoading = overviewLoading || practicalLoading;
 
   // Card configuration based on variant
   const getCardVariant = () => {
@@ -105,7 +117,7 @@ const QuickInfoCards: React.FC<QuickInfoCardsProps> = ({
       colorScheme: 'deep-forest',
       tabTarget: 'stories',
       tabLabel: 'Read more stories',
-      condition: () => organization.testimonials.length > 0
+      condition: () => storiesData && storiesData.testimonials.length > 0
     },
     {
       id: 'gallery',
@@ -115,7 +127,7 @@ const QuickInfoCards: React.FC<QuickInfoCardsProps> = ({
       colorScheme: 'warm-beige',
       tabTarget: 'experience',
       tabLabel: 'View full gallery',
-      condition: () => organization.gallery.images.length > 0
+      condition: () => mediaData && mediaData.data.length > 0
     }
   ];
 
@@ -196,6 +208,30 @@ const QuickInfoCards: React.FC<QuickInfoCardsProps> = ({
     );
   };
 
+  // Early return if loading critical data
+  if (isLoading) {
+    return (
+      <div className={`grid gap-4 ${className}`}>
+        {Array.from({ length: Math.min(maxCards, 3) }).map((_, i) => (
+          <Card key={i} className="bg-gradient-to-br from-warm-beige/10 to-soft-cream animate-pulse">
+            <CardHeader className="pb-2">
+              <div className="h-6 bg-warm-beige/40 rounded-lg w-3/4"></div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="h-4 bg-warm-beige/30 rounded w-full"></div>
+              <div className="h-4 bg-warm-beige/30 rounded w-2/3"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  // Early return if no data available
+  if (!overviewData?.organization || !selectedProgram) {
+    return null;
+  }
+
   // Render card-specific content using CardMetadata
   const renderCardContent = (cardConfig: typeof availableCards[0], cardVariant: string) => {
     switch (cardConfig.id) {
@@ -203,16 +239,22 @@ const QuickInfoCards: React.FC<QuickInfoCardsProps> = ({
         return (
           <>
             <CardMetadata
-              duration={program.duration}
-              cost={program.cost}
+              duration={{
+                min: selectedProgram.duration_min_weeks,
+                max: selectedProgram.duration_max_weeks
+              }}
+              cost={{
+                amount: selectedProgram.cost_amount ? parseFloat(selectedProgram.cost_amount.toString()) : 0,
+                currency: selectedProgram.cost_currency || 'USD'
+              }}
               variant={cardVariant as 'default' | 'compact' | 'detailed' | 'minimal'}
               layout="grid"
               showIcons={false}
               className="text-deep-forest/80"
             />
             <div className="text-xs text-deep-forest/80">
-              Includes: {program.cost.includes.slice(0, 2).join(', ').toLowerCase()}
-              {program.cost.includes.length > 2 && ' + more'}
+              {practicalData?.program_inclusions?.slice(0, 2).map(inc => inc.inclusion_type).join(', ').toLowerCase()}
+              {(practicalData?.program_inclusions?.length || 0) > 2 && ' + more'}
             </div>
           </>
         );
@@ -221,18 +263,22 @@ const QuickInfoCards: React.FC<QuickInfoCardsProps> = ({
         return (
           <>
             <CardMetadata
-              location={organization.location}
+              location={{
+                country: locationData?.organization.country || '',
+                region: locationData?.organization.region || '',
+                city: locationData?.organization.city || ''
+              }}
               variant={cardVariant as 'default' | 'compact' | 'detailed' | 'minimal'}
               layout="vertical"
               showIcons={false}
               className="text-deep-forest/80"
             />
             <div className="text-xs text-deep-forest/80">
-              Airport pickup: {organization.transportation.airportPickup ? 'Included' : 'Not included'}
+              Airport pickup: {locationData?.transportation?.airport_pickup ? 'Included' : 'Not included'}
             </div>
-            {organization.location.nearestAirport && (
+            {locationData?.organization.nearest_airport && (
               <div className="text-xs text-deep-forest/80">
-                Nearest: {organization.location.nearestAirport}
+                Nearest: {locationData.organization.nearest_airport}
               </div>
             )}
           </>
@@ -242,7 +288,7 @@ const QuickInfoCards: React.FC<QuickInfoCardsProps> = ({
         return (
           <>
             <CardMetadata
-              animalTypes={program.animalTypes}
+              animalTypes={overviewData?.organization.animal_types || []}
               variant={cardVariant as 'default' | 'compact' | 'detailed' | 'minimal'}
               layout="grid"
               showIcons={false}
@@ -252,13 +298,13 @@ const QuickInfoCards: React.FC<QuickInfoCardsProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div className="text-center p-3 bg-white/80 rounded-xl">
                 <div className="text-lg font-bold text-warm-sunset">
-                  {program.schedule.hoursPerDay}h
+                  {selectedProgram.hours_per_day}h
                 </div>
                 <div className="text-xs text-deep-forest/70">daily work</div>
               </div>
               <div className="text-center p-3 bg-white/80 rounded-xl">
                 <div className="text-lg font-bold text-golden-hour">
-                  {program.animalTypes.length}
+                  {overviewData?.organization.animal_types?.length || 0}
                 </div>
                 <div className="text-xs text-deep-forest/70">species</div>
               </div>
@@ -270,38 +316,39 @@ const QuickInfoCards: React.FC<QuickInfoCardsProps> = ({
         return (
           <>
             <div className="flex items-center gap-2">
-              {organization.verified && (
+              {overviewData?.organization.verified && (
                 <div className="flex items-center gap-1 px-2 py-1 bg-sage-green/10 text-sage-green rounded-full text-xs">
                   <Shield className="w-3 h-3" />
                   Verified
                 </div>
               )}
               <div className="text-sm text-deep-forest font-medium">
-                Est. {organization.yearFounded}
+                Est. {overviewData?.organization.year_founded || 'N/A'}
               </div>
             </div>
             <CardMetadata
-              volunteerCount={organization.statistics.volunteersHosted}
+              volunteerCount={overviewData?.statistics?.volunteers_hosted || 0}
               variant={cardVariant as 'default' | 'compact' | 'detailed' | 'minimal'}
               layout="vertical"
               showIcons={false}
               className="text-deep-forest/80"
             />
             <div className="text-xs text-deep-forest/80">
-              {organization.certifications.length} official certification{organization.certifications.length > 1 ? 's' : ''}
+              {overviewData?.organization.certifications?.length || 0} official certification{(overviewData?.organization.certifications?.length || 0) > 1 ? 's' : ''}
             </div>
           </>
         );
       
-      case 'testimonial':
-        const testimonial = organization.testimonials[0];
+      case 'testimonial': {
+        const testimonial = storiesData?.testimonials[0];
+        if (!testimonial) return null;
         return (
           <>
             <div className="text-sm text-deep-forest italic leading-relaxed">
-              "{testimonial.quote.slice(0, 120)}{testimonial.quote.length > 120 ? '...' : ''}"
+              "{testimonial.content.slice(0, 120)}{testimonial.content.length > 120 ? '...' : ''}"
             </div>
             <div className="text-xs text-deep-forest/70">
-              — {testimonial.volunteerName}, {testimonial.volunteerCountry}
+              — {testimonial.volunteer_name}, {testimonial.volunteer_country}
             </div>
             <div className="flex items-center gap-1">
               {[...Array(testimonial.rating)].map((_, i) => (
@@ -310,23 +357,25 @@ const QuickInfoCards: React.FC<QuickInfoCardsProps> = ({
             </div>
           </>
         );
+      }
       
       case 'gallery':
+        if (!mediaData?.data.length) return null;
         return (
           <>
             <div className="grid grid-cols-3 gap-2">
-              {organization.gallery.images.slice(0, 3).map((image, index) => (
+              {mediaData.data.slice(0, 3).map((image, index) => (
                 <div key={index} className="aspect-square overflow-hidden rounded-lg">
                   <img 
-                    src={image.url} 
-                    alt={image.altText}
+                    src={image.file_url} 
+                    alt={image.alt_text || image.title}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               ))}
             </div>
             <div className="text-xs text-deep-forest/80 text-center">
-              {organization.gallery.images.length} photos + {organization.gallery.videos.length} videos
+              {mediaData.count} media items
             </div>
           </>
         );

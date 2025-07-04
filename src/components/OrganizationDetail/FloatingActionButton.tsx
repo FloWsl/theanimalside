@@ -3,29 +3,30 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MessageSquare, 
-  Phone, 
   Mail, 
   ArrowUp, 
-  ExternalLink,
   Heart,
   Share2,
   Plus,
   X
 } from 'lucide-react';
 import { Button } from '../ui/button';
-import { OrganizationDetail } from '../../types';
+import { useOrganizationEssentials } from '../../hooks/useOrganizationData';
 
 interface FloatingActionButtonProps {
-  organization: OrganizationDetail;
+  organizationId: string;
   scrollY?: number;
   className?: string;
 }
 
 const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ 
-  organization, 
+  organizationId, 
   scrollY = 0, 
   className = '' 
 }) => {
+  // Fetch essential organization data
+  const { data: essentials, isLoading } = useOrganizationEssentials(organizationId);
+  const organization = essentials?.organization;
   const [isExpanded, setIsExpanded] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   
@@ -33,6 +34,11 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   useEffect(() => {
     setShowScrollToTop(scrollY > 300);
   }, [scrollY]);
+
+  // Don't render if still loading or no organization data
+  if (isLoading || !organization) {
+    return null;
+  }
   
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
@@ -45,7 +51,9 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   const handleContact = (method: 'email' | 'phone' | 'whatsapp') => {
     switch (method) {
       case 'email':
-        window.location.href = `mailto:${organization.email}?subject=Volunteer Inquiry - ${organization.name}`;
+        if (organization.email) {
+          window.location.href = `mailto:${organization.email}?subject=Volunteer Inquiry - ${organization.name}`;
+        }
         break;
       case 'phone':
         if (organization.phone) {
@@ -67,14 +75,14 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   const handleShare = async () => {
     const shareData = {
       title: `${organization.name} - Wildlife Volunteer Program`,
-      text: organization.tagline,
+      text: organization.description || organization.name,
       url: window.location.href
     };
     
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-      } catch (err) {
+      } catch {
         // Fallback to copying URL
         navigator.clipboard.writeText(window.location.href);
       }
@@ -91,11 +99,11 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     const programData = {
       id: organization.id,
       name: organization.name,
-      location: organization.location,
+      location: { country: organization.country, region: organization.region },
       savedAt: new Date().toISOString()
     };
     
-    if (!savedPrograms.find((p: any) => p.id === organization.id)) {
+    if (!savedPrograms.find((p: { id: string }) => p.id === organization.id)) {
       savedPrograms.push(programData);
       localStorage.setItem('savedPrograms', JSON.stringify(savedPrograms));
     }
@@ -109,7 +117,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       label: 'Email',
       onClick: () => handleContact('email'),
       variant: 'nature' as const,
-      show: true
+      show: !!organization.email
     },
     {
       icon: MessageSquare,

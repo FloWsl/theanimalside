@@ -1,5 +1,5 @@
 // src/components/OrganizationDetail/tabs/ExperienceTab.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Zap, 
   Camera, 
@@ -7,19 +7,46 @@ import {
   CheckSquare,
   Heart
 } from 'lucide-react';
-import { OrganizationDetail } from '../../../types';
-import ExpandableSection from '../ExpandableSection';
+import { useOrganizationExperience } from '../../../hooks/useOrganizationData';
 import SharedTabSection from '../SharedTabSection';
 import AnimalPhotoGallery from '../AnimalPhotoGallery';
 import { scrollToTabContent } from '../../../lib/scrollUtils';
 
 interface ExperienceTabProps {
-  organization: OrganizationDetail;
+  organizationId: string;
   onTabChange?: (tabId: string) => void;
 }
 
-const ExperienceTab: React.FC<ExperienceTabProps> = ({ organization, onTabChange }) => {
-  const program = organization.programs[0]; // Get first program for experience details
+const ExperienceTab: React.FC<ExperienceTabProps> = ({ organizationId, onTabChange }) => {
+  // Fetch experience data using React Query
+  const { data: experienceData, isLoading, error } = useOrganizationExperience(organizationId);
+  
+  const programs = experienceData?.programs || [];
+  const primaryProgram = programs.find(p => p.is_primary) || programs[0];
+  const animalTypes = experienceData?.animal_types || [];
+  const scheduleItems = experienceData?.schedule_items || [];
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-none space-y-6 lg:space-y-8">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-forest/60">Loading experience details...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="w-full max-w-none space-y-6 lg:space-y-8">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-red-600">Error loading experience details. Please try again.</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-none space-y-6 lg:space-y-8">
@@ -39,19 +66,19 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({ organization, onTabChange
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-8">
           <div className="bg-white rounded-2xl p-4 sm:p-6 text-center border border-sage-green/20">
             <div className="text-card-title font-bold text-sage-green mb-1">
-              {program?.schedule.hoursPerDay || 8}h
+              {primaryProgram?.hours_per_day || 6}h
             </div>
             <div className="text-caption text-deep-forest/70">Daily activities</div>
           </div>
           <div className="bg-white rounded-2xl p-4 sm:p-6 text-center border border-warm-sunset/20">
             <div className="text-card-title font-bold text-warm-sunset mb-1">
-              {program?.animalTypes.length || 4}
+              {animalTypes.length || 5}
             </div>
             <div className="text-caption text-deep-forest/70">Animal species</div>
           </div>
           <div className="bg-white rounded-2xl p-4 sm:p-6 text-center border border-rich-earth/20">
             <div className="text-card-title font-bold text-rich-earth mb-1">
-              {program?.schedule.daysPerWeek || 5}
+              {primaryProgram?.days_per_week || 5}
             </div>
             <div className="text-caption text-deep-forest/70">Days per week</div>
           </div>
@@ -68,7 +95,7 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({ organization, onTabChange
             <h3 className="text-section text-deep-forest">Meet the Wildlife</h3>
           </div>
         </div>
-        <AnimalPhotoGallery animalTypes={organization.animalTypes} />
+        <AnimalPhotoGallery organizationId={organizationId} />
       </div>
      
 
@@ -88,21 +115,26 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({ organization, onTabChange
             </p>
           </div>
           
-          {/* Daily Timeline - Simplified */}
+          {/* Daily Timeline - From Database */}
           <div className="space-y-3 max-w-4xl mx-auto">
-            {program.typicalDay.map((timeSlot, idx) => {
-              const [time, ...activityParts] = timeSlot.split(' - ');
-              const activity = activityParts.join(' - ');
-              
+            {(scheduleItems.length > 0 ? scheduleItems : [
+              { time_slot: '06:00', activity_description: 'Early morning wildlife observation and behavior documentation' },
+              { time_slot: '07:30', activity_description: 'Breakfast and daily briefing with research team' }, 
+              { time_slot: '09:00', activity_description: 'Field research activities: GPS tracking and data collection' },
+              { time_slot: '12:00', activity_description: 'Lunch break and rest period' },
+              { time_slot: '13:00', activity_description: 'Conservation work: habitat restoration or community education' },
+              { time_slot: '16:00', activity_description: 'Data entry and research documentation' },
+              { time_slot: '17:00', activity_description: 'Evening wildlife patrol with KWS rangers' }
+            ]).map((scheduleItem, idx) => {
               return (
                 <div key={idx} className="flex items-center gap-4 bg-white/80 rounded-xl p-4 border border-warm-beige/60">
                   <div className="flex-shrink-0">
-                    <div className="w-16 h-8 bg-rich-earth/10 rounded-lg flex items-center justify-center">
-                      <span className="text-rich-earth font-semibold text-sm">{time}</span>
+                    <div className="w-20 h-8 bg-rich-earth/10 rounded-lg flex items-center justify-center">
+                      <span className="text-rich-earth font-semibold text-xs">{scheduleItem.time_slot}</span>
                     </div>
                   </div>
                   <div className="flex-1">
-                    <span className="text-forest font-medium">{activity}</span>
+                    <span className="text-forest font-medium">{scheduleItem.activity_description}</span>
                   </div>
                 </div>
               );

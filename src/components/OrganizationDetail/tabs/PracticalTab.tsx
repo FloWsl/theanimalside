@@ -16,15 +16,12 @@ import {
   Wifi,
   Car
 } from 'lucide-react';
-import { OrganizationDetail, Program } from '../../../types';
+import { useOrganizationPractical } from '../../../hooks/useOrganizationData';
 import SharedTabSection from '../SharedTabSection';
 import { scrollToTabContent } from '../../../lib/scrollUtils';
 
 interface PracticalTabProps {
-  organization: OrganizationDetail;
-  selectedProgram: Program;
-  isDesktop?: boolean;
-  sidebarVisible?: boolean;
+  organizationId: string;
   hideDuplicateInfo?: boolean;
   onTabChange?: (tabId: string) => void;
 }
@@ -123,32 +120,43 @@ const AccommodationGallery: React.FC<{ photos: string[] }> = ({ photos }) => {
 };
 
 const PracticalTab: React.FC<PracticalTabProps> = ({ 
-  organization, 
-  selectedProgram, 
-  isDesktop = false,
-  sidebarVisible = false,
+  organizationId,
   hideDuplicateInfo = false,
   onTabChange 
 }) => {
-  // Physical fitness levels - simple admin-friendly scale
-  const fitnessLevels = {
-    1: { label: 'Minimal', description: 'Light activities suitable for most fitness levels' },
-    2: { label: 'Light', description: 'Some walking and standing, basic activities' },
-    3: { label: 'Moderate', description: 'Walking, lifting, outdoor work in various weather' },
-    4: { label: 'High', description: 'Demanding physical work, hiking, heavy lifting' },
-    5: { label: 'Intensive', description: 'Very demanding work, extreme conditions' }
-  };
+  // Fetch practical data using React Query
+  const { data: practicalData, isLoading, error } = useOrganizationPractical(organizationId);
   
-  // Mock accommodation photos following photo-first strategy
-  const mockAccommodationPhotos = [
-    'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&h=400&fit=crop&crop=center', // Comfortable volunteer dormitory
-    'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=400&fit=crop&crop=center', // Common living area
-    'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop&crop=center', // Outdoor volunteer space
-    'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600&h=400&fit=crop&crop=center'  // Shared facilities
-  ];
   
-  // For demo: assume fitness level 3 (Moderate) - in real app, this comes from organization data
-  const currentFitnessLevel = fitnessLevels[3];
+  // Get accommodation photos from database
+  const accommodationPhotos = practicalData?.accommodation_media?.map(media => media.url) || [];
+  
+  // Get fitness requirements from database
+  const fitnessRequirement = practicalData?.skill_requirements?.find(
+    req => req.skill_name.toLowerCase().includes('fitness') || req.skill_name.toLowerCase().includes('physical')
+  );
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-none space-y-6 lg:space-y-8">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-forest/60">Loading practical information...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="w-full max-w-none space-y-6 lg:space-y-8">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-red-600">Error loading practical information. Please try again.</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-none space-y-6 lg:space-y-8">
@@ -167,25 +175,25 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-8">
           <div className="bg-white rounded-xl p-3 sm:p-4 text-center border border-rich-earth/20">
             <div className="text-xl sm:text-2xl font-bold text-rich-earth mb-1">
-              {selectedProgram.cost.amount === 0 ? 'FREE' : `${selectedProgram.cost.currency}${selectedProgram.cost.amount}`}
+              {practicalData?.primary_program?.cost_amount == 0 ? 'FREE' : `${practicalData?.primary_program?.cost_currency || '$'}${practicalData?.primary_program?.cost_amount || 'Contact'}`}
             </div>
             <div className="text-xs sm:text-sm text-deep-forest/70">Program cost</div>
           </div>
           <div className="bg-white rounded-xl p-3 sm:p-4 text-center border border-warm-sunset/20">
             <div className="text-xl sm:text-2xl font-bold text-warm-sunset mb-1">
-              {selectedProgram.duration.min}-{selectedProgram.duration.max || '∞'}
+              {practicalData?.primary_program?.duration_min_weeks || 1}-{practicalData?.primary_program?.duration_max_weeks || '∞'}
             </div>
             <div className="text-xs sm:text-sm text-deep-forest/70">Weeks</div>
           </div>
           <div className="bg-white rounded-xl p-3 sm:p-4 text-center border border-sage-green/20">
             <div className="text-xl sm:text-2xl font-bold text-sage-green mb-1">
-              {organization.ageRequirement.min}+
+              {practicalData?.age_requirement?.min_age || 18}+
             </div>
             <div className="text-xs sm:text-sm text-deep-forest/70">Years old</div>
           </div>
           <div className="bg-white rounded-xl p-3 sm:p-4 text-center border border-golden-hour/20">
             <div className="text-sm sm:text-lg font-bold text-golden-hour mb-1">
-              {organization.accommodation.provided ? '✓' : '✗'}
+              {practicalData?.accommodation?.provided ? '✓' : '✗'}
             </div>
             <div className="text-xs sm:text-sm text-deep-forest/70">Housing</div>
           </div>
@@ -204,7 +212,7 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
           <div className="text-center">
             <h3 className="text-lg sm:text-xl text-forest mb-3">Where You'll Stay</h3>
             <p className="text-sm sm:text-base text-forest/80 max-w-2xl mx-auto">
-              {organization.accommodation.description}
+              {practicalData?.accommodation?.description || 'Accommodation details available upon inquiry'}
             </p>
           </div>
           
@@ -212,7 +220,7 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
           <div className="bg-gradient-to-br from-soft-cream via-warm-beige to-gentle-lemon/20 rounded-2xl overflow-hidden shadow-nature border border-beige/60">
             <div className="p-4 sm:p-6 lg:p-8">
               {/* Photo gallery takes full width */}
-              <AccommodationGallery photos={mockAccommodationPhotos} />
+              <AccommodationGallery photos={accommodationPhotos} />
               
               {/* Details flow below in single column */}
               <div className="mt-8 space-y-6">
@@ -220,7 +228,7 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
                 {/* Accommodation description */}
                 <div className="text-center">
                   <p className="text-forest leading-relaxed text-lg max-w-3xl mx-auto">
-                    {organization.accommodation.description}
+                    {practicalData?.accommodation?.description || 'Accommodation details available upon inquiry'}
                   </p>
                 </div>
                 
@@ -228,9 +236,9 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
                 <div className="bg-sage-green/5 rounded-lg p-4">
                   <h4 className="text-card-title text-sage-green mb-3 text-center">✨ Key Amenities</h4>
                   <div className="flex flex-wrap gap-2 justify-center">
-                    {organization.accommodation.amenities.map((amenity, index) => (
+                    {(practicalData?.amenities || []).map((amenity, index) => (
                       <span key={index} className="px-3 py-1 bg-white text-forest rounded-full text-sm border border-sage-green/20">
-                        {amenity}
+                        {amenity.amenity_name}
                       </span>
                     ))}
                   </div>
@@ -246,14 +254,14 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
                       <h4 className="text-card-title text-forest">Meals Included</h4>
                     </div>
                     <p className="text-forest/80 mb-4">
-                      {organization.meals.description}
+                      {practicalData?.meal_plan?.description || 'Meal details available upon inquiry'}
                     </p>
                     <div className="space-y-2">
                       <div className="text-sm font-medium text-forest">Dietary Options:</div>
                       <div className="flex flex-wrap gap-2">
-                        {organization.meals.dietaryOptions.map((option, index) => (
+                        {(practicalData?.dietary_options || []).map((option, index) => (
                           <span key={index} className="px-3 py-1 bg-rich-earth/10 text-rich-earth rounded-full text-sm">
-                            {option}
+                            {option.option_name}
                           </span>
                         ))}
                       </div>
@@ -302,21 +310,21 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
             <Calendar className="w-8 h-8 text-sage-green mx-auto mb-3" />
             <div className="font-semibold text-forest mb-2">Age Requirement</div>
             <div className="text-sage-green font-bold">
-              {organization.ageRequirement.min}+ years
-              {organization.ageRequirement.max && ` - ${organization.ageRequirement.max} years`}
+              {practicalData?.age_requirement?.min_age || 18}+ years
+              {practicalData?.age_requirement?.max_age && ` - ${practicalData?.age_requirement?.max_age} years`}
             </div>
           </div>
           <div className="bg-white rounded-xl p-4 text-center border border-rich-earth/20">
             <Heart className="w-8 h-8 text-rich-earth mx-auto mb-3" />
             <div className="font-semibold text-forest mb-2">Fitness Level</div>
-            <div className="text-rich-earth font-bold">Moderate</div>
-            <div className="text-xs text-forest/60 mt-1">Walking, lifting, outdoor work</div>
+            <div className="text-rich-earth font-bold">{fitnessRequirement?.skill_name || 'Moderate'}</div>
+            <div className="text-xs text-forest/60 mt-1">{fitnessRequirement?.skill_description || 'Walking, lifting, outdoor work'}</div>
           </div>
           <div className="bg-white rounded-xl p-4 text-center border border-warm-sunset/20">
             <MapPin className="w-8 h-8 text-warm-sunset mx-auto mb-3" />
             <div className="font-semibold text-forest mb-2">Languages</div>
             <div className="text-warm-sunset font-bold text-sm">
-              {organization.languages.join(', ')}
+              {(practicalData?.languages || []).map(lang => lang.language_name).join(', ') || 'English'}
             </div>
           </div>
         </div>
@@ -343,26 +351,26 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
           <div className="bg-gradient-to-br from-soft-cream via-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-6 lg:p-8 border border-warm-beige/40 shadow-nature">
             <div className="text-center">
               <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
-                organization.internetAccess.available ? 'bg-sage-green/20' : 'bg-gray-100'
+                practicalData?.internet_access?.available ? 'bg-sage-green/20' : 'bg-gray-100'
               }`}>
                 <Wifi className={`w-8 h-8 ${
-                  organization.internetAccess.available ? 'text-sage-green' : 'text-gray-400'
+                  practicalData?.internet_access?.available ? 'text-sage-green' : 'text-gray-400'
                 }`} />
               </div>
               
               <div className="mb-4">
                 <div className="text-lg font-semibold text-forest mb-2">
-                  {organization.internetAccess.available 
-                    ? `${organization.internetAccess.quality.charAt(0).toUpperCase() + organization.internetAccess.quality.slice(1)} WiFi Available` 
+                  {practicalData?.internet_access?.available 
+                    ? `${(practicalData?.internet_access?.quality || 'basic').charAt(0).toUpperCase() + (practicalData?.internet_access?.quality || 'basic').slice(1)} WiFi Available` 
                     : 'Limited Internet Access'
                   }
                 </div>
                 <p className="text-forest/80 leading-relaxed max-w-lg mx-auto">
-                  {organization.internetAccess.description}
+                  {practicalData?.internet_access?.description || 'Internet details available upon inquiry'}
                 </p>
               </div>
               
-              {organization.internetAccess.available && (
+              {practicalData?.internet_access?.available && (
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-sage-green/10 text-sage-green rounded-full text-sm font-medium">
                   <CheckCircle className="w-4 h-4" />
                   <span>Video calls and messaging supported</span>
@@ -397,9 +405,9 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
                 <DollarSign className="w-12 h-12 text-rich-earth mx-auto mb-3" />
                 <div className="text-sm font-medium text-forest/70 mb-2">Total Program Cost</div>
                 <div className="text-3xl font-bold text-rich-earth mb-2">
-                  {selectedProgram.cost.amount === 0 ? 'FREE' : `${selectedProgram.cost.currency}${selectedProgram.cost.amount}`}
+                  {practicalData?.primary_program?.cost_amount == 0 ? 'FREE' : `${practicalData?.primary_program?.cost_currency || '$'}${practicalData?.primary_program?.cost_amount || 'Contact'}`}
                 </div>
-                <div className="text-forest/70 font-medium text-sm">per {selectedProgram.cost.period}</div>
+                <div className="text-forest/70 font-medium text-sm">per {practicalData?.primary_program?.cost_period || 'week'}</div>
               </div>
               
               {/* What's Included & Not Included */}
@@ -412,10 +420,10 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
                     <h4 className="font-semibold text-forest">What's Included</h4>
                   </div>
                   <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-2">
-                    {selectedProgram.cost.includes.map((item, index) => (
+                    {(practicalData?.program_inclusions?.filter(item => item.inclusion_type === 'included') || []).map((item, index) => (
                       <div key={index} className="flex items-start gap-2">
                         <div className="w-1.5 h-1.5 bg-sage-green rounded-full flex-shrink-0 mt-2"></div>
-                        <span className="text-sm text-forest">{item}</span>
+                        <span className="text-sm text-forest">{item.item_name}</span>
                       </div>
                     ))}
                   </div>
@@ -428,10 +436,10 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
                     <h4 className="font-semibold text-forest">Additional Expenses</h4>
                   </div>
                   <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-2">
-                    {selectedProgram.cost.excludes.map((item, index) => (
+                    {(practicalData?.program_inclusions?.filter(item => item.inclusion_type === 'excluded') || []).map((item, index) => (
                       <div key={index} className="flex items-start gap-2">
                         <div className="w-1.5 h-1.5 border border-warm-sunset rounded-full flex-shrink-0 mt-2"></div>
-                        <span className="text-sm text-forest/80">{item}</span>
+                        <span className="text-sm text-forest/80">{item.item_name}</span>
                       </div>
                     ))}
                   </div>
@@ -469,7 +477,7 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
                     <h4 className="font-semibold text-forest">International Flights</h4>
                   </div>
                   <p className="text-sm text-forest/70 mb-3">
-                    To {organization.location.nearestAirport || organization.location.city}. Book 2-3 months ahead for better rates.
+                    To {practicalData?.transportation?.description?.includes('airport') ? 'the airport pickup location' : 'the nearest airport'}. Book 2-3 months ahead for better rates.
                   </p>
                   <button className="text-sm text-rich-earth hover:underline">
                     Flight search resources →
@@ -554,7 +562,7 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
           <div className="text-center">
             <h3 className="text-lg sm:text-xl text-forest mb-3">What to Bring</h3>
             <p className="text-sm sm:text-base text-forest/80 max-w-2xl mx-auto">
-              Essential items for conservation work and comfortable living in {organization.location.country}.
+              Essential items for conservation work and comfortable living in this destination.
             </p>
           </div>
           
@@ -625,11 +633,11 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
               </div>
               <h4 className="font-semibold text-forest mb-2">Complete Packing Guide</h4>
               <p className="text-sm text-forest/70 mb-4 max-w-lg mx-auto">
-                Get our comprehensive guide with detailed packing lists, climate info, and insider tips for {organization.location.country}.
+                Get our comprehensive guide with detailed packing lists, climate info, and insider tips for this destination.
               </p>
               <button 
                 onClick={() => {
-                  console.log('Download guide for:', organization.location.country);
+                  console.log('Download guide for: this destination');
                   alert('Comprehensive packing guide coming soon! We\'ll notify you when it\'s available.');
                 }}
                 className="inline-flex items-center gap-2 text-sm text-golden-hour hover:text-white hover:bg-golden-hour font-medium bg-golden-hour/10 px-4 py-2 rounded-lg transition-colors"
@@ -660,10 +668,15 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
           
           <div className="bg-gradient-to-br from-soft-cream via-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-6 lg:p-8 border border-warm-beige/40 shadow-nature">
             <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-4">
-              {selectedProgram.requirements.map((req, index) => (
+              {(practicalData?.health_requirements || []).map((req, index) => (
                 <div key={index} className="flex items-start gap-3 p-4 bg-white rounded-xl border border-sage-green/20">
                   <CheckCircle className="w-5 h-5 text-sage-green flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-forest">{req}</span>
+                  <div className="text-sm text-forest">
+                    <div className="font-medium">{req.requirement_name}</div>
+                    {req.requirement_description && (
+                      <div className="text-xs text-forest/70 mt-1">{req.requirement_description}</div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

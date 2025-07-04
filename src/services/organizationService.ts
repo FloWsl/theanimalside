@@ -40,20 +40,77 @@ export class OrganizationService {
   }
 
   /**
+   * Get basic organization information by ID
+   * Used for: Internal service methods that work with UUIDs
+   */
+  static async getBasicInfoById(organizationId: string): Promise<Organization> {
+    const { data, error } = await supabase
+      .from('organizations')
+      .select('*')
+      .eq('id', organizationId)
+      .eq('status', 'active')
+      .single();
+
+    if (error) handleSupabaseError(error);
+    return data;
+  }
+
+  /**
+   * Get organization by slug (alias for getBasicInfo for compatibility)
+   * Used for: FlatOrganizationPage routing compatibility
+   */
+  static async getOrganizationBySlug(slug: string): Promise<Organization | null> {
+    try {
+      return await this.getBasicInfo(slug);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Check if organization slug exists and is valid
+   * Used for: Route validation
+   */
+  static async isValidOrganizationSlug(slug: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('organizations')
+      .select('slug')
+      .eq('slug', slug)
+      .eq('status', 'active')
+      .single();
+
+    return !error && !!data;
+  }
+
+  /**
    * Get complete overview data for a tab
    * Used for: OverviewTab component
    */
   static async getOverview(organizationId: string): Promise<OrganizationOverview> {
-    const [organization, primaryProgram, featuredPhotos, statistics] = await Promise.all([
-      this.getBasicInfo(organizationId),
+    const [organization, primaryProgram, featuredPhotos, statistics, animalTypes] = await Promise.all([
+      this.getBasicInfoById(organizationId),
       this.getPrimaryProgram(organizationId),
       this.getFeaturedPhotos(organizationId),
-      this.getStatistics(organizationId)
+      this.getStatistics(organizationId),
+      this.getAnimalTypes(organizationId)
     ]);
 
     return {
-      organization,
-      primary_program: primaryProgram,
+      organization: {
+        ...organization,
+        animal_types: animalTypes.map(at => at.animal_type)
+      },
+      primary_program: {
+        ...primaryProgram,
+        duration: {
+          min: primaryProgram.duration_min_weeks,
+          max: primaryProgram.duration_max_weeks
+        },
+        cost: {
+          amount: primaryProgram.cost_amount ? parseFloat(primaryProgram.cost_amount.toString()) : 0,
+          currency: primaryProgram.cost_currency || 'USD'
+        }
+      },
       featured_photos: featuredPhotos,
       statistics
     };
@@ -115,7 +172,10 @@ export class OrganizationService {
       ageRequirement,
       skillRequirements,
       healthRequirements,
-      languages
+      languages,
+      primaryProgram,
+      programInclusions,
+      accommodationMedia
     ] = await Promise.all([
       this.getAccommodation(organizationId),
       this.getMealPlan(organizationId),
@@ -124,12 +184,16 @@ export class OrganizationService {
       this.getAgeRequirement(organizationId),
       this.getSkillRequirements(organizationId),
       this.getHealthRequirements(organizationId),
-      this.getLanguages(organizationId)
+      this.getLanguages(organizationId),
+      this.getPrimaryProgram(organizationId),
+      this.getProgramInclusions(organizationId),
+      this.getAccommodationMedia(organizationId)
     ]);
 
     return {
       accommodation: accommodation.accommodation,
       amenities: accommodation.amenities,
+      accommodation_media: accommodationMedia,
       meal_plan: mealPlan.mealPlan,
       dietary_options: mealPlan.dietaryOptions,
       transportation,
@@ -137,7 +201,9 @@ export class OrganizationService {
       age_requirement: ageRequirement,
       skill_requirements: skillRequirements,
       health_requirements: healthRequirements,
-      languages
+      languages,
+      primary_program: primaryProgram,
+      program_inclusions: programInclusions
     };
   }
 
@@ -146,10 +212,13 @@ export class OrganizationService {
    * Used for: LocationTab component
    */
   static async getLocation(organizationId: string): Promise<OrganizationLocation> {
-    const [organization, transportation, activities] = await Promise.all([
-      this.getBasicInfo(organizationId),
+    const [organization, transportation, activities, programHighlights, languages, primaryProgram] = await Promise.all([
+      this.getBasicInfoById(organizationId),
       this.getTransportation(organizationId),
-      this.getActivities(organizationId)
+      this.getActivities(organizationId),
+      this.getProgramHighlights(organizationId),
+      this.getLanguages(organizationId),
+      this.getPrimaryProgram(organizationId)
     ]);
 
     return {
@@ -164,7 +233,14 @@ export class OrganizationService {
         nearest_airport: organization.nearest_airport
       },
       transportation,
-      activities
+      activities,
+      program_highlights: programHighlights,
+      languages,
+      primary_program: {
+        id: primaryProgram.id,
+        title: primaryProgram.title,
+        days_per_week: primaryProgram.days_per_week
+      }
     };
   }
 
@@ -203,7 +279,7 @@ export class OrganizationService {
       keyRequirements,
       languages
     ] = await Promise.all([
-      this.getBasicInfo(organizationId),
+      this.getBasicInfoById(organizationId),
       this.getPrimaryProgram(organizationId),
       this.getAccommodation(organizationId),
       this.getMealPlan(organizationId),
@@ -415,11 +491,66 @@ export class OrganizationService {
   }
 
   /**
+   * Get program inclusions and exclusions
+   */
+  private static async getProgramInclusions(organizationId: string) {
+    const { data: program } = await supabase
+      .from('programs')
+      .select('id')
+      .eq('organization_id', organizationId)
+      .eq('is_primary', true)
+      .single();
+
+    if (!program) return [];
+
+    const { data, error } = await supabase
+      .from('program_inclusions')
+      .select('*')
+      .eq('program_id', program.id)
+      .order('order_index');
+
+    if (error) handleSupabaseError(error);
+    return data || [];
+  }
+
+  /**
+   * Get accommodation media items
+   */
+  private static async getAccommodationMedia(organizationId: string) {
+    const { data, error } = await supabase
+      .from('media_items')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .eq('category', 'accommodation')
+      .order('order_index');
+
+    if (error) handleSupabaseError(error);
+    return data || [];
+  }
+
+  /**
    * Get program activities
    */
   private static async getActivities(organizationId: string) {
     const { data, error } = await supabase
       .from('program_activities')
+      .select(`
+        *,
+        programs!inner(organization_id)
+      `)
+      .eq('programs.organization_id', organizationId)
+      .order('order_index');
+
+    if (error) handleSupabaseError(error);
+    return data || [];
+  }
+
+  /**
+   * Get program highlights for location tab
+   */
+  private static async getProgramHighlights(organizationId: string) {
+    const { data, error } = await supabase
+      .from('program_highlights')
       .select(`
         *,
         programs!inner(organization_id)
@@ -443,6 +574,20 @@ export class OrganizationService {
 
     if (error) handleSupabaseError(error);
     return data;
+  }
+
+  /**
+   * Get animal types for organization
+   */
+  private static async getAnimalTypes(organizationId: string) {
+    const { data, error } = await supabase
+      .from('animal_types')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .order('order_index');
+
+    if (error) handleSupabaseError(error);
+    return data || [];
   }
 
   // ==================== TESTIMONIALS & REVIEWS ====================
@@ -563,6 +708,61 @@ export class OrganizationService {
   ): Promise<PaginatedResponse<Organization>> {
     const { from, to } = getPaginationRange(pagination.page, pagination.limit);
 
+    // If animal types filter is provided, we need to join with animal_types table
+    if (filters.animal_types && filters.animal_types.length > 0) {
+      
+      let query = supabase
+        .from('organizations')
+        .select(`
+          *,
+          animal_types!inner(animal_type)
+        `, { count: 'exact' })
+        .eq('status', 'active')
+        .in('animal_types.animal_type', filters.animal_types)
+        .range(from, to)
+        .order('featured', { ascending: false })
+        .order('name');
+
+      if (filters.country) {
+        query = query.eq('country', filters.country);
+      }
+
+      if (filters.region) {
+        query = query.eq('region', filters.region);
+      }
+
+      if (filters.verified_only) {
+        query = query.eq('verified', true);
+      }
+
+      if (filters.featured_only) {
+        query = query.eq('featured', true);
+      }
+
+      const { data, error, count } = await query;
+
+      if (error) handleSupabaseError(error);
+
+      // Remove duplicates if an organization has multiple matching animal types
+      const uniqueOrganizations = data?.reduce((acc: Organization[], org: any) => {
+        if (!acc.find(existing => existing.id === org.id)) {
+          // Remove the nested animal_types data for clean return
+          const { animal_types, ...cleanOrg } = org;
+          acc.push(cleanOrg);
+        }
+        return acc;
+      }, []) || [];
+
+      return {
+        data: uniqueOrganizations,
+        count: count || 0,
+        page: pagination.page,
+        limit: pagination.limit,
+        has_more: (count || 0) > to + 1
+      };
+    }
+
+    // Default query without animal filtering
     let query = supabase
       .from('organization_overview')
       .select('*', { count: 'exact' })

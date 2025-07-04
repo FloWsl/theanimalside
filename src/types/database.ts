@@ -7,33 +7,33 @@ export interface Organization {
   id: string;
   name: string;
   slug: string;
-  tagline: string;
-  mission: string;
+  tagline: string | null;
+  mission: string | null;
   
   // Identity & Credibility
-  logo: string;
-  hero_image: string;
-  website: string;
+  logo: string | null;
+  hero_image: string | null;
+  website: string | null;
   email: string;
-  phone?: string;
-  year_founded: number;
-  verified: boolean;
+  phone?: string | null;
+  year_founded: number | null;
+  verified: boolean | null;
   
   // Location (denormalized for performance)
   country: string;
-  region: string;
-  city: string;
-  address?: string;
-  coordinates: [number, number]; // PostGIS POINT
-  timezone: string;
-  nearest_airport?: string;
+  region: string | null;
+  city: string | null;
+  address?: string | null;
+  coordinates: unknown | null; // PostGIS POINT - matches Supabase generated types
+  timezone: string | null;
+  nearest_airport?: string | null;
   
   // Meta
-  status: 'active' | 'inactive' | 'seasonal';
-  featured: boolean;
-  last_updated: string;
-  created_at: string;
-  updated_at: string;
+  status: string | null; // More flexible than enum for database compatibility
+  featured: boolean | null;
+  last_updated: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface OrganizationCertification {
@@ -549,6 +549,7 @@ export interface OrganizationExperience {
 export interface OrganizationPractical {
   accommodation: Accommodation;
   amenities: AccommodationAmenity[];
+  accommodation_media: MediaItem[];
   meal_plan: MealPlan;
   dietary_options: DietaryOption[];
   transportation: Transportation;
@@ -557,13 +558,18 @@ export interface OrganizationPractical {
   skill_requirements: SkillRequirement[];
   health_requirements: HealthRequirement[];
   languages: Language[];
+  primary_program: Program;
+  program_inclusions: ProgramInclusion[];
 }
 
-// For Location Tab - Location + activities
+// For Location Tab - Location + activities + highlights + languages
 export interface OrganizationLocation {
   organization: Pick<Organization, 'id' | 'name' | 'country' | 'region' | 'city' | 'coordinates' | 'timezone' | 'nearest_airport'>;
   transportation: Transportation;
   activities: ProgramActivity[];
+  program_highlights: ProgramHighlight[];
+  languages: Language[];
+  primary_program: Pick<Program, 'id' | 'title' | 'days_per_week'>;
 }
 
 // For Stories Tab - Testimonials + statistics

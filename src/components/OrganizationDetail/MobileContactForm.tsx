@@ -2,12 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Mail, 
-  Phone, 
   User, 
   Calendar, 
-  MapPin, 
-  MessageSquare, 
   ChevronRight,
   ChevronLeft,
   Heart,
@@ -16,13 +12,14 @@ import {
   AlertCircle,
   Info
 } from 'lucide-react';
-import { OrganizationDetail, ContactForm } from '../../types';
+import { useOrganizationEssentials } from '../../hooks/useOrganizationData';
+import type { ContactForm } from '../../types';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardHeader } from '../ui/card';
 
 interface MobileContactFormProps {
-  organization: OrganizationDetail;
+  organizationId: string;
   onSuccess?: () => void;
   onBack?: () => void;
 }
@@ -38,10 +35,14 @@ interface FormData extends Partial<ContactForm> {
 }
 
 const MobileContactForm: React.FC<MobileContactFormProps> = ({ 
-  organization, 
+  organizationId, 
   onSuccess,
   onBack 
 }) => {
+  // Fetch organization essentials for form data
+  const { data: essentials, isLoading } = useOrganizationEssentials(organizationId);
+  const organization = essentials?.organization;
+  const primaryProgram = essentials?.primary_program;
   const [currentStep, setCurrentStep] = useState<FormStep>('interest');
   const [formData, setFormData] = useState<FormData>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -49,21 +50,35 @@ const MobileContactForm: React.FC<MobileContactFormProps> = ({
 
   // Auto-save functionality
   useEffect(() => {
+    if (!organization?.id) return;
     const savedData = localStorage.getItem(`form-${organization.id}`);
     if (savedData) {
       try {
         setFormData(JSON.parse(savedData));
-      } catch (e) {
+      } catch {
         console.warn('Failed to load saved form data');
       }
     }
-  }, [organization.id]);
+  }, [organization?.id]);
 
   useEffect(() => {
-    if (Object.keys(formData).length > 0) {
+    if (Object.keys(formData).length > 0 && organization?.id) {
       localStorage.setItem(`form-${organization.id}`, JSON.stringify(formData));
     }
-  }, [formData, organization.id]);
+  }, [formData, organization?.id]);
+
+  // Show loading state
+  if (isLoading || !organization) {
+    return (
+      <Card className="w-full max-w-2xl mx-auto bg-white shadow-nature-xl border border-beige/60">
+        <CardContent className="p-6">
+          <div className="text-center py-8">
+            <div className="text-lg text-forest/60">Loading contact form...</div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const updateFormData = (updates: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
@@ -130,11 +145,13 @@ const MobileContactForm: React.FC<MobileContactFormProps> = ({
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Clear saved form data
-      localStorage.removeItem(`form-${organization.id}`);
+      if (organization?.id) {
+        localStorage.removeItem(`form-${organization.id}`);
+      }
       
       setCurrentStep('success');
       if (onSuccess) onSuccess();
-    } catch (error) {
+    } catch {
       setErrors({ submit: 'Failed to submit application. Please try again.' });
     } finally {
       setIsSubmitting(false);
@@ -159,7 +176,7 @@ const MobileContactForm: React.FC<MobileContactFormProps> = ({
         </div>
         <h3 className="text-feature text-deep-forest">Express Your Interest</h3>
         <p className="text-body text-forest/80 max-w-md mx-auto">
-          Choose how you'd like to connect with {organization.name}
+          Choose how you'd like to connect with {organization?.name || 'this organization'}
         </p>
       </div>
 
@@ -251,13 +268,13 @@ const MobileContactForm: React.FC<MobileContactFormProps> = ({
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-gradient-to-br from-sage-green/5 to-sage-green/10 rounded-2xl p-4 text-center">
           <div className="text-2xl font-bold text-sage-green mb-1">
-            {organization.programs[0].cost.amount === 0 ? 'FREE' : `${organization.programs[0].cost.currency} ${organization.programs[0].cost.amount}`}
+            {primaryProgram?.fee_amount === 0 ? 'FREE' : `${primaryProgram?.fee_currency || 'USD'} ${primaryProgram?.fee_amount || 'TBD'}`}
           </div>
-          <div className="text-sm text-deep-forest/70">per {organization.programs[0].cost.period}</div>
+          <div className="text-sm text-deep-forest/70">per {primaryProgram?.fee_period || 'program'}</div>
         </div>
         <div className="bg-gradient-to-br from-warm-sunset/5 to-warm-sunset/10 rounded-2xl p-4 text-center">
           <div className="text-2xl font-bold text-warm-sunset mb-1">
-            {organization.programs[0].duration.min}-{organization.programs[0].duration.max || '∞'}
+            {primaryProgram?.duration_weeks_min || 1}-{primaryProgram?.duration_weeks_max || '∞'}
           </div>
           <div className="text-sm text-deep-forest/70">weeks duration</div>
         </div>
@@ -267,7 +284,7 @@ const MobileContactForm: React.FC<MobileContactFormProps> = ({
       <div className="bg-gradient-to-br from-gentle-lemon/5 to-soft-cream rounded-2xl p-6 border border-golden-hour/20">
         <h4 className="text-lg font-semibold text-deep-forest mb-4">What's Included</h4>
         <div className="space-y-2">
-          {organization.programs[0].cost.includes.slice(0, 4).map((item, index) => (
+          {(primaryProgram?.fee_includes || ['Accommodation', 'Meals', 'Local Transport', 'Project Activities']).slice(0, 4).map((item, index) => (
             <div key={index} className="flex items-center gap-3">
               <CheckCircle className="w-4 h-4 text-sage-green flex-shrink-0" />
               <span className="text-sm text-deep-forest">{item}</span>
@@ -282,11 +299,11 @@ const MobileContactForm: React.FC<MobileContactFormProps> = ({
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 bg-rich-earth rounded-full flex-shrink-0"></div>
-            <span className="text-sm text-deep-forest">Age {organization.ageRequirement.min}+ years</span>
+            <span className="text-sm text-deep-forest">Age {primaryProgram?.age_requirement_min || 18}+ years</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 bg-rich-earth rounded-full flex-shrink-0"></div>
-            <span className="text-sm text-deep-forest">Basic {organization.languages[0]} communication</span>
+            <span className="text-sm text-deep-forest">Basic {organization?.primary_language || 'English'} communication</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 bg-rich-earth rounded-full flex-shrink-0"></div>
@@ -564,7 +581,7 @@ const MobileContactForm: React.FC<MobileContactFormProps> = ({
       <div className="space-y-4">
         <h3 className="text-feature text-deep-forest">Application Submitted!</h3>
         <p className="text-body text-forest/80 max-w-md mx-auto">
-          Thank you for your interest in {organization.name}. We'll be in touch within {organization.applicationProcess.processingTime}.
+          Thank you for your interest in {organization?.name}. We'll be in touch within {primaryProgram?.application_processing_time || '2-3 business days'}.
         </p>
       </div>
 

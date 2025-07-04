@@ -1,7 +1,7 @@
 // src/components/OrganizationDetail/RatingOverview.tsx
 import React from 'react';
 import { Star, Users, ThumbsUp, TrendingUp, Award } from 'lucide-react';
-import { OrganizationTestimonial } from '../../types';
+import { Testimonial } from '../../types/database';
 import { 
   calculateAverageRating, 
   calculateRecommendationRate,
@@ -10,7 +10,7 @@ import {
 } from '../../lib/rating-utils';
 
 interface RatingOverviewProps {
-  testimonials: OrganizationTestimonial[];
+  testimonials: Testimonial[];
   organizationName: string;
   totalVolunteersHosted?: number;
 }
@@ -28,6 +28,7 @@ const RatingOverview: React.FC<RatingOverviewProps> = ({
   
   // Extract most mentioned positive themes from testimonials
   const getMostMentionedThemes = () => {
+    if (!testimonials || !Array.isArray(testimonials)) return [];
     const themes = testimonials.reduce((acc, testimonial) => {
       const quote = testimonial.quote.toLowerCase();
       

@@ -2,8 +2,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { getOrganizationBySlug } from '../../data/organizationDetails';
-import { OrganizationDetail as OrganizationDetailType, Program } from '../../types';
+import { useQuery } from '@tanstack/react-query';
+import { OrganizationService } from '../../services/organizationService';
+import type { Organization, Program } from '../../types/database';
 
 // Import tab system components
 import TabNavigation, { TabId } from './TabNavigation';
@@ -102,13 +103,54 @@ const OrganizationDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const breadcrumbs = useBreadcrumbs();
   
-  // Get organization data by slug
-  const organization: OrganizationDetailType | undefined = slug ? getOrganizationBySlug(slug) : undefined;
+  // Query organization data by slug
+  const { data: organization, isLoading, error } = useQuery({
+    queryKey: ['organization', slug],
+    queryFn: () => OrganizationService.getOrganizationBySlug(slug!),
+    enabled: !!slug,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Query primary program for the organization
+  const { data: primaryProgram } = useQuery({
+    queryKey: ['organization-primary-program', organization?.id],
+    queryFn: async () => {
+      if (!organization?.id) return null;
+      const overview = await OrganizationService.getOverview(organization.id);
+      return overview.primary_program;
+    },
+    enabled: !!organization?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Query all programs for the organization (for ProgramSelector)
+  const { data: allPrograms = [] } = useQuery({
+    queryKey: ['organization-all-programs', organization?.id],
+    queryFn: async () => {
+      if (!organization?.id) return [];
+      const experience = await OrganizationService.getExperience(organization.id);
+      return experience.programs;
+    },
+    enabled: !!organization?.id,
+    staleTime: 10 * 60 * 1000, // Programs change less frequently
+  });
   
-  // State for selected program (defaults to first program)
-  const [selectedProgram, setSelectedProgram] = useState<Program | null>(
-    organization?.programs[0] || null
-  );
+  // State for selected program (defaults to primary program)
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  
+  // Update selected program when programs load
+  useEffect(() => {
+    if (allPrograms.length > 0 && !selectedProgram) {
+      // Find primary program in the list, or default to first program
+      const primary = allPrograms.find(p => p.is_primary) || allPrograms[0];
+      setSelectedProgram(primary);
+    }
+  }, [allPrograms, selectedProgram]);
+
+  // Program change handler
+  const handleProgramChange = (program: Program) => {
+    setSelectedProgram(program);
+  };
   
   // Enhanced cross-device state management
   const {
@@ -198,12 +240,7 @@ const OrganizationDetail: React.FC = () => {
   
   const performanceConfig = usePerformanceOptimization();
 
-  // Update selected program when organization changes
-  React.useEffect(() => {
-    if (organization && !selectedProgram) {
-      setSelectedProgram(organization.programs[0]);
-    }
-  }, [organization, selectedProgram]);
+  // Update selected program when primary program changes
   
   // Enhanced content rendering with desktop optimization
   const renderOptimizedTabContent = () => {
@@ -219,18 +256,17 @@ const OrganizationDetail: React.FC = () => {
       case 'overview':
         return (
           <OverviewTab 
-            {...commonProps}
+            organizationId={organization.id}
             hideDuplicateInfo={isDesktop}
             onTabChange={handleTabChange}
           />
         );
       case 'experience':
-        return <ExperienceTab {...commonProps} onTabChange={handleTabChange} />;
+        return <ExperienceTab organizationId={organization.id} onTabChange={handleTabChange} />;
       case 'practical':
         return (
           <PracticalTab 
-            {...commonProps}
-            selectedProgram={selectedProgram}
+            organizationId={organization.id}
             hideDuplicateInfo={isDesktop}
             onTabChange={handleTabChange}
           />
@@ -238,17 +274,17 @@ const OrganizationDetail: React.FC = () => {
       case 'location':
         return (
           <LocationTab 
-            {...commonProps}
+            organizationId={organization.id}
             hideDuplicateInfo={isDesktop}
             onTabChange={handleTabChange}
           />
         );
       case 'stories':
-        return <StoriesTab {...commonProps} />;
+        return <StoriesTab organizationId={organization.id} />;
       case 'connect':
-        return <ConnectTab {...commonProps} />;
+        return <ConnectTab organizationId={organization.id} />;
       default:
-        return <OverviewTab {...commonProps} hideDuplicateInfo={isDesktop} onTabChange={handleTabChange} />;
+        return <OverviewTab organizationId={organization.id} hideDuplicateInfo={isDesktop} onTabChange={handleTabChange} />;
     }
   };
   
@@ -314,13 +350,15 @@ const OrganizationDetail: React.FC = () => {
               </div>
               
               {/* Continue Your Discovery Section - Below tab content, within left column */}
-              <div className="mt-12 pt-8 border-t border-warm-beige/30">
-                <SmartNavigation
-                  organization={organization}
-                  currentTab={activeTab}
-                  variant="inline"
-                />
-              </div>
+              {organization && (
+                <div className="mt-12 pt-8 border-t border-warm-beige/30">
+                  <SmartNavigation
+                    organization={organization}
+                    currentTab={activeTab}
+                    variant="inline"
+                  />
+                </div>
+              )}
             </main>
           </div>
           
@@ -333,30 +371,32 @@ const OrganizationDetail: React.FC = () => {
             }`}
           >
             {/* Conditionally wrap sidebar in Suspense for performance */}
-            {performanceConfig.lazyLoad ? (
-              <React.Suspense 
-                fallback={
-                  <div className="animate-pulse space-y-4">
-                    <div className="h-20 bg-beige/40 rounded-xl" />
-                    <div className="h-32 bg-beige/40 rounded-xl" />
-                    <div className="h-24 bg-beige/40 rounded-xl" />
-                  </div>
-                }
-              >
+            {organization && selectedProgram && (
+              performanceConfig.lazyLoad ? (
+                <React.Suspense 
+                  fallback={
+                    <div className="animate-pulse space-y-4">
+                      <div className="h-20 bg-beige/40 rounded-xl" />
+                      <div className="h-32 bg-beige/40 rounded-xl" />
+                      <div className="h-24 bg-beige/40 rounded-xl" />
+                    </div>
+                  }
+                >
+                  <EssentialInfoSidebar 
+                    organizationId={organization.id}
+                    selectedProgramId={selectedProgram?.id}
+                    isDesktop={isDesktop}
+                    className="lg:space-y-4"
+                  />
+                </React.Suspense>
+              ) : (
                 <EssentialInfoSidebar 
-                  organization={organization} 
-                  selectedProgram={selectedProgram}
+                  organizationId={organization.id}
+                  selectedProgramId={selectedProgram?.id}
                   isDesktop={isDesktop}
                   className="lg:space-y-4"
                 />
-              </React.Suspense>
-            ) : (
-              <EssentialInfoSidebar 
-                organization={organization} 
-                selectedProgram={selectedProgram}
-                isDesktop={isDesktop}
-                className="lg:space-y-4"
-              />
+              )
             )}
           </aside>
         </div>
@@ -379,13 +419,15 @@ const OrganizationDetail: React.FC = () => {
         {renderOptimizedTabContent()}
         
         {/* Continue Your Discovery Section - Below tab content on mobile */}
-        <div className="mt-12 pt-8 border-t border-warm-beige/30">
-          <SmartNavigation
-            organization={organization}
-            currentTab={activeTab}
-            variant="inline"
-          />
-        </div>
+        {organization && (
+          <div className="mt-12 pt-8 border-t border-warm-beige/30">
+            <SmartNavigation
+              organization={organization}
+              currentTab={activeTab}
+              variant="inline"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -402,14 +444,51 @@ const OrganizationDetail: React.FC = () => {
     );
   }
   
-  if (!organization) {
+  // Loading state
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-section text-forest">Loading...</h1>
-          <p className="text-body text-forest/70">Fetching organization details...</p>
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-soft-cream">
+          <div className="text-center">
+            <div className="w-8 h-8 border-3 border-sage-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-forest/70 text-sm">Loading organization...</p>
+          </div>
         </div>
-      </div>
+      </Layout>
+    );
+  }
+
+  // Error handling - show 404 if organization not found
+  if (error || !organization) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-soft-cream flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto px-6">
+            <div className="text-6xl mb-6">🔍</div>
+            <h1 className="text-hero text-deep-forest mb-4">
+              Organization Not Found
+            </h1>
+            <p className="text-body text-forest/80 mb-8">
+              We couldn't find an organization with the slug "{slug}". 
+              It may have been moved or the URL might be incorrect.
+            </p>
+            <div className="space-y-4">
+              <a 
+                href="/opportunities"
+                className="inline-block w-full px-6 py-3 bg-rich-earth text-white rounded-lg hover:bg-deep-earth transition-colors font-medium"
+              >
+                Browse All Organizations
+              </a>
+              <a 
+                href="/"
+                className="inline-block w-full px-6 py-3 border-2 border-rich-earth text-rich-earth rounded-lg hover:bg-rich-earth hover:text-white transition-colors font-medium"
+              >
+                Return to Home
+              </a>
+            </div>
+          </div>
+        </div>
+      </Layout>
     );
   }
 
@@ -431,20 +510,19 @@ const OrganizationDetail: React.FC = () => {
         <title>{organization.name} | Wildlife Volunteer Program | The Animal Side</title>
         <meta 
           name="description" 
-          content={`${organization.tagline} - ${organization.mission.slice(0, 160)}...`} 
+          content={organization.tagline ? `${organization.tagline} - ${organization.mission?.slice(0, 160) || 'Wildlife conservation volunteer opportunities'}...` : 'Wildlife conservation volunteer opportunities'} 
         />
-        <meta name="keywords" content={organization.tags.join(', ')} />
         <meta property="og:title" content={`${organization.name} | Wildlife Volunteer Program`} />
-        <meta property="og:description" content={organization.tagline} />
-        <meta property="og:image" content={organization.heroImage} />
+        <meta property="og:description" content={organization.tagline || 'Wildlife conservation volunteer opportunities'} />
+        <meta property="og:image" content={organization.hero_image || '/images/default-wildlife.jpg'} />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href={`https://theanimalside.com/organization/${organization.slug}`} />
+        <link rel="canonical" href={`https://theanimalside.com/${organization.slug}`} />
       </Helmet>
 
       {/* Main Container */}
       <div className="min-h-screen bg-cream">
         {/* Organization Header */}
-        <OrganizationHeader organization={organization} />
+        {organization && <OrganizationHeader organization={organization} />}
         
         {/* Breadcrumb Navigation - Top of page */}
         <div className="bg-soft-cream/80 backdrop-blur-sm border-b border-warm-beige/30">
@@ -460,14 +538,12 @@ const OrganizationDetail: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4">
             
             {/* Program Selector (only shows if multiple programs) */}
-            {organization.programs.length > 1 && (
-              <div className="mb-8">
-                <ProgramSelector 
-                  programs={organization.programs}
-                  selectedProgram={selectedProgram}
-                  onProgramChange={setSelectedProgram}
-                />
-              </div>
+            {allPrograms.length > 1 && selectedProgram && (
+              <ProgramSelector
+                programs={allPrograms}
+                selectedProgram={selectedProgram}
+                onProgramChange={handleProgramChange}
+              />
             )}
             
             {/* Responsive Layout - Desktop two-column + Mobile tabs */}

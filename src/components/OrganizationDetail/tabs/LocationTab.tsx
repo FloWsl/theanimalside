@@ -14,18 +14,50 @@ import {
   Cloud,
   CheckCircle
 } from 'lucide-react';
-import { OrganizationDetail } from '../../../types';
+import { useOrganizationLocation } from '../../../hooks/useOrganizationData';
 import SharedTabSection from '../SharedTabSection';
 import { scrollToTabContent } from '../../../lib/scrollUtils';
 
 interface LocationTabProps {
-  organization: OrganizationDetail;
+  organizationId: string;
   onTabChange?: (tabId: string) => void;
   hideDuplicateInfo?: boolean;
 }
 
-const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hideDuplicateInfo = false }) => {
-  const program = organization.programs[0]; // Main program for activities
+const LocationTab: React.FC<LocationTabProps> = ({ organizationId, onTabChange, hideDuplicateInfo = false }) => {
+  // Database integration - fetch location data
+  const { data: locationData, isLoading, error } = useOrganizationLocation(organizationId);
+  
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-none space-y-6 lg:space-y-8">
+        <div className="text-center py-8">
+          <div className="text-lg text-forest/60">Loading location information...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !locationData) {
+    return (
+      <div className="w-full max-w-none space-y-6 lg:space-y-8">
+        <div className="text-center py-8">
+          <div className="text-lg text-red-600 mb-4">Unable to load location information</div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="text-rich-earth hover:text-deep-forest underline"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Use database data
+  const { organization: org, transportation, program_highlights, languages, primary_program } = locationData;
 
   return (
     <div className="w-full max-w-none space-y-6 lg:space-y-8">
@@ -38,11 +70,11 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
       >
         <div className="text-center max-w-3xl mx-auto px-4">
           <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-deep-forest mb-3 sm:mb-4">
-            {organization.location.city}, {organization.location.region}
+            {org.city}, {org.region}
           </div>
-          <div className="text-lg sm:text-xl text-forest/80 mb-4 sm:mb-6">{organization.location.country}</div>
+          <div className="text-lg sm:text-xl text-forest/80 mb-4 sm:mb-6">{org.country}</div>
           <p className="text-base sm:text-lg text-forest/90 leading-relaxed">
-            Discover the incredible {organization.location.region} region where your conservation work will make a lasting impact on local wildlife and communities.
+            Discover the incredible {org.region} area where your conservation work will make a lasting impact on local wildlife and communities.
           </p>
         </div>
       </SharedTabSection>
@@ -60,7 +92,7 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
           <div className="text-center px-4">
             <h3 className="text-lg sm:text-xl lg:text-2xl text-deep-forest mb-3">Your Journey Begins Here</h3>
             <p className="text-base sm:text-lg text-forest/80 leading-relaxed max-w-2xl mx-auto">
-              Complete travel guide to help you reach {organization.location.city} and start your conservation journey with confidence.
+              Complete travel guide to help you reach {org.city} and start your conservation journey with confidence.
             </p>
           </div>
 
@@ -76,7 +108,7 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-warm-sunset/20 rounded-xl flex items-center justify-center flex-shrink-0">
                     <Plane className="w-5 h-5 sm:w-6 sm:h-6 text-warm-sunset" />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-deep-forest">Travel to {organization.location.city}</h3>
+                  <h3 className="text-lg sm:text-xl font-semibold text-deep-forest">Travel to {org.city}</h3>
                 </div>
 
                 {/* Airport Details */}
@@ -88,7 +120,7 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-forest mb-2 text-sm sm:text-base">Nearest International Airport</h4>
-                        <p className="text-sm sm:text-base text-forest/80 leading-relaxed">{organization.location.nearestAirport}</p>
+                        <p className="text-sm sm:text-base text-forest/80 leading-relaxed">{org.nearest_airport || 'Contact for airport details'}</p>
                       </div>
                     </div>
                     
@@ -96,7 +128,7 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
                     <div className="flex items-center justify-center sm:justify-start">
                       <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-warm-sunset/10 text-warm-sunset rounded-lg sm:rounded-full text-xs sm:text-sm font-medium">
                         <MapPin className="w-3 h-3 flex-shrink-0" />
-                        <span className="text-center sm:text-left">Primary gateway to {organization.location.region}</span>
+                        <span className="text-center sm:text-left">Primary gateway to {org.region}</span>
                       </div>
                     </div>
                   </div>
@@ -109,25 +141,25 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
                     Transportation Services
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 text-center ${organization.transportation.airportPickup
+                    <div className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 text-center ${transportation.airport_pickup
                       ? 'border-sage-green bg-sage-green/5 text-sage-green hover:bg-sage-green/10'
                       : 'border-gray-200 bg-gray-50 text-gray-400'
                       }`}>
                       <Car className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2 sm:mb-3" />
                       <div className="font-semibold mb-1 text-xs sm:text-sm">Airport Pickup</div>
                       <div className="text-xs sm:text-sm">
-                        {organization.transportation.airportPickup ? 'Included' : 'Arrange separately'}
+                        {transportation.airport_pickup ? 'Included' : 'Arrange separately'}
                       </div>
                     </div>
 
-                    <div className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 text-center ${organization.transportation.localTransport
+                    <div className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 text-center ${transportation.local_transport
                       ? 'border-sage-green bg-sage-green/5 text-sage-green hover:bg-sage-green/10'
                       : 'border-gray-200 bg-gray-50 text-gray-400'
                       }`}>
                       <Car className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2 sm:mb-3" />
                       <div className="font-semibold mb-1 text-xs sm:text-sm">Local Transport</div>
                       <div className="text-xs sm:text-sm">
-                        {organization.transportation.localTransport ? 'Available' : 'Walking distance'}
+                        {transportation.local_transport ? 'Available' : 'Walking distance'}
                       </div>
                     </div>
                   </div>
@@ -166,7 +198,7 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
                       <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-golden-hour flex-shrink-0" />
                       <span className="font-medium text-forest text-xs sm:text-sm">Time Zone</span>
                     </div>
-                    <div className="text-xs sm:text-sm text-forest/70">{organization.location.timezone}</div>
+                    <div className="text-xs sm:text-sm text-forest/70">{org.timezone || 'Local time'}</div>
                   </div>
                 </div>
               </div>
@@ -182,7 +214,7 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
                   <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-forest mb-2 sm:mb-3 text-sm sm:text-base">Transportation Details</h4>
                     <p className="text-sm sm:text-base text-forest/80 leading-relaxed">
-                      {organization.transportation.description}
+                      {transportation.description || 'Transportation details available upon inquiry'}
                     </p>
                   </div>
                 </div>
@@ -215,7 +247,7 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
           <div className="text-center px-4">
             <h3 className="text-lg sm:text-xl lg:text-2xl text-deep-forest mb-3">Connect with Your New Community</h3>
             <p className="text-base sm:text-lg text-forest/80 leading-relaxed max-w-2xl mx-auto">
-              Essential local information to help you settle in and connect with the community in {organization.location.region}.
+              Essential local information to help you settle in and connect with the community in {org.region}.
             </p>
           </div>
 
@@ -237,8 +269,8 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
                     <div className="flex items-start gap-3">
                       <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-rich-earth flex-shrink-0 mt-0.5" />
                       <div className="min-w-0 flex-1">
-                        <div className="font-semibold text-forest text-sm sm:text-base">{organization.location.city}, {organization.location.region}</div>
-                        <div className="text-xs sm:text-sm text-forest/70">{organization.location.country}</div>
+                        <div className="font-semibold text-forest text-sm sm:text-base">{org.city}, {org.region}</div>
+                        <div className="text-xs sm:text-sm text-forest/70">{org.country}</div>
                       </div>
                     </div>
                     
@@ -246,7 +278,7 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
                       <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-rich-earth flex-shrink-0 mt-0.5" />
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-forest text-sm sm:text-base">Time Zone</div>
-                        <div className="text-xs sm:text-sm text-forest/70">{organization.location.timezone}</div>
+                        <div className="text-xs sm:text-sm text-forest/70">{org.timezone || 'Local time'}</div>
                       </div>
                     </div>
                   </div>
@@ -266,9 +298,9 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
                 <div className="bg-white/80 rounded-xl p-4 sm:p-5 border border-warm-beige/30">
                   <h5 className="font-semibold text-forest mb-3 sm:mb-4 text-sm sm:text-base">Languages Spoken</h5>
                   <div className="flex flex-wrap gap-2 sm:gap-3">
-                    {organization.languages.map((language, index) => (
+                    {(languages.length > 0 ? languages : [{ language_name: 'English' }]).map((language, index) => (
                       <span key={index} className="px-3 sm:px-4 py-1.5 sm:py-2 bg-sage-green/15 text-sage-green rounded-full text-xs sm:text-sm font-medium border border-sage-green/20">
-                        {language}
+                        {language.language_name}
                       </span>
                     ))}
                   </div>
@@ -283,7 +315,7 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
       </SharedTabSection>
 
       {/* Local Adventures - Discovery Section */}
-      {program.highlights && program.highlights.length > 0 && (
+      {program_highlights && program_highlights.length > 0 && (
         <div className="bg-gradient-to-br from-deep-forest via-forest to-sage-green/20 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 xl:p-10 text-white shadow-nature-xl">
           <div className="text-center mb-6 sm:mb-8 lg:mb-10 px-4">
             <div className="flex items-center justify-center gap-3 mb-4 sm:mb-6">
@@ -293,19 +325,19 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
             </div>
             <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-white mb-3 sm:mb-4">Local Adventures & Activities</h3>
             <p className="text-base sm:text-lg text-white/90 max-w-3xl mx-auto leading-relaxed">
-              Explore the incredible natural beauty and cultural richness of {organization.location.region} during your free time.
+              Explore the incredible natural beauty and cultural richness of {org.region} during your free time.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            {program.highlights.map((highlight, index) => (
-              <div key={index} className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-white/20 hover:bg-white/15 transition-colors">
+            {program_highlights.map((highlight, index) => (
+              <div key={highlight.id} className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-white/20 hover:bg-white/15 transition-colors">
                 <div className="flex items-start gap-3 sm:gap-4">
                   <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
                     <Mountain className="w-3 h-3 sm:w-4 sm:h-4 text-gentle-lemon" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm sm:text-base text-white/90 leading-relaxed">{highlight}</p>
+                    <p className="text-sm sm:text-base text-white/90 leading-relaxed">{highlight.highlight_text}</p>
                   </div>
                 </div>
               </div>
@@ -317,11 +349,11 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
               <h4 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Your Schedule</h4>
               <div className="grid grid-cols-2 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-gentle-lemon mb-1">{program.schedule.daysPerWeek}</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-gentle-lemon mb-1">{primary_program.days_per_week || 5}</div>
                   <div className="text-sm sm:text-base text-white/90">days of work per week</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-sunset mb-1">{7 - program.schedule.daysPerWeek}</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-sunset mb-1">{7 - (primary_program.days_per_week || 5)}</div>
                   <div className="text-sm sm:text-base text-white/90">days free for exploration</div>
                 </div>
               </div>
@@ -342,7 +374,7 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
           <div className="text-center px-4">
             <h3 className="text-lg sm:text-xl lg:text-2xl text-deep-forest mb-3">What to Expect Weather-Wise</h3>
             <p className="text-base sm:text-lg text-forest/80 leading-relaxed max-w-2xl mx-auto">
-              Understanding {organization.location.region}'s climate helps you pack smart and prepare for your outdoor conservation work.
+              Understanding {org.region}'s climate helps you pack smart and prepare for your outdoor conservation work.
             </p>
           </div>
 
@@ -389,7 +421,7 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
       {/* Stories Tab CTA - Enhanced */}
       <div className="text-center py-8 sm:py-10 lg:py-12 px-4 bg-gradient-to-r from-soft-cream/50 to-warm-beige/20 rounded-2xl border border-warm-beige/30">
         <h3 className="text-lg sm:text-xl lg:text-2xl text-deep-forest mb-3 sm:mb-4">
-          Real Stories from {organization.location.region}
+          Real Stories from {org.region}
         </h3>
         <p className="text-base sm:text-lg text-forest/80 leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8">
           Discover what other volunteers experienced living and working in this incredible location through their authentic stories and insights.

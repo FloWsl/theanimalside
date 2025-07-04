@@ -1,18 +1,32 @@
 // src/components/OrganizationDetail/OrganizationHeader.tsx
 import React from 'react';
 import { MapPin, Star, Verified, Compass } from 'lucide-react';
-import { OrganizationDetail } from '../../types';
+import { Organization } from '../../types/database';
 import { calculateAverageRating, generateStarDisplay } from '../../lib/rating-utils';
+import { useTestimonials } from '../../hooks/useOrganizationData';
 
 interface OrganizationHeaderProps {
-  organization: OrganizationDetail;
+  organization: Organization;
 }
 
 const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ organization }) => {
+  // Safety check for organization data
+  if (!organization) {
+    return (
+      <div className="min-h-screen bg-gray-200 animate-pulse flex items-center justify-center">
+        <p className="text-gray-500">Loading organization...</p>
+      </div>
+    );
+  }
+
+  // Get testimonials using React Query hook
+  const { data: testimonialsResponse } = useTestimonials(organization.id);
+  const testimonials = testimonialsResponse?.data || [];
+  
   // Minimal rating calculation
-  const averageRating = calculateAverageRating(organization.testimonials);
+  const averageRating = calculateAverageRating(testimonials);
   const starDisplay = generateStarDisplay(averageRating);
-  const reviewCount = organization.testimonials.length;
+  const reviewCount = testimonials.length;
   
   return (
     <div className="relative overflow-hidden min-h-screen flex items-center">
@@ -44,9 +58,9 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ organization })
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:justify-between">
               <div className="flex items-center gap-2 bg-gradient-to-r from-rich-earth/95 to-warm-sunset/90 backdrop-blur-md px-4 lg:px-5 py-2 lg:py-3 rounded-full border border-white/30 shadow-2xl">
                 <Compass className="w-4 h-4 lg:w-5 lg:h-5 text-white drop-shadow-sm" />
-                <span className="text-white font-bold tracking-wide text-body">{organization.location.country}</span>
+                <span className="text-white font-bold tracking-wide text-body">{organization.location?.country || organization.location_country || 'Global'}</span>
                 <span className="text-white/80 hidden sm:inline">•</span>
-                <span className="text-white/95 text-body hidden sm:inline">{organization.animalTypes.slice(0, 3).map(a => a.animalType).join(', ')}</span>
+                <span className="text-white/95 text-body hidden sm:inline">{(organization.animalTypes || []).slice(0, 3).map(a => a.animalType || a.animal_type || 'Wildlife').join(', ')}</span>
               </div>
               
               {/* Enhanced immersive rating display - mobile responsive */}
@@ -71,7 +85,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ organization })
               
               {/* Mobile animal types display */}
               <div className="sm:hidden text-white/85 text-body">
-                {organization.animalTypes.slice(0, 3).map(a => a.animalType).join(' • ')}
+                {(organization.animalTypes || []).slice(0, 3).map(a => a.animalType || a.animal_type || 'Wildlife').join(' • ')}
               </div>
             </div>
               {/* Enhanced Immersive Organization Identity - mobile responsive */}
@@ -81,8 +95,8 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ organization })
                   <div className="absolute -inset-2 lg:-inset-3 bg-gradient-to-br from-warm-sunset/40 to-rich-earth/35 rounded-3xl blur-xl lg:blur-2xl" />
                   <div className="absolute -inset-1 bg-gradient-to-br from-white/20 to-white/10 rounded-3xl" />
                   <img 
-                    src={organization.logo} 
-                    alt={`${organization.name} logo`}
+                    src={organization.logo || organization.logo_url || '/images/default-logo.png'} 
+                    alt={`${organization.name || 'Organization'} logo`}
                     className="relative w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 rounded-3xl object-cover border-2 lg:border-3 border-white/40 shadow-2xl"
                   />
                   {organization.verified && (
@@ -96,7 +110,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ organization })
                 <div className="space-y-4 lg:space-y-6">
                   <div>
                     <h1 className="text-hero text-white drop-shadow-2xl leading-tight">
-                      {organization.name}
+                      {organization.name || 'Wildlife Organization'}
                     </h1>
                   </div>
                   
@@ -104,17 +118,17 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ organization })
                   <div className="flex flex-wrap justify-center lg:justify-start gap-2 lg:gap-4">
                     <div className="bg-white/15 backdrop-blur-md px-3 lg:px-4 py-1.5 lg:py-2 rounded-full border border-white/25 shadow-xl">
                       <span className="text-white/95 text-caption font-semibold tracking-wide">
-                        {organization.programs[0]?.duration.min}-{organization.programs[0]?.duration.max || '∞'} weeks
+                        {organization.programs?.[0]?.duration?.min || 1}-{organization.programs?.[0]?.duration?.max || '∞'} weeks
                       </span>
                     </div>
                     <div className="bg-white/15 backdrop-blur-md px-3 lg:px-4 py-1.5 lg:py-2 rounded-full border border-white/25 shadow-xl">
                       <span className="text-white/95 text-caption font-semibold tracking-wide">
-                        {organization.location.city}
+                        {organization.location?.city || organization.location_city || 'Local area'}
                       </span>
                     </div>
                     <div className="bg-white/15 backdrop-blur-md px-3 lg:px-4 py-1.5 lg:py-2 rounded-full border border-white/25 shadow-xl">
                       <span className="text-white/95 text-caption font-semibold tracking-wide">
-                        Since {organization.yearFounded}
+                        Since {organization.yearFounded || organization.year_founded || new Date().getFullYear()}
                       </span>
                     </div>
                   </div>
@@ -123,7 +137,7 @@ const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ organization })
             {/* Enhanced description with design system colors */}
             <div className="text-center max-w-3xl mx-auto px-4">
               <p className="text-body-large text-white/90 font-light drop-shadow-lg leading-relaxed">
-                Work hands-on with rescued {organization.animalTypes.map(a => a.animalType.toLowerCase()).slice(0, -1).join(', ')} and {organization.animalTypes[organization.animalTypes.length - 1]?.animalType.toLowerCase()} in {organization.location.country}'s pristine wilderness. Help with daily care, rehabilitation, and release programs while living among the wildlife you're protecting.
+                Work hands-on with rescued {(organization.animalTypes || []).map(a => (a.animalType || a.animal_type || 'wildlife').toLowerCase()).slice(0, -1).join(', ')} and {(organization.animalTypes || [])[Math.max(0, (organization.animalTypes || []).length - 1)]?.animalType?.toLowerCase() || (organization.animalTypes || [])[Math.max(0, (organization.animalTypes || []).length - 1)]?.animal_type?.toLowerCase() || 'animals'} in {organization.location?.country || organization.location_country || 'nature'}'s pristine wilderness. Help with daily care, rehabilitation, and release programs while living among the wildlife you're protecting.
               </p>
             </div>
           </div>

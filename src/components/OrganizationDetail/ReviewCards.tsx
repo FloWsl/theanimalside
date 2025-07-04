@@ -11,11 +11,11 @@ import {
   Verified,
   ThumbsUp
 } from 'lucide-react';
-import { OrganizationTestimonial } from '../../types';
+import { Testimonial } from '../../types/database';
 import { generateStarArray } from '../../lib/rating-utils';
 
 interface ReviewCardsProps {
-  testimonials: OrganizationTestimonial[];
+  testimonials: Testimonial[];
   maxInitialReviews?: number;
 }
 
@@ -31,10 +31,11 @@ const ReviewCards: React.FC<ReviewCardsProps> = ({
 
   // Sort testimonials based on selected option
   const sortedTestimonials = useMemo(() => {
+    if (!testimonials || !Array.isArray(testimonials)) return [];
     const sorted = [...testimonials].sort((a, b) => {
       switch (sortBy) {
         case 'recent':
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         case 'highest':
           return b.rating - a.rating;
         case 'verified':
@@ -144,10 +145,10 @@ const ReviewCards: React.FC<ReviewCardsProps> = ({
               <div className="flex items-start gap-4 mb-4">
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">
-                  {testimonial.avatar ? (
+                  {testimonial.avatar_url ? (
                     <img
-                      src={testimonial.avatar}
-                      alt={testimonial.volunteerName}
+                      src={testimonial.avatar_url}
+                      alt={testimonial.volunteer_name}
                       className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
                     />
                   ) : (
@@ -169,21 +170,21 @@ const ReviewCards: React.FC<ReviewCardsProps> = ({
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div>
                       <h4 className="font-semibold text-deep-forest truncate">
-                        {testimonial.volunteerName}
-                        {testimonial.volunteerAge && (
+                        {testimonial.volunteer_name}
+                        {testimonial.volunteer_age && (
                           <span className="text-forest/60 font-normal ml-2">
-                            ({testimonial.volunteerAge})
+                            ({testimonial.volunteer_age})
                           </span>
                         )}
                       </h4>
                       <div className="flex items-center gap-3 text-sm text-forest/70">
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
-                          {testimonial.volunteerCountry}
+                          {testimonial.volunteer_country}
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          {new Date(testimonial.date).toLocaleDateString('en-US', {
+                          {new Date(testimonial.experience_date).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short'
                           })}
@@ -203,7 +204,7 @@ const ReviewCards: React.FC<ReviewCardsProps> = ({
                   {/* Program Info */}
                   <div className="mt-2">
                     <span className="inline-flex items-center px-2 py-1 bg-rich-earth/10 text-rich-earth rounded-full text-xs font-medium">
-                      {testimonial.program} • {testimonial.duration}
+                      {testimonial.program_name} • {testimonial.duration_weeks} weeks
                     </span>
                   </div>
                 </div>

@@ -1,7 +1,7 @@
-// src/components/OrganizationDetail/ProgramSelector.tsx
+// src/components/OrganizationDetail/ProgramSelector.tsx - Database-Integrated Version
 import React from 'react';
 import { Clock, Users, Calendar } from 'lucide-react';
-import { Program } from '../../types';
+import { Program } from '../../types/database';
 
 interface ProgramSelectorProps {
   programs: Program[];
@@ -69,22 +69,22 @@ const ProgramSelector: React.FC<ProgramSelectorProps> = ({
                   <div className="flex flex-wrap gap-3">
                     <div className="flex items-center gap-1 text-xs text-forest/60">
                       <Calendar className="w-3 h-3" />
-                      <span>{program.duration.min}-{program.duration.max || '∞'} weeks</span>
+                      <span>{program.duration_min_weeks}-{program.duration_max_weeks || '∞'} weeks</span>
                     </div>
                     <div className="flex items-center gap-1 text-xs text-forest/60">
                       <Clock className="w-3 h-3" />
-                      <span>{program.schedule.hoursPerDay}h/day</span>
+                      <span>{program.hours_per_day}h/day</span>
                     </div>
                     <div className="flex items-center gap-1 text-xs text-forest/60">
                       <Users className="w-3 h-3" />
-                      <span>{program.animalTypes.join(', ')}</span>
+                      <span>{program.days_per_week} days/week</span>
                     </div>
                   </div>
                   
                   {/* Cost Display */}
                   <div className="pt-2 border-t border-beige/50">
                     <div className="text-sm font-medium text-forest">
-                      {program.cost.amount === 0 ? 'Free Program' : `${program.cost.amount} ${program.cost.currency}/${program.cost.period}`}
+                      {program.cost_amount === 0 || program.cost_amount === null ? 'Free Program' : `${program.cost_amount} ${program.cost_currency}/${program.cost_period}`}
                     </div>
                   </div>
                 </div>

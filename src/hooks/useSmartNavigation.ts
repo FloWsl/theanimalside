@@ -102,10 +102,10 @@ const generateStaticRecommendations = (context: NavigationContext): NavigationRe
   const recommendations: NavigationRecommendation[] = [];
 
   // Extract rich data from organization
-  const primaryAnimal = organization.animalTypes[0];
-  const secondaryAnimals = organization.animalTypes.slice(1, 3);
-  const totalAnimalsRescued = organization.statistics.animalsRescued;
-  const yearsOperating = organization.statistics.yearsOperating;
+  const primaryAnimal = organization.animalTypes?.[0];
+  const secondaryAnimals = organization.animalTypes?.slice(1, 3) || [];
+  const totalAnimalsRescued = organization.statistics?.animalsRescued || 0;
+  const yearsOperating = organization.statistics?.yearsOperating || 0;
 
   // 1. Similar animal type (SEO-friendly URL)
   if (primaryAnimal) {
@@ -125,19 +125,22 @@ const generateStaticRecommendations = (context: NavigationContext): NavigationRe
   }
 
   // 2. Regional opportunities (SEO-friendly URL)
-  recommendations.push({
-    id: 'regional-programs',
-    title: organization.location.country,
-    description: '',
-    url: generateCountryRoute(organization.location.country),
-    category: 'comparison',
-    priority: 8,
-    reasoning: 'Regional alternatives',
-    metadata: {
-      emoji: getCountryEmoji(organization.location.country),
-      type: 'location'
-    }
-  });
+  const country = organization.location?.country || organization.location_country || 'Global';
+  if (country && country !== 'Global') {
+    recommendations.push({
+      id: 'regional-programs',
+      title: country,
+      description: '',
+      url: generateCountryRoute(country),
+      category: 'comparison',
+      priority: 8,
+      reasoning: 'Regional alternatives',
+      metadata: {
+        emoji: getCountryEmoji(country),
+        type: 'location'
+      }
+    });
+  }
 
   // 3. Secondary animal if available
   if (secondaryAnimals.length > 0) {
@@ -193,14 +196,15 @@ const getTabSpecificRecommendations = (
   tab: TabId, 
   org: OrganizationDetail
 ): NavigationRecommendation[] => {
-  const countrySlug = org.location.country.toLowerCase().replace(/\s+/g, '-');
+  const country = org.location?.country || org.location_country || 'global';
+  const countrySlug = country.toLowerCase().replace(/\s+/g, '-');
   
   switch (tab) {
     case 'practical':
       return [{
         id: 'travel-guide',
         title: `Travel guide`,
-        description: `Planning your trip to ${org.location.country}`,
+        description: `Planning your trip to ${country}`,
         url: `/guides/${countrySlug}-travel`,
         category: 'preparation',
         priority: 5,
@@ -219,9 +223,10 @@ const getTabSpecificRecommendations = (
       }];
     
     case 'location':
+      const region = org.location?.region || org.location_region || country;
       return [{
         id: 'area-guide',
-        title: `About ${org.location.region}`,
+        title: `About ${region}`,
         description: `Local area information`,
         url: `/guides/${countrySlug}-region`,
         category: 'educational',

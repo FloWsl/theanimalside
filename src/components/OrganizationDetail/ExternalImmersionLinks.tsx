@@ -9,7 +9,7 @@ import {
   ArrowRight,
   CheckCircle
 } from 'lucide-react';
-import { OrganizationTestimonial } from '../../types';
+import { Testimonial } from '../../types/database';
 
 interface VolunteerContent {
   id: string;
@@ -26,7 +26,7 @@ interface VolunteerContent {
 
 interface ExternalImmersionLinksProps {
   organizationName: string;
-  testimonials: OrganizationTestimonial[];
+  testimonials: Testimonial[];
   volunteerContent?: VolunteerContent[];
 }
 
@@ -76,7 +76,8 @@ const ExternalImmersionLinks: React.FC<ExternalImmersionLinksProps> = ({
 
   // Match content creators with testimonials to verify authenticity
   const getContentCreatorTestimonial = (volunteerName: string) => {
-    return testimonials.find(t => t.volunteerName === volunteerName);
+    if (!testimonials || !Array.isArray(testimonials)) return undefined;
+    return testimonials.find(t => t.volunteer_name === volunteerName);
   };
 
   // Get platform icon and colors

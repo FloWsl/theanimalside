@@ -6,12 +6,13 @@ import {
   MapPin,
   ChevronRight
 } from 'lucide-react';
-import { OrganizationDetail } from '../../../types';
+import { useOrganizationOverview } from '../../../hooks/useOrganizationData';
 import SimplePhotoModal from '../SimplePhotoModal';
+import QuickInfoCards from '../QuickInfoCards';
 import { scrollToTabContent } from '../../../lib/scrollUtils';
 
 interface OverviewTabProps {
-  organization: OrganizationDetail;
+  organizationId: string;
   hideDuplicateInfo?: boolean;
   onTabChange?: (tabId: string) => void;
 }
@@ -52,23 +53,50 @@ const generateConservationContext = (animalType: string, country: string): strin
 };
 
 const OverviewTab: React.FC<OverviewTabProps> = ({
-  organization,
+  organizationId,
   hideDuplicateInfo = false,
   onTabChange
 }) => {
-  const program = organization.programs[0]; // Get first program for essential info
+  // Fetch overview data using React Query
+  const { data: overviewData, isLoading, error } = useOrganizationOverview(organizationId);
+  
+  const program = overviewData?.primary_program;
+  const featuredPhotos = overviewData?.featured_photos || [];
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex items-center justify-center">
+          <div className="text-forest/60">Loading overview...</div>
+        </div>
+      </div>
+    );
+  }
 
-  // Generate simple context line
-  const contextLine = `Protecting ${organization.animalTypes[0]?.animalType || 'wildlife'} in the heart of ${organization.location.country}`;
+  // Show error state
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex items-center justify-center">
+          <div className="text-red-600">Error loading overview. Please try again.</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Generate simple context line using database data
+  const primaryAnimalType = overviewData?.organization?.animal_types?.[0] || 'wildlife';
+  const organizationCountry = overviewData?.organization?.country || 'nature';
+  const contextLine = `Protecting ${primaryAnimalType} in the heart of ${organizationCountry}`;
 
   // Simplified Photo Curation - Admin-friendly approach
   const getCuratedPhotoCollections = () => {
-    const allPhotos = organization.gallery.images || [];
+    const allPhotos = featuredPhotos;
     
     // Simple division of photos into logical groups
     const totalPhotos = allPhotos.length;
@@ -120,8 +148,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         <div className="relative h-96 lg:h-[500px]">
           {/* Main hero image */}
           <img
-            src={organization.heroImage}
-            alt={`${organization.name} conservation work`}
+            src={overviewData?.organization?.hero_image || '/images/default-hero.jpg'}
+            alt={`${overviewData?.organization?.name || 'Conservation'} conservation work`}
             className="w-full h-full object-cover"
           />
 
@@ -131,14 +159,14 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
           {/* Hero text overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
             <h1 className="text-3xl lg:text-4xl font-bold mb-2 text-white">
-              {organization.name}
+              {overviewData?.organization?.name || 'Conservation Organization'}
             </h1>
             <p className="text-xl lg:text-2xl text-white/90 mb-4">
               {contextLine}
             </p>
             <div className="flex items-center gap-2 text-white/80">
               <MapPin className="w-5 h-5" />
-              <span className="text-lg">{organization.location.region}, {organization.location.country}</span>
+              <span className="text-lg">{overviewData?.organization?.region || 'Regional area'}, {organizationCountry}</span>
             </div>
           </div>
         </div>
@@ -155,7 +183,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
             <h3 className="font-medium text-deep-forest mb-1 text-sm">Duration</h3>
             <p className="text-lg font-bold text-rich-earth">
-              {program.duration.min}-{program.duration.max || '∞'} weeks
+              {program?.duration?.min || 1}-{program?.duration?.max || '∞'} weeks
             </p>
           </div>
 
@@ -166,11 +194,21 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
             <h3 className="font-medium text-deep-forest mb-1 text-sm">From</h3>
             <p className="text-lg font-bold text-rich-earth">
-              {program.cost.amount ? `${program.cost.currency}${program.cost.amount.toLocaleString()}` : 'Free'}
+              {program?.cost?.amount ? `${program?.cost?.currency || '$'}${program?.cost?.amount?.toLocaleString()}` : 'Free'}
             </p>
           </div>
         </div>
       )}
+
+      {/* Quick Info Cards - Contextual Information */}
+      <QuickInfoCards
+        organizationId={organizationId}
+        currentTab="overview"
+        onTabChange={onTabChange}
+        variant="default"
+        maxCards={3}
+        className="mb-8"
+      />
 
       {/* Conservation Context Section */}
       <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8">
@@ -179,7 +217,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             Why This Work Matters
           </h3>
           <p className="text-lg text-forest/80 leading-relaxed mb-6">
-            {generateConservationContext(organization.animalTypes[0]?.animalType, organization.location.country)}
+            {generateConservationContext(primaryAnimalType, organizationCountry)}
           </p>
 
         </div>
@@ -282,7 +320,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
           {/* Photo Gallery CTA */}
           <div className="text-center mt-10 pt-8 border-t border-warm-beige/40">
             <p className="text-forest/70 mb-4">
-              <span className="font-semibold text-rich-earth">{organization.gallery.images.length}</span> photos showcase real volunteer experiences
+              <span className="font-semibold text-rich-earth">{featuredPhotos.length || 0}</span> photos showcase real volunteer experiences
             </p>
             <p className="text-sm text-forest/60">
               These unfiltered moments capture the authentic conservation work and meaningful connections you'll experience
@@ -298,7 +336,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
           Ready to Make a Difference?
         </h3>
         <p className="text-lg text-forest/80 leading-relaxed max-w-2xl mx-auto mb-8">
-          Join our conservation team and experience the rewarding work of protecting {organization.animalTypes[0]?.animalType.toLowerCase()} while immersing yourself in {organization.location.country}'s incredible natural environment.
+          Join our conservation team and experience the rewarding work of protecting {primaryAnimalType?.toLowerCase() || 'wildlife'} while immersing yourself in {organizationCountry}'s incredible natural environment.
         </p>
 
         {/* Call to Action Buttons */}

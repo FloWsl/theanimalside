@@ -2,6 +2,7 @@ export interface Opportunity {
   id: string;
   title: string;
   organization: string;
+  slug?: string; // Organization slug for routing
   location: {
     country: string;
     city: string;
