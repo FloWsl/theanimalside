@@ -744,7 +744,7 @@ async function runMigration() {
   
   try {
     const stats = await migrator.migrate();
-    console.log('\n🎉 Migration completed successfully!');
+    console.log('\n🎉 Migration completed successfully!', stats);
     process.exit(0);
   } catch (error) {
     console.error('\n💥 Migration failed:', error.message);

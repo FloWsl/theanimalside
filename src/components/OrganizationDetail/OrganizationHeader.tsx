@@ -1,6 +1,6 @@
 // src/components/OrganizationDetail/OrganizationHeader.tsx
 import React from 'react';
-import { MapPin, Star, Verified, Compass } from 'lucide-react';
+import { Star, Verified, Compass } from 'lucide-react';
 import { OrganizationDetail } from '../../types';
 import { calculateAverageRating, generateStarDisplay } from '../../lib/rating-utils';
 

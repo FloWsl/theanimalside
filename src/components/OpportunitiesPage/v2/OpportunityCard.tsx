@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Users, Shield, ExternalLink, Heart } from 'lucide-react';
 import { Opportunity } from '../../../types';
-import { getOpportunityRoute, hasValidOpportunityRoute } from '../../../utils/organizationMapping';
+import { getOpportunityRoute } from '../../../utils/organizationMapping';
 
 interface OpportunityCardProps {
   opportunity: Opportunity;
@@ -93,7 +93,6 @@ const formatCost = (cost: Opportunity['cost']): { display: string; color: string
 const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, index }) => {
   const costInfo = formatCost(opportunity.cost);
   const opportunityRoute = getOpportunityRoute(opportunity.id, opportunity.organizationSlug);
-  const hasValidRoute = hasValidOpportunityRoute(opportunity.id, opportunity.organizationSlug);
   
   // This component should only receive opportunities with valid routes
   // Filtering should happen at the data level, not component level

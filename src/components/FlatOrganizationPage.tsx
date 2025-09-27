@@ -1,9 +1,7 @@
 import React from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { generateOrganizationPageSEO, useSEO } from '../utils/seoUtils';
-import { isValidOrganizationSlug, parseRoute } from '../utils/routeUtils';
 import { useOrganizationBasic } from '../hooks/useOrganizationData';
-import OrganizationDetail from './OrganizationDetail';
 
 /**
  * FlatOrganizationPage - Handler for direct organization access routes

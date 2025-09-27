@@ -48,9 +48,10 @@ function App() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <HelmetProvider>
-        <BrowserRouter>
+    <div data-testid="legacy-app">
+      <QueryClientProvider client={queryClient}>
+        <HelmetProvider>
+          <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={
@@ -271,6 +272,7 @@ function App() {
         </BrowserRouter>
       </HelmetProvider>
     </QueryClientProvider>
+    </div>
   );
 }
 

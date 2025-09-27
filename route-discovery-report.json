@@ -1,0 +1,203 @@
+{
+  "timestamp": "2025-09-27T13:14:39.404Z",
+  "currentRoutes": {
+    "explicit": [
+      "/",
+      "/opportunities",
+      "/volunteer-costa-rica",
+      "/volunteer-thailand",
+      "/volunteer-south-africa",
+      "/lions-volunteer",
+      "/elephants-volunteer",
+      "/sea-turtles-volunteer",
+      "/volunteer-costa-rica/sea-turtles",
+      "/volunteer-thailand/elephants",
+      "/sea-turtles-volunteer/costa-rica",
+      "/wildlife-conservation",
+      "/marine-conservation",
+      "/forest-conservation"
+    ],
+    "dynamic": [
+      "/volunteer-:country",
+      "/:animal-volunteer",
+      "/volunteer-:country/:animal",
+      "/:animal-volunteer/:country",
+      "/:orgSlug",
+      "/guides/:guideSlug"
+    ],
+    "legacy": [
+      "/organization/:slug",
+      "/organization/:slug/program/:programSlug",
+      "/organization/:slug/programs"
+    ],
+    "system": [
+      "/404",
+      "*"
+    ]
+  },
+  "dataRoutes": {
+    "countries": [
+      "/volunteer-costa-rica",
+      "/volunteer-thailand",
+      "/volunteer-south-africa",
+      "/volunteer-australia",
+      "/volunteer-indonesia"
+    ],
+    "animals": [
+      "/sea-turtles-volunteer",
+      "/marine-life-volunteer",
+      "/sloths-volunteer",
+      "/primates-volunteer",
+      "/elephants-volunteer",
+      "/lions-volunteer",
+      "/big-cats-volunteer",
+      "/koalas-volunteer",
+      "/orangutans-volunteer"
+    ],
+    "combinations": [
+      {
+        "countryFirst": "/volunteer-costa-rica/sea-turtles",
+        "animalFirst": "/sea-turtles-volunteer/costa-rica",
+        "country": "costa-rica",
+        "animal": "sea-turtles"
+      },
+      {
+        "countryFirst": "/volunteer-costa-rica/marine-life",
+        "animalFirst": "/marine-life-volunteer/costa-rica",
+        "country": "costa-rica",
+        "animal": "marine-life"
+      },
+      {
+        "countryFirst": "/volunteer-costa-rica/sloths",
+        "animalFirst": "/sloths-volunteer/costa-rica",
+        "country": "costa-rica",
+        "animal": "sloths"
+      },
+      {
+        "countryFirst": "/volunteer-costa-rica/primates",
+        "animalFirst": "/primates-volunteer/costa-rica",
+        "country": "costa-rica",
+        "animal": "primates"
+      },
+      {
+        "countryFirst": "/volunteer-thailand/elephants",
+        "animalFirst": "/elephants-volunteer/thailand",
+        "country": "thailand",
+        "animal": "elephants"
+      },
+      {
+        "countryFirst": "/volunteer-south-africa/lions",
+        "animalFirst": "/lions-volunteer/south-africa",
+        "country": "south-africa",
+        "animal": "lions"
+      },
+      {
+        "countryFirst": "/volunteer-south-africa/big-cats",
+        "animalFirst": "/big-cats-volunteer/south-africa",
+        "country": "south-africa",
+        "animal": "big-cats"
+      },
+      {
+        "countryFirst": "/volunteer-australia/marine-life",
+        "animalFirst": "/marine-life-volunteer/australia",
+        "country": "australia",
+        "animal": "marine-life"
+      },
+      {
+        "countryFirst": "/volunteer-australia/koalas",
+        "animalFirst": "/koalas-volunteer/australia",
+        "country": "australia",
+        "animal": "koalas"
+      },
+      {
+        "countryFirst": "/volunteer-indonesia/primates",
+        "animalFirst": "/primates-volunteer/indonesia",
+        "country": "indonesia",
+        "animal": "primates"
+      },
+      {
+        "countryFirst": "/volunteer-indonesia/orangutans",
+        "animalFirst": "/orangutans-volunteer/indonesia",
+        "country": "indonesia",
+        "animal": "orangutans"
+      }
+    ],
+    "organizations": []
+  },
+  "navigationLinks": [],
+  "seoRoutes": {
+    "critical": [
+      "/volunteer-costa-rica",
+      "/volunteer-thailand",
+      "/lions-volunteer",
+      "/elephants-volunteer",
+      "/sea-turtles-volunteer",
+      "/volunteer-costa-rica/sea-turtles",
+      "/opportunities"
+    ],
+    "highTraffic": [
+      "/volunteer-south-africa",
+      "/volunteer-thailand/elephants",
+      "/sea-turtles-volunteer/costa-rica",
+      "/wildlife-conservation",
+      "/marine-conservation"
+    ],
+    "priority": [
+      "/forest-conservation",
+      "/volunteer-costa-rica/sea-turtles",
+      "/volunteer-costa-rica/marine-life",
+      "/volunteer-costa-rica/sloths",
+      "/volunteer-costa-rica/primates",
+      "/volunteer-thailand/elephants",
+      "/volunteer-south-africa/lions",
+      "/volunteer-south-africa/big-cats",
+      "/volunteer-australia/marine-life",
+      "/volunteer-australia/koalas",
+      "/volunteer-indonesia/primates"
+    ]
+  },
+  "recommendations": {
+    "keep": [
+      "/",
+      "/opportunities",
+      "/volunteer-costa-rica",
+      "/volunteer-thailand",
+      "/volunteer-south-africa",
+      "/lions-volunteer",
+      "/elephants-volunteer",
+      "/sea-turtles-volunteer",
+      "/volunteer-costa-rica/sea-turtles",
+      "/volunteer-thailand/elephants",
+      "/sea-turtles-volunteer/costa-rica",
+      "/volunteer-:country",
+      "/:animal-volunteer",
+      "/volunteer-:country/:animal",
+      "/:animal-volunteer/:country",
+      "/:orgSlug",
+      "/guides/:guideSlug",
+      "/404",
+      "*"
+    ],
+    "modernize": [
+      "/wildlife-conservation",
+      "/marine-conservation",
+      "/forest-conservation",
+      "/volunteer-:country",
+      "/:animal-volunteer",
+      "/volunteer-:country/:animal",
+      "/:animal-volunteer/:country"
+    ],
+    "delete": [
+      "/organization/:slug",
+      "/organization/:slug/program/:programSlug",
+      "/organization/:slug/programs"
+    ]
+  },
+  "statistics": {
+    "totalRoutes": 25,
+    "uniqueCountries": 5,
+    "uniqueAnimals": 9,
+    "validCombinations": 11,
+    "brokenLinks": 0
+  }
+}

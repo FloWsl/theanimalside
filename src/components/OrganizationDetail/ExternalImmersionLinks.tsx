@@ -1,13 +1,12 @@
 // src/components/OrganizationDetail/ExternalImmersionLinks.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
+import {
   ExternalLink,
   Instagram,
   Video,
   BookOpen,
-  ArrowRight,
-  CheckCircle
+  ArrowRight
 } from 'lucide-react';
 import { OrganizationTestimonial } from '../../types';
 

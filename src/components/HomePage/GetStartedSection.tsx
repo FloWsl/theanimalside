@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { Search, Heart, Shield, ChevronRight, Compass, Users, Clock, Star } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 const GetStartedSection: React.FC = () => {
   const steps = [

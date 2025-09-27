@@ -59,11 +59,6 @@ const ScalableMultiSelect: React.FC<ScalableMultiSelectProps> = ({
     onSelectionChange(selected.filter(s => s !== item));
   };
 
-  const displayText = () => {
-    if (selected.length === 0) return placeholder;
-    if (selected.length <= maxDisplayed) return selected.join(', ');
-    return `${selected.slice(0, maxDisplayed).join(', ')} +${selected.length - maxDisplayed} more`;
-  };
 
   return (
     <div className="relative" ref={dropdownRef}>

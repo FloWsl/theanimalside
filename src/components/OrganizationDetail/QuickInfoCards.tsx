@@ -1,13 +1,11 @@
 // src/components/OrganizationDetail/QuickInfoCards.tsx
 import React from 'react';
-import { 
-  Heart, 
-  MapPin, 
-  DollarSign, 
-  Clock, 
-  ChevronRight, 
+import {
+  Heart,
+  MapPin,
+  DollarSign,
+  ChevronRight,
   Star,
-  Users,
   Shield,
   Camera
 } from 'lucide-react';

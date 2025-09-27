@@ -1,12 +1,10 @@
 // src/components/OrganizationDetail/FloatingActionButton.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  MessageSquare, 
-  Phone, 
-  Mail, 
-  ArrowUp, 
-  ExternalLink,
+import {
+  MessageSquare,
+  Mail,
+  ArrowUp,
   Heart,
   Share2,
   Plus,

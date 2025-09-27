@@ -1,10 +1,8 @@
 // src/components/OrganizationDetail/ReviewCards.tsx
 import React, { useState, useMemo } from 'react';
-import { 
-  Star, 
-  User, 
-  MapPin, 
-  Calendar, 
+import {
+  Star,
+  User,
   ChevronDown,
   ChevronUp,
   Filter,

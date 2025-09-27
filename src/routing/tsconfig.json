@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.app.json",
+  "compilerOptions": {
+    "noImplicitReturns": true,
+    "exactOptionalPropertyTypes": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "./AppRouter.tsx",
+    "./components/RouteWrapper.tsx",
+    "./components/RouteLoader.tsx",
+    "./navigation/NavigationFlowProvider.tsx",
+    "./navigation/NavigationFlowSystem.ts",
+    "./hooks/useRoutePerformance.ts",
+    "./performance/RoutePerformanceMonitor.ts",
+    "./tests/Phase3.2.integration.test.ts"
+  ]
+}

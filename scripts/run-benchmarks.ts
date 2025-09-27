@@ -153,7 +153,7 @@ class BenchmarkRunner {
     const resultsDir = path.join(process.cwd(), 'benchmark-results');
     try {
       await fs.mkdir(resultsDir, { recursive: true });
-    } catch (error) {
+    } catch {
       // Directory already exists
     }
     

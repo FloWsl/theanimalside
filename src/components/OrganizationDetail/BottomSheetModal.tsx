@@ -1,7 +1,7 @@
 // src/components/OrganizationDetail/BottomSheetModal.tsx
 import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls, PanInfo } from 'framer-motion';
-import { X, Minus } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '../ui/card';
 
 interface BottomSheetModalProps {
@@ -49,7 +49,7 @@ const BottomSheetModal: React.FC<BottomSheetModalProps> = ({
   }, [isOpen, onClose]);
 
   // Handle drag to close
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const shouldClose = info.velocity.y > 500 || info.offset.y > 200;
     if (shouldClose) {
       onClose();

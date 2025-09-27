@@ -2,27 +2,22 @@
 // Updated to use normalized data structure and Supabase integration
 
 import React, { useState } from 'react';
-import { 
-  DollarSign, 
-  Calendar, 
-  Globe, 
-  Home, 
-  UtensilsCrossed, 
-  MapPin, 
+import {
+  DollarSign,
+  Calendar,
+  Globe,
+  MapPin,
   Clock,
   Wifi,
   Car,
   ChevronDown,
   ChevronUp,
-  AlertCircle,
-  Loader2
+  AlertCircle
 } from 'lucide-react';
 import { useOrganizationEssentials, useTabData } from '../../hooks/useOrganizationData';
-import type { Program } from '../../types/database';
 
 interface EssentialInfoSidebarProps {
   organizationId: string; // Changed from full organization object
-  selectedProgramId?: string; // Allow program selection
   isDesktop?: boolean;
   sidebarExpanded?: boolean;
   className?: string;
@@ -65,10 +60,9 @@ const SidebarError: React.FC<{ error: Error; retry: () => void }> = ({ error, re
   </div>
 );
 
-const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({ 
-  organizationId, 
-  selectedProgramId,
-  isDesktop = false, 
+const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
+  organizationId,
+  isDesktop = false,
   className = ''
 }) => {
   // Use the new data hook
@@ -282,7 +276,7 @@ const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
             </h4>
             {essentials.key_requirements.length <= 3 ? (
               <div className="space-y-2">
-                {essentials.key_requirements.map((requirement, index) => (
+                {essentials.key_requirements.map((requirement) => (
                   <div key={requirement.id} className="text-sm text-forest/80 flex items-center gap-3 p-3 bg-warm-sunset/5 rounded-lg">
                     <div className="w-2 h-2 bg-warm-sunset rounded-full flex-shrink-0" />
                     <span className="leading-relaxed">{requirement.skill_name}</span>

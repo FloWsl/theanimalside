@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Search, MapPin, DollarSign, Calendar, ChevronDown, Sparkles, Globe } from 'lucide-react';
+import { X, Search, MapPin, DollarSign, Calendar, ChevronDown, Sparkles } from 'lucide-react';
 import { V2SearchFilters } from './index';
 import ScalableMultiSelect from './ScalableMultiSelect';
 

@@ -18,11 +18,9 @@ const DurationSlider: React.FC<DurationSliderProps> = ({
   onChange,
   min = 1,
   max = 24,
-  step = 1,
   className = ''
 }) => {
   const [isDragging, setIsDragging] = useState<'min' | 'max' | null>(null);
-  const [dragStart, setDragStart] = useState({ x: 0, value: 0 });
 
   // Duration ranges for visual feedback
   const getDurationLabel = (weeks: number) => {

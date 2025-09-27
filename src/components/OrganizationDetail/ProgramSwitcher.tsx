@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Users, Clock, DollarSign, Check, Loader2 } from 'lucide-react';
 import type { Program } from '../../types';
-import { generateProgramSlug } from '../../utils/programUtils';
 
 interface ProgramSwitcherProps {
   programs: Program[];

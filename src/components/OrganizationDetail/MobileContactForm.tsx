@@ -1,13 +1,9 @@
 // src/components/OrganizationDetail/MobileContactForm.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Mail, 
-  Phone, 
-  User, 
-  Calendar, 
-  MapPin, 
-  MessageSquare, 
+import {
+  User,
+  Calendar,
   ChevronRight,
   ChevronLeft,
   Heart,
@@ -19,7 +15,7 @@ import {
 import { OrganizationDetail, ContactForm } from '../../types';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardHeader } from '../ui/card';
 
 interface MobileContactFormProps {
   organization: OrganizationDetail;
@@ -53,7 +49,7 @@ const MobileContactForm: React.FC<MobileContactFormProps> = ({
     if (savedData) {
       try {
         setFormData(JSON.parse(savedData));
-      } catch (e) {
+      } catch {
         console.warn('Failed to load saved form data');
       }
     }

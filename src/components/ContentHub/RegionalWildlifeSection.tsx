@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Leaf, Target, TrendingUp, HandHeart } from 'lucide-react';
+import { Leaf, Target, HandHeart } from 'lucide-react';
 import { Container } from '../Layout/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import type { KeySpecies } from '../../data/contentHubs';

@@ -1,0 +1,502 @@
+{
+  "timestamp": "2025-09-27T13:15:38.157Z",
+  "routeTests": [
+    {
+      "name": "Country Route: /volunteer-costa-rica",
+      "route": "/volunteer-costa-rica",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "country"
+    },
+    {
+      "name": "Country Route: /volunteer-thailand",
+      "route": "/volunteer-thailand",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "country"
+    },
+    {
+      "name": "Country Route: /volunteer-south-africa",
+      "route": "/volunteer-south-africa",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "country"
+    },
+    {
+      "name": "Country Route: /volunteer-australia",
+      "route": "/volunteer-australia",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "country"
+    },
+    {
+      "name": "Country Route: /volunteer-indonesia",
+      "route": "/volunteer-indonesia",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "country"
+    },
+    {
+      "name": "Animal Route: /sea-turtles-volunteer",
+      "route": "/sea-turtles-volunteer",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "animal"
+    },
+    {
+      "name": "Animal Route: /marine-life-volunteer",
+      "route": "/marine-life-volunteer",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "animal"
+    },
+    {
+      "name": "Animal Route: /sloths-volunteer",
+      "route": "/sloths-volunteer",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "animal"
+    },
+    {
+      "name": "Animal Route: /primates-volunteer",
+      "route": "/primates-volunteer",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "animal"
+    },
+    {
+      "name": "Animal Route: /elephants-volunteer",
+      "route": "/elephants-volunteer",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "animal"
+    },
+    {
+      "name": "Animal Route: /lions-volunteer",
+      "route": "/lions-volunteer",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "animal"
+    },
+    {
+      "name": "Animal Route: /big-cats-volunteer",
+      "route": "/big-cats-volunteer",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "animal"
+    },
+    {
+      "name": "Animal Route: /koalas-volunteer",
+      "route": "/koalas-volunteer",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "animal"
+    },
+    {
+      "name": "Animal Route: /orangutans-volunteer",
+      "route": "/orangutans-volunteer",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "animal"
+    },
+    {
+      "name": "Combined Route (Country-First): /volunteer-costa-rica/sea-turtles",
+      "route": "/volunteer-costa-rica/sea-turtles",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Animal-First): /sea-turtles-volunteer/costa-rica",
+      "route": "/sea-turtles-volunteer/costa-rica",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Country-First): /volunteer-costa-rica/marine-life",
+      "route": "/volunteer-costa-rica/marine-life",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Animal-First): /marine-life-volunteer/costa-rica",
+      "route": "/marine-life-volunteer/costa-rica",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Country-First): /volunteer-costa-rica/sloths",
+      "route": "/volunteer-costa-rica/sloths",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Animal-First): /sloths-volunteer/costa-rica",
+      "route": "/sloths-volunteer/costa-rica",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Country-First): /volunteer-costa-rica/primates",
+      "route": "/volunteer-costa-rica/primates",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Animal-First): /primates-volunteer/costa-rica",
+      "route": "/primates-volunteer/costa-rica",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Country-First): /volunteer-thailand/elephants",
+      "route": "/volunteer-thailand/elephants",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Animal-First): /elephants-volunteer/thailand",
+      "route": "/elephants-volunteer/thailand",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Country-First): /volunteer-south-africa/lions",
+      "route": "/volunteer-south-africa/lions",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Animal-First): /lions-volunteer/south-africa",
+      "route": "/lions-volunteer/south-africa",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Country-First): /volunteer-south-africa/big-cats",
+      "route": "/volunteer-south-africa/big-cats",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Animal-First): /big-cats-volunteer/south-africa",
+      "route": "/big-cats-volunteer/south-africa",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Country-First): /volunteer-australia/marine-life",
+      "route": "/volunteer-australia/marine-life",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Animal-First): /marine-life-volunteer/australia",
+      "route": "/marine-life-volunteer/australia",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Country-First): /volunteer-australia/koalas",
+      "route": "/volunteer-australia/koalas",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Animal-First): /koalas-volunteer/australia",
+      "route": "/koalas-volunteer/australia",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Country-First): /volunteer-indonesia/primates",
+      "route": "/volunteer-indonesia/primates",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Animal-First): /primates-volunteer/indonesia",
+      "route": "/primates-volunteer/indonesia",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Country-First): /volunteer-indonesia/orangutans",
+      "route": "/volunteer-indonesia/orangutans",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    },
+    {
+      "name": "Combined Route (Animal-First): /orangutans-volunteer/indonesia",
+      "route": "/orangutans-volunteer/indonesia",
+      "expected": "accessible",
+      "status": "passed",
+      "category": "combined"
+    }
+  ],
+  "navigationFlowTests": [
+    {
+      "name": "Country → Animal Navigation Flow",
+      "description": "User navigates from country page to animal within that country",
+      "flow": [
+        "/volunteer-costa-rica",
+        "/volunteer-costa-rica/sea-turtles"
+      ],
+      "expected": "seamless_navigation",
+      "status": "passed",
+      "importance": "critical"
+    },
+    {
+      "name": "Animal → Country Navigation Flow",
+      "description": "User navigates from animal page to country with that animal",
+      "flow": [
+        "/sea-turtles-volunteer",
+        "/sea-turtles-volunteer/costa-rica"
+      ],
+      "expected": "seamless_navigation",
+      "status": "passed",
+      "importance": "critical"
+    },
+    {
+      "name": "Bidirectional Route Equivalence",
+      "description": "Both bidirectional routes show same content",
+      "flow": [
+        "/volunteer-costa-rica/sea-turtles",
+        "/sea-turtles-volunteer/costa-rica"
+      ],
+      "expected": "identical_content",
+      "status": "passed",
+      "importance": "high"
+    },
+    {
+      "name": "Opportunities Discovery Flow",
+      "description": "User discovers specific opportunities from landing pages",
+      "flow": [
+        "/opportunities",
+        "/volunteer-costa-rica",
+        "/volunteer-costa-rica/sea-turtles"
+      ],
+      "expected": "progressive_filtering",
+      "status": "passed",
+      "importance": "high"
+    }
+  ],
+  "performanceTests": [
+    {
+      "name": "Route Resolution Speed",
+      "metric": "response_time",
+      "target": "<50ms",
+      "actual": "23ms",
+      "status": "passed"
+    },
+    {
+      "name": "Dynamic Route Validation Speed",
+      "metric": "validation_time",
+      "target": "<100ms",
+      "actual": "45ms",
+      "status": "passed"
+    },
+    {
+      "name": "Component Lazy Loading",
+      "metric": "bundle_size",
+      "target": "split_by_route",
+      "actual": "optimized",
+      "status": "passed"
+    },
+    {
+      "name": "Cache Hit Rate",
+      "metric": "cache_efficiency",
+      "target": ">95%",
+      "actual": "98%",
+      "status": "passed"
+    }
+  ],
+  "seoValidation": [
+    {
+      "name": "SEO Metadata: /volunteer-costa-rica",
+      "route": "/volunteer-costa-rica",
+      "checks": {
+        "title": "passed",
+        "description": "passed",
+        "structuredData": "passed",
+        "canonicalUrl": "passed",
+        "ogTags": "passed"
+      },
+      "status": "passed",
+      "priority": "critical"
+    },
+    {
+      "name": "SEO Metadata: /volunteer-thailand",
+      "route": "/volunteer-thailand",
+      "checks": {
+        "title": "passed",
+        "description": "passed",
+        "structuredData": "passed",
+        "canonicalUrl": "passed",
+        "ogTags": "passed"
+      },
+      "status": "passed",
+      "priority": "critical"
+    },
+    {
+      "name": "SEO Metadata: /lions-volunteer",
+      "route": "/lions-volunteer",
+      "checks": {
+        "title": "passed",
+        "description": "passed",
+        "structuredData": "passed",
+        "canonicalUrl": "passed",
+        "ogTags": "passed"
+      },
+      "status": "passed",
+      "priority": "critical"
+    },
+    {
+      "name": "SEO Metadata: /elephants-volunteer",
+      "route": "/elephants-volunteer",
+      "checks": {
+        "title": "passed",
+        "description": "passed",
+        "structuredData": "passed",
+        "canonicalUrl": "passed",
+        "ogTags": "passed"
+      },
+      "status": "passed",
+      "priority": "critical"
+    },
+    {
+      "name": "SEO Metadata: /sea-turtles-volunteer",
+      "route": "/sea-turtles-volunteer",
+      "checks": {
+        "title": "passed",
+        "description": "passed",
+        "structuredData": "passed",
+        "canonicalUrl": "passed",
+        "ogTags": "passed"
+      },
+      "status": "passed",
+      "priority": "critical"
+    },
+    {
+      "name": "SEO Metadata: /volunteer-costa-rica/sea-turtles",
+      "route": "/volunteer-costa-rica/sea-turtles",
+      "checks": {
+        "title": "passed",
+        "description": "passed",
+        "structuredData": "passed",
+        "canonicalUrl": "passed",
+        "ogTags": "passed"
+      },
+      "status": "passed",
+      "priority": "critical"
+    },
+    {
+      "name": "SEO Metadata: /opportunities",
+      "route": "/opportunities",
+      "checks": {
+        "title": "passed",
+        "description": "passed",
+        "structuredData": "passed",
+        "canonicalUrl": "passed",
+        "ogTags": "passed"
+      },
+      "status": "passed",
+      "priority": "critical"
+    },
+    {
+      "name": "SEO Metadata: /volunteer-south-africa",
+      "route": "/volunteer-south-africa",
+      "checks": {
+        "title": "passed",
+        "description": "passed",
+        "structuredData": "passed",
+        "canonicalUrl": "passed",
+        "ogTags": "passed"
+      },
+      "status": "passed",
+      "priority": "high"
+    },
+    {
+      "name": "SEO Metadata: /volunteer-thailand/elephants",
+      "route": "/volunteer-thailand/elephants",
+      "checks": {
+        "title": "passed",
+        "description": "passed",
+        "structuredData": "passed",
+        "canonicalUrl": "passed",
+        "ogTags": "passed"
+      },
+      "status": "passed",
+      "priority": "high"
+    },
+    {
+      "name": "SEO Metadata: /sea-turtles-volunteer/costa-rica",
+      "route": "/sea-turtles-volunteer/costa-rica",
+      "checks": {
+        "title": "passed",
+        "description": "passed",
+        "structuredData": "passed",
+        "canonicalUrl": "passed",
+        "ogTags": "passed"
+      },
+      "status": "passed",
+      "priority": "high"
+    },
+    {
+      "name": "SEO Metadata: /wildlife-conservation",
+      "route": "/wildlife-conservation",
+      "checks": {
+        "title": "passed",
+        "description": "passed",
+        "structuredData": "passed",
+        "canonicalUrl": "passed",
+        "ogTags": "passed"
+      },
+      "status": "passed",
+      "priority": "high"
+    },
+    {
+      "name": "SEO Metadata: /marine-conservation",
+      "route": "/marine-conservation",
+      "checks": {
+        "title": "passed",
+        "description": "passed",
+        "structuredData": "passed",
+        "canonicalUrl": "passed",
+        "ogTags": "passed"
+      },
+      "status": "passed",
+      "priority": "high"
+    }
+  ],
+  "summary": {
+    "totalTests": 56,
+    "passed": 56,
+    "failed": 0,
+    "warnings": 0,
+    "routeIntegrity": "100%",
+    "navigationFlows": "100%",
+    "performance": "100%",
+    "seoReadiness": "100%"
+  }
+}

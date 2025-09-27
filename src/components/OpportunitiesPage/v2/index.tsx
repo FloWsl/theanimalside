@@ -1,4 +1,4 @@
-import React, { useState, useMemo, lazy, Suspense } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useOpportunitiesV2 } from '../../../hooks/useOpportunityData';
 import { SearchFilters } from '../../../types';

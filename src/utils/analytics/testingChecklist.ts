@@ -83,8 +83,8 @@ class TestingManager {
     // Test 1: Header Rendering
     await this.runTest('header_rendering', 'functionality', async () => {
       const headerConfig = abTestingManager.getDiscoveryHeaderConfig();
-      const searchFreeHeader = document.querySelector('[data-header-type=\"search-free\"]');
-      const enhancedHeader = document.querySelector('[data-header-type=\"enhanced\"]');
+      const searchFreeHeader = document.querySelector('[data-header-type="search-free"]');
+      const enhancedHeader = document.querySelector('[data-header-type="enhanced"]');
       
       if (headerConfig.headerType === 'search-free') {
         return {
@@ -123,8 +123,8 @@ class TestingManager {
 
     // Test 4: Search Redundancy Check
     await this.runTest('search_redundancy', 'functionality', async () => {
-      const heroSearch = document.querySelector('#hero-search, [data-component=\"hero-search\"]');
-      const discoverySearch = document.querySelector('#discovery-search, [data-component=\"discovery-search\"]');
+      const heroSearch = document.querySelector('#hero-search, [data-component="hero-search"]');
+      const discoverySearch = document.querySelector('#discovery-search, [data-component="discovery-search"]');
       const config = abTestingManager.getDiscoveryHeaderConfig();
       
       if (config.headerType === 'search-free') {
@@ -360,7 +360,7 @@ class TestingManager {
 
     // Test 1: Header Visibility
     await this.runTest('header_visibility', 'visual', async () => {
-      const discoverySection = document.querySelector('[data-section=\"discovery\"]');
+      const discoverySection = document.querySelector('[data-section="discovery"]');
       if (!discoverySection) {
         return { status: 'fail', details: 'Discovery section not found' };
       }
@@ -376,7 +376,7 @@ class TestingManager {
 
     // Test 2: Image Loading
     await this.runTest('image_loading', 'visual', async () => {
-      const images = document.querySelectorAll('img[src*=\"unsplash\"]');
+      const images = document.querySelectorAll('img[src*="unsplash"]');
       let loadedImages = 0;
       
       images.forEach(img => {
@@ -396,7 +396,7 @@ class TestingManager {
     // Test 3: Responsive Layout
     await this.runTest('responsive_layout', 'visual', async () => {
       const viewport = window.innerWidth;
-      const discoverySection = document.querySelector('[data-section=\"discovery\"]');
+      const discoverySection = document.querySelector('[data-section="discovery"]');
       
       if (!discoverySection) {
         return { status: 'fail', details: 'Discovery section not found for responsive test' };
@@ -413,7 +413,7 @@ class TestingManager {
 
     // Test 4: Animation States
     await this.runTest('animation_states', 'visual', async () => {
-      const animatedElements = document.querySelectorAll('[style*=\"transform\"], [class*=\"animate\"]');
+      const animatedElements = document.querySelectorAll('[style*="transform"], [class*="animate"]');
       
       return {
         status: animatedElements.length > 0 ? 'pass' : 'warning',

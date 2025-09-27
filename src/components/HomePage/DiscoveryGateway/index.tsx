@@ -26,17 +26,7 @@ const DiscoveryGateway: React.FC<DiscoveryGatewayProps> = ({
   onLocationSelect
 }) => {
   // State for inter-component communication
-  const [selectedAnimal, setSelectedAnimal] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-
-  // Enhanced header handlers
-  const handleAnimalSelect = (animalId: string) => {
-    setSelectedAnimal(animalId);
-  };  // 
-
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
-  };
+  const [selectedAnimal] = useState<string | null>(null);
   
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });

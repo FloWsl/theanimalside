@@ -13,22 +13,18 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import { OrganizationDetail, Program } from '../../types';
+import { OrganizationDetail } from '../../types';
 import { useOrganizationEssentials, useTabDataState } from '../../hooks/useOrganizationTabData';
 
 interface EssentialInfoSidebarProps {
   organization: OrganizationDetail;
-  selectedProgram: Program;
   isDesktop?: boolean;
-  sidebarExpanded?: boolean;
   className?: string;
 }
 
-const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({ 
-  organization, 
-  selectedProgram, 
-  isDesktop = false, 
-  sidebarExpanded = true,
+const EssentialInfoSidebar: React.FC<EssentialInfoSidebarProps> = ({
+  organization,
+  isDesktop = false,
   className = ''
 }) => {
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
