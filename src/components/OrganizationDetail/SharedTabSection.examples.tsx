@@ -3,13 +3,10 @@
 
 import React from 'react';
 import { Heart, MapPin, DollarSign } from 'lucide-react';
-import SharedTabSection, { 
-  HeroSection, 
-  SectionCard, 
-  SubsectionCard,
-  EssentialSection,
-  ImportantSection,
-  ComprehensiveSection 
+import SharedTabSection, {
+  HeroSection,
+  SectionCard,
+  SubsectionCard
 } from './SharedTabSection';
 
 // Example usage patterns for developers
