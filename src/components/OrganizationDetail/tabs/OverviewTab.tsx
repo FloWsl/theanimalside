@@ -69,11 +69,37 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   // Handle loading state
   if (isLoading) {
     return (
-      <div className="w-full max-w-none space-y-6 lg:space-y-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-warm-beige/40 rounded w-1/3"></div>
-          <div className="h-20 bg-warm-beige/40 rounded"></div>
-          <div className="h-32 bg-warm-beige/40 rounded"></div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="animate-pulse">
+          {/* Hero Section Skeleton */}
+          <div className="relative rounded-3xl overflow-hidden shadow-xl bg-warm-beige/40 h-96 lg:h-[500px] mb-8" />
+
+          {/* Mobile Info Cards Skeleton */}
+          <div className="grid grid-cols-2 gap-4 lg:hidden mb-8">
+            <div className="bg-warm-beige/40 rounded-xl h-24" />
+            <div className="bg-warm-beige/40 rounded-xl h-24" />
+          </div>
+
+          {/* Context Section Skeleton */}
+          <div className="bg-warm-beige/40 rounded-2xl h-32 mb-8" />
+
+          {/* Photo Gallery Skeleton */}
+          <div className="bg-gradient-to-br from-warm-beige/20 to-gentle-lemon/10 rounded-3xl p-8 lg:p-12 border border-warm-beige/40">
+            <div className="text-center mb-10">
+              <div className="h-8 bg-warm-beige/40 rounded w-1/2 mx-auto mb-4" />
+              <div className="h-20 bg-warm-beige/40 rounded max-w-2xl mx-auto" />
+            </div>
+
+            {/* Photo Grid Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="bg-warm-beige/40 rounded-2xl aspect-[4/3]" />
+              <div className="bg-warm-beige/40 rounded-2xl aspect-[4/3]" />
+              <div className="bg-warm-beige/40 rounded-2xl aspect-[4/3]" />
+            </div>
+          </div>
+
+          {/* CTA Section Skeleton */}
+          <div className="bg-warm-beige/40 rounded-2xl h-48" />
         </div>
       </div>
     );

@@ -1,5 +1,5 @@
 // src/components/OrganizationDetail/tabs/ExperienceTab.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Zap, 
   Camera, 
@@ -8,7 +8,6 @@ import {
   Heart
 } from 'lucide-react';
 import { OrganizationDetail } from '../../../types';
-import ExpandableSection from '../ExpandableSection';
 import SharedTabSection from '../SharedTabSection';
 import AnimalPhotoGallery from '../AnimalPhotoGallery';
 import { scrollToTabContent } from '../../../lib/scrollUtils';
@@ -28,10 +27,44 @@ const ExperienceTab: React.FC<ExperienceTabProps> = ({ organization, onTabChange
   if (isLoading) {
     return (
       <div className="w-full max-w-none space-y-6 lg:space-y-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-warm-beige/40 rounded w-1/3"></div>
-          <div className="h-20 bg-warm-beige/40 rounded"></div>
-          <div className="h-32 bg-warm-beige/40 rounded"></div>
+        <div className="animate-pulse">
+          {/* Header Section Skeleton */}
+          <div className="relative rounded-3xl overflow-hidden shadow-xl mb-8">
+            <div className="bg-warm-beige/40 h-96 lg:h-80 rounded-3xl" />
+          </div>
+
+          {/* Wildlife Cards Section Skeleton */}
+          <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/3 mb-6" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="bg-warm-beige/40 rounded-xl aspect-square" />
+              ))}
+            </div>
+          </div>
+
+          {/* Daily Schedule Section Skeleton */}
+          <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/4 mb-6" />
+            <div className="space-y-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <div className="w-16 h-6 bg-warm-beige/40 rounded" />
+                  <div className="flex-1 h-6 bg-warm-beige/40 rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Impact Section Skeleton */}
+          <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/3 mb-6" />
+            <div className="space-y-3">
+              <div className="h-4 bg-warm-beige/40 rounded w-3/4" />
+              <div className="h-4 bg-warm-beige/40 rounded w-2/3" />
+              <div className="h-4 bg-warm-beige/40 rounded w-4/5" />
+            </div>
+          </div>
         </div>
       </div>
     );

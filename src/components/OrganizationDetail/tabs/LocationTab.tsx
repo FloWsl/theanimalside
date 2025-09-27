@@ -25,7 +25,7 @@ interface LocationTabProps {
   hideDuplicateInfo?: boolean;
 }
 
-const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hideDuplicateInfo = false }) => {
+const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange }) => {
   // Fetch real database data using proper service method
   const locationQuery = useOrganizationLocation(organization.slug);
   const { data: locationData, isLoading, error } = useTabDataState(locationQuery, 'Location');
@@ -34,10 +34,78 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
   if (isLoading) {
     return (
       <div className="w-full max-w-none space-y-6 lg:space-y-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-warm-beige/40 rounded w-1/3"></div>
-          <div className="h-20 bg-warm-beige/40 rounded"></div>
-          <div className="h-32 bg-warm-beige/40 rounded"></div>
+        <div className="animate-pulse">
+          {/* Location Hero Section Skeleton */}
+          <div className="relative rounded-3xl overflow-hidden shadow-xl mb-8">
+            <div className="bg-warm-beige/40 h-72 rounded-3xl" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="h-10 bg-white/60 rounded w-64 mx-auto" />
+                <div className="h-6 bg-white/60 rounded w-32 mx-auto" />
+                <div className="h-4 bg-white/60 rounded w-96 mx-auto" />
+              </div>
+            </div>
+          </div>
+
+          {/* Getting There Section Skeleton */}
+          <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8 mb-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/3 mb-6" />
+            <div className="bg-gradient-to-br from-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-6">
+              <div className="grid lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="bg-white/80 rounded-xl h-32" />
+                  <div className="bg-white/80 rounded-xl h-24" />
+                </div>
+                <div className="space-y-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="bg-white/80 rounded-xl h-20" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Local Community Section Skeleton */}
+          <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8 mb-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/3 mb-6" />
+            <div className="bg-gradient-to-br from-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="bg-white/80 rounded-xl h-40" />
+                </div>
+                <div className="space-y-4">
+                  <div className="bg-white/80 rounded-xl h-40" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Local Adventures Section Skeleton */}
+          <div className="bg-gradient-to-br from-deep-forest/80 to-sage-green/60 rounded-2xl p-8 mb-8">
+            <div className="text-center mb-6">
+              <div className="w-12 h-12 bg-white/20 rounded-xl mx-auto mb-4" />
+              <div className="h-8 bg-white/30 rounded w-64 mx-auto mb-3" />
+              <div className="h-4 bg-white/30 rounded w-96 mx-auto" />
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white/10 rounded-xl h-24" />
+              ))}
+            </div>
+          </div>
+
+          {/* Climate Section Skeleton */}
+          <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/4 mb-6" />
+            <div className="bg-gradient-to-br from-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-6">
+              <div className="grid sm:grid-cols-3 gap-4 mb-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="bg-white/80 rounded-xl h-40" />
+                ))}
+              </div>
+              <div className="bg-white/60 rounded-xl h-24" />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -65,17 +133,17 @@ const LocationTab: React.FC<LocationTabProps> = ({ organization, onTabChange, hi
   const transportation = locationData?.transportation || organization.transportation;
   const activities = locationData?.activities || [];
   const languages = locationData?.languages || [];
-  const primaryProgram = locationData?.primary_program || organization.programs?.[0];
+  // const primaryProgram = locationData?.primary_program || organization.programs?.[0];
   
   // Ensure we have a valid program with fallback data
-  const program = primaryProgram || {
-    title: 'Wildlife Conservation Program',
-    highlights: [],
-    schedule: {
-      daysPerWeek: 5,
-      hoursPerDay: 6
-    }
-  };
+  // const _program = primaryProgram || {
+  //   title: 'Wildlife Conservation Program',
+  //   highlights: [],
+  //   schedule: {
+  //     daysPerWeek: 5,
+  //     hoursPerDay: 6
+  //   }
+  // };
 
   return (
     <div className="w-full max-w-none space-y-6 lg:space-y-8">

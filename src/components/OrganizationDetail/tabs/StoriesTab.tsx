@@ -24,10 +24,89 @@ const StoriesTab: React.FC<StoriesTabProps> = ({ organization, onTabChange }) =>
   if (isLoading) {
     return (
       <div className="w-full max-w-none space-y-6 lg:space-y-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-warm-beige/40 rounded w-1/3"></div>
-          <div className="h-20 bg-warm-beige/40 rounded"></div>
-          <div className="h-32 bg-warm-beige/40 rounded"></div>
+        <div className="animate-pulse">
+          {/* Hero Section Skeleton */}
+          <div className="relative rounded-3xl overflow-hidden shadow-xl mb-8">
+            <div className="bg-warm-beige/40 h-64 rounded-3xl" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-4 px-4">
+                <div className="h-8 bg-white/60 rounded w-48 mx-auto" />
+                <div className="h-4 bg-white/60 rounded w-80 mx-auto" />
+                <div className="h-4 bg-white/60 rounded w-72 mx-auto" />
+              </div>
+            </div>
+          </div>
+
+          {/* Rating Overview Section Skeleton */}
+          <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8 mb-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/3 mb-6" />
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-warm-beige/40 rounded-full mx-auto mb-4" />
+                <div className="h-6 bg-warm-beige/40 rounded w-12 mx-auto mb-2" />
+                <div className="h-4 bg-warm-beige/40 rounded w-20 mx-auto" />
+              </div>
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="h-4 bg-warm-beige/40 rounded w-16" />
+                    <div className="flex-1 h-2 bg-warm-beige/40 rounded" />
+                    <div className="h-4 bg-warm-beige/40 rounded w-8" />
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-3">
+                <div className="h-4 bg-warm-beige/40 rounded w-32" />
+                <div className="h-4 bg-warm-beige/40 rounded w-24" />
+                <div className="h-4 bg-warm-beige/40 rounded w-28" />
+              </div>
+            </div>
+          </div>
+
+          {/* External Links Section Skeleton */}
+          <div className="bg-gradient-to-br from-sage-green/5 to-warm-sunset/5 rounded-2xl p-8 mb-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/4 mb-6" />
+            <div className="grid md:grid-cols-3 gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-white/80 rounded-xl p-4">
+                  <div className="h-32 bg-warm-beige/40 rounded-lg mb-4" />
+                  <div className="h-4 bg-warm-beige/40 rounded w-3/4 mb-2" />
+                  <div className="h-3 bg-warm-beige/40 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Review Cards Section Skeleton */}
+          <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/3 mb-6" />
+            <div className="grid md:grid-cols-2 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-gradient-to-br from-warm-beige/20 to-gentle-lemon/10 rounded-xl p-6 border border-warm-beige/40">
+                  {/* Rating stars */}
+                  <div className="flex gap-1 mb-4">
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <div key={j} className="w-4 h-4 bg-warm-beige/40 rounded" />
+                    ))}
+                  </div>
+                  {/* Quote */}
+                  <div className="space-y-2 mb-6">
+                    <div className="h-4 bg-warm-beige/40 rounded w-full" />
+                    <div className="h-4 bg-warm-beige/40 rounded w-4/5" />
+                    <div className="h-4 bg-warm-beige/40 rounded w-3/5" />
+                  </div>
+                  {/* Author info */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-warm-beige/40 rounded-full" />
+                    <div className="space-y-1">
+                      <div className="h-4 bg-warm-beige/40 rounded w-24" />
+                      <div className="h-3 bg-warm-beige/40 rounded w-16" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );

@@ -1,5 +1,5 @@
 // src/components/OrganizationDetail/index.tsx - Enhanced Cross-Device Architecture
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { OrganizationService } from '../../services/organizationService';
@@ -8,14 +8,15 @@ import { generateProgramSlug, findProgramBySlug, getPrimaryProgram } from '../..
 
 // Import tab system components
 import TabNavigation, { TabId } from './TabNavigation';
-import { 
+import {
   OverviewTab,
-  ExperienceTab, 
+  ExperienceTab,
   PracticalTab,
   LocationTab,
   StoriesTab,
-  ConnectTab 
+  ConnectTab
 } from './tabs';
+import { TabErrorBoundary } from './OrganizationDetailErrorBoundary';
 
 // Import header and navigation
 import OrganizationHeader from './OrganizationHeader';
@@ -26,9 +27,7 @@ import ProgramIndicator from './ProgramIndicator';
 import ProgramSwitcher from './ProgramSwitcher';
 
 // Import layout components for responsive architecture
-import { Layout } from '../Layout/Container';
 import EssentialInfoSidebar from './EssentialInfoSidebar';
-import Breadcrumb, { useBreadcrumbs } from '../ui/Breadcrumb';
 
 // Enhanced cross-device state management hook
 const useCrossDeviceState = () => {
@@ -104,7 +103,6 @@ const useCrossDeviceState = () => {
 
 const OrganizationDetail: React.FC = () => {
   const { slug, programSlug } = useParams<{ slug: string; programSlug?: string }>();
-  const breadcrumbs = useBreadcrumbs();
   
   // Check if we're viewing a specific program
   const isSpecificProgramPage = !!programSlug;
@@ -213,11 +211,7 @@ const OrganizationDetail: React.FC = () => {
   // Enhanced cross-device state management
   const {
     activeTab,
-    handleTabChange,
-    sidebarExpanded,
-    setSidebarExpanded,
-    viewMode,
-    setViewMode
+    handleTabChange
   } = useCrossDeviceState();
   
   // Enhanced responsive state management with smooth transitions
@@ -263,14 +257,14 @@ const OrganizationDetail: React.FC = () => {
         
         try {
           observer.observe({ entryTypes: ['layout-shift'] });
-        } catch (e) {
+        } catch {
           // PerformanceObserver not supported, gracefully degrade
         }
         
         return () => {
           try {
             observer.disconnect();
-          } catch (e) {
+          } catch {
             // Silent fail if observer wasn't supported
           }
         };
@@ -318,37 +312,59 @@ const OrganizationDetail: React.FC = () => {
     switch (activeTab) {
       case 'overview':
         return (
-          <OverviewTab 
-            {...commonProps}
-            hideDuplicateInfo={isDesktop}
-            onTabChange={handleTabChange}
-          />
+          <TabErrorBoundary tabName="Overview">
+            <OverviewTab
+              {...commonProps}
+              hideDuplicateInfo={isDesktop}
+              onTabChange={handleTabChange}
+            />
+          </TabErrorBoundary>
         );
       case 'experience':
-        return <ExperienceTab {...commonProps} onTabChange={handleTabChange} />;
+        return (
+          <TabErrorBoundary tabName="Experience">
+            <ExperienceTab {...commonProps} onTabChange={handleTabChange} />
+          </TabErrorBoundary>
+        );
       case 'practical':
         return (
-          <PracticalTab 
-            {...commonProps}
-            selectedProgram={selectedProgram}
-            hideDuplicateInfo={isDesktop}
-            onTabChange={handleTabChange}
-          />
+          <TabErrorBoundary tabName="Practical">
+            <PracticalTab
+              {...commonProps}
+              selectedProgram={selectedProgram}
+              hideDuplicateInfo={isDesktop}
+              onTabChange={handleTabChange}
+            />
+          </TabErrorBoundary>
         );
       case 'location':
         return (
-          <LocationTab 
-            {...commonProps}
-            hideDuplicateInfo={isDesktop}
-            onTabChange={handleTabChange}
-          />
+          <TabErrorBoundary tabName="Location">
+            <LocationTab
+              {...commonProps}
+              hideDuplicateInfo={isDesktop}
+              onTabChange={handleTabChange}
+            />
+          </TabErrorBoundary>
         );
       case 'stories':
-        return <StoriesTab {...commonProps} />;
+        return (
+          <TabErrorBoundary tabName="Stories">
+            <StoriesTab {...commonProps} />
+          </TabErrorBoundary>
+        );
       case 'connect':
-        return <ConnectTab {...commonProps} />;
+        return (
+          <TabErrorBoundary tabName="Connect">
+            <ConnectTab {...commonProps} />
+          </TabErrorBoundary>
+        );
       default:
-        return <OverviewTab {...commonProps} hideDuplicateInfo={isDesktop} onTabChange={handleTabChange} />;
+        return (
+          <TabErrorBoundary tabName="Overview">
+            <OverviewTab {...commonProps} hideDuplicateInfo={isDesktop} onTabChange={handleTabChange} />
+          </TabErrorBoundary>
+        );
     }
   };
   

@@ -1,10 +1,9 @@
 // src/components/OrganizationDetail/tabs/PracticalTab.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  DollarSign, 
-  Clock, 
-  Heart, 
+import {
+  DollarSign,
+  Heart,
   Shield,
   Plane,
   CheckCircle,
@@ -125,13 +124,10 @@ const AccommodationGallery: React.FC<{ photos: string[] }> = ({ photos }) => {
   );
 };
 
-const PracticalTab: React.FC<PracticalTabProps> = ({ 
-  organization, 
-  selectedProgram, 
-  isDesktop = false,
-  sidebarVisible = false,
-  hideDuplicateInfo = false,
-  onTabChange 
+const PracticalTab: React.FC<PracticalTabProps> = ({
+  organization,
+  selectedProgram,
+  onTabChange
 }) => {
   const navigate = useNavigate();
   
@@ -146,10 +142,69 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
   if (isLoading) {
     return (
       <div className="w-full max-w-none space-y-6 lg:space-y-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-warm-beige/40 rounded w-1/3"></div>
-          <div className="h-20 bg-warm-beige/40 rounded"></div>
-          <div className="h-32 bg-warm-beige/40 rounded"></div>
+        <div className="animate-pulse">
+          {/* Essential Information Section Skeleton */}
+          <div className="relative rounded-3xl overflow-hidden shadow-xl mb-8">
+            <div className="bg-warm-beige/40 h-64 rounded-3xl" />
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-4xl px-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="bg-white/80 rounded-xl h-20" />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Accommodation Section Skeleton */}
+          <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8 mb-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/3 mb-6" />
+            <div className="bg-gradient-to-br from-warm-beige/30 to-gentle-lemon/20 rounded-xl p-6">
+              <div className="aspect-[4/3] bg-warm-beige/40 rounded-xl mb-6" />
+              <div className="space-y-4">
+                <div className="h-6 bg-warm-beige/40 rounded w-3/4" />
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="bg-warm-beige/30 rounded-lg h-24" />
+                  <div className="bg-warm-beige/30 rounded-lg h-24" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Requirements Section Skeleton */}
+          <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8 mb-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/4 mb-6" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-warm-beige/40 rounded-xl h-32" />
+              ))}
+            </div>
+          </div>
+
+          {/* Cost Breakdown Section Skeleton */}
+          <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8 mb-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/3 mb-6" />
+            <div className="bg-gradient-to-br from-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-6">
+              <div className="grid sm:grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="bg-white/80 rounded-xl h-40" />
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="bg-white/80 rounded-xl h-32" />
+                  <div className="bg-white/80 rounded-xl h-32" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Packing Section Skeleton */}
+          <div className="bg-white rounded-2xl shadow-sm border border-warm-beige/40 p-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-1/4 mb-6" />
+            <div className="bg-gradient-to-br from-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="bg-white/80 rounded-xl h-48" />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -1103,22 +1158,6 @@ const PracticalTab: React.FC<PracticalTabProps> = ({
 
       {/* OPTIONAL CANCELLATION POLICY - Only show if organization provides it */}
       {/* Note: organization.cancellationPolicy doesn't exist in mock data, but would be added for real implementation */}
-      {false && ( // Will be: organization.cancellationPolicy && (
-        <SharedTabSection
-          title="Cancellation Policy"
-          variant="section"
-          level="important"
-          icon={Shield}
-          className="mt-8"
-        >
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
-            <p className="text-forest leading-relaxed">
-              {/* organization.cancellationPolicy */}
-              Sample: Cancel 90+ days before for full refund minus $50 admin fee. 30-89 days: 75% refund. 0-29 days: 50% credit valid for 2 years.
-            </p>
-          </div>
-        </SharedTabSection>
-      )}
 
 
       {/* Simple Next Step CTA */}

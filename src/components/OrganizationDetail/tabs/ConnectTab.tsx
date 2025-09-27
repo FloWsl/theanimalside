@@ -4,7 +4,6 @@ import {
   Mail,
   MessageCircle,
   Send,
-  Clock,
   CheckCircle,
   Heart,
   Phone,
@@ -23,7 +22,7 @@ interface ConnectTabProps {
   onTabChange?: (tabId: string) => void;
 }
 
-const ConnectTab: React.FC<ConnectTabProps> = ({ organization, onTabChange }) => {
+const ConnectTab: React.FC<ConnectTabProps> = ({ organization }) => {
   // Fetch real database data using proper service method
   const connectQuery = useOrganizationConnect(organization.slug);
   const { data: connectData, isLoading, error } = useTabDataState(connectQuery, 'Connect');
@@ -32,10 +31,127 @@ const ConnectTab: React.FC<ConnectTabProps> = ({ organization, onTabChange }) =>
   if (isLoading) {
     return (
       <div className="w-full max-w-none space-y-6 lg:space-y-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-warm-beige/40 rounded w-1/3"></div>
-          <div className="h-20 bg-warm-beige/40 rounded"></div>
-          <div className="h-32 bg-warm-beige/40 rounded"></div>
+        <div className="animate-pulse">
+          {/* Hero Section Skeleton */}
+          <div className="relative rounded-3xl overflow-hidden shadow-xl mb-8">
+            <div className="bg-warm-beige/40 h-64 rounded-3xl" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-4 px-4">
+                <div className="h-8 bg-white/60 rounded w-64 mx-auto" />
+                <div className="h-4 bg-white/60 rounded w-96 mx-auto" />
+                <div className="h-4 bg-white/60 rounded w-80 mx-auto" />
+                <div className="flex items-center justify-center gap-4 mt-6">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-white/60 rounded-full" />
+                      <div className="h-3 bg-white/60 rounded w-16" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Introduction Section Skeleton */}
+          <div className="text-center mb-8">
+            <div className="h-8 bg-warm-beige/40 rounded w-48 mx-auto mb-3" />
+            <div className="h-4 bg-warm-beige/40 rounded w-96 mx-auto" />
+          </div>
+
+          {/* Contact Information Section Skeleton */}
+          <div className="bg-gradient-to-br from-warm-sunset/5 to-golden-hour/10 rounded-3xl p-8 border border-warm-sunset/20 mb-8">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-warm-sunset/20 rounded-3xl mx-auto mb-6" />
+              <div className="h-8 bg-warm-beige/40 rounded w-32 mx-auto mb-4" />
+              <div className="h-4 bg-warm-beige/40 rounded w-80 mx-auto" />
+            </div>
+
+            {/* Contact Details Skeleton */}
+            <div className="bg-white rounded-2xl p-6 border border-warm-sunset/20 mb-8">
+              <div className="h-6 bg-warm-beige/40 rounded w-40 mb-4" />
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 bg-warm-beige/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 bg-warm-sunset/40 rounded" />
+                      <div className="space-y-2">
+                        <div className="h-4 bg-warm-beige/40 rounded w-16" />
+                        <div className="h-3 bg-warm-beige/40 rounded w-32" />
+                      </div>
+                    </div>
+                    <div className="h-8 bg-rich-earth/40 rounded w-20" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Tips Section Skeleton */}
+            <div className="bg-white/80 rounded-2xl p-6 border border-warm-sunset/10">
+              <div className="h-6 bg-warm-beige/40 rounded w-48 mb-4" />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="h-4 bg-warm-beige/40 rounded w-32 mb-2" />
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="h-3 bg-warm-beige/40 rounded w-40" />
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-warm-beige/40 rounded w-36 mb-2" />
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="h-3 bg-warm-beige/40 rounded w-44" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Application Section Skeleton */}
+          <div className="bg-gradient-to-br from-rich-earth/5 to-warm-beige/20 rounded-3xl p-8 border border-rich-earth/20">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-rich-earth/20 rounded-3xl mx-auto mb-6" />
+              <div className="h-8 bg-warm-beige/40 rounded w-36 mx-auto mb-4" />
+              <div className="h-4 bg-warm-beige/40 rounded w-88 mx-auto" />
+            </div>
+
+            <div className="text-center mb-8">
+              <div className="h-12 bg-rich-earth/40 rounded-2xl w-64 mx-auto" />
+            </div>
+
+            {/* Application Process Skeleton */}
+            <div className="bg-white/80 rounded-2xl p-6 border border-rich-earth/10 mb-6">
+              <div className="h-6 bg-warm-beige/40 rounded w-40 mb-4" />
+              <div className="grid md:grid-cols-3 gap-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-rich-earth/20 rounded-full" />
+                    <div className="space-y-2">
+                      <div className="h-4 bg-warm-beige/40 rounded w-24" />
+                      <div className="h-3 bg-warm-beige/40 rounded w-32" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Application Tips Skeleton */}
+            <div className="bg-white/80 rounded-2xl p-6 border border-rich-earth/10">
+              <div className="h-6 bg-warm-beige/40 rounded w-44 mb-4" />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="h-4 bg-warm-beige/40 rounded w-28 mb-2" />
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="h-3 bg-warm-beige/40 rounded w-40" />
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-warm-beige/40 rounded w-36 mb-2" />
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="h-3 bg-warm-beige/40 rounded w-44" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
