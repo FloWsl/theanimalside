@@ -10,6 +10,11 @@ interface AnimalPhotoGalleryProps {
 const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) => {
   const [selectedAnimal, setSelectedAnimal] = useState<number | null>(null);
 
+  // Return empty div if no animal types provided
+  if (!animalTypes || animalTypes.length === 0) {
+    return <div className="text-center py-8 text-forest/60">No animal types available</div>;
+  }
+
   // Lock background scroll when modal is open
   useEffect(() => {
     if (selectedAnimal !== null) {
@@ -37,7 +42,7 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
         {/* Immersive Animal List/Grid */}
         <div className="flex overflow-y-hidden overflow-x-auto snap-x snap-mandatory space-x-3 md:space-x-4 py-6 scrollbar-hide md:grid md:grid-cols-4 md:gap-4 md:space-x-0">
           {animalTypes.map((animal, index) => {
-            const animalSlug = animal.animalType.toLowerCase().replace(/\s+/g, "-");
+            const animalSlug = animal?.animalType?.toLowerCase()?.replace(/\s+/g, "-") || `animal-${index}`;
             const isSelected = selectedAnimal === index;
 
             return (
@@ -53,14 +58,14 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
                   {/* Image */}
                   <div className="relative h-40 md:h-48 overflow-hidden">
                     <img
-                      src={animal.image}
-                      alt={`${animal.animalType} volunteer opportunities`}
+                      src={animal?.image || '/placeholder-animal.jpg'}
+                      alt={`${animal?.animalType || 'Animal'} volunteer opportunities`}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     <div className="absolute bottom-3 left-3 right-3">
                       <h3 className="text-white font-bold text-base md:text-lg drop-shadow-lg leading-tight">
-                        {animal.animalType}
+                        {animal?.animalType || 'Unknown Animal'}
                       </h3>
                     </div>
                     <div className="absolute top-3 right-3">
@@ -96,8 +101,8 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
                     {/* Modal Header Image */}
                     <div className="relative h-52 md:h-64 overflow-hidden">
                       <img
-                        src={animal.image}
-                        alt={`${animal.animalType} details`}
+                        src={animal?.image || '/placeholder-animal.jpg'}
+                        alt={`${animal?.animalType || 'Animal'} details`}
                         className="w-full h-full object-cover"
                       />
                     <button
@@ -108,7 +113,7 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
                     </button>
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-5">
                         <h3 className="text-white font-bold text-2xl leading-tight">
-                          {animal.animalType}
+                          {animal?.animalType || 'Unknown Animal'}
                         </h3>
                       </div>
                     </div>
@@ -117,13 +122,13 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
                   <div className="p-6 space-y-6 max-h-[40vh] overflow-y-auto">
                       <div>
                         <p className="text-forest/80 leading-relaxed">
-                          {animal.description}
+                          {animal?.description || 'No description available.'}
                         </p>
                       </div>
                       <div>
                         <h4 className="font-semibold text-forest mb-3">Species you’ll work with:</h4>
                         <div className="grid grid-cols-1 gap-2">
-                          {animal.species.map((species, sIdx) => (
+                          {(animal?.species || []).map((species, sIdx) => (
                             <div
                               key={sIdx}
                               className="flex items-center gap-3 p-3 bg-warm-beige/30 rounded-lg"
@@ -136,10 +141,10 @@ const AnimalPhotoGallery: React.FC<AnimalPhotoGalleryProps> = ({ animalTypes }) 
                       </div>
                       <div className="pt-4">
                         <a
-                          href={`/opportunities/${animal.animalType.toLowerCase().replace(/\s+/g, "-")}`}
+                          href={`/opportunities/${animal?.animalType?.toLowerCase()?.replace(/\s+/g, "-") || 'animals'}`}
                           className="w-full inline-flex items-center justify-center gap-2 bg-rich-earth hover:bg-rich-earth/90 text-white px-6 py-4 rounded-2xl font-semibold transition-colors duration-200 focus:outline-none"
                         >
-                          More {animal.animalType} Opportunities
+                          More {animal?.animalType || 'Animal'} Opportunities
                           <ChevronRight className="w-5 h-5" />
                         </a>
                       </div>

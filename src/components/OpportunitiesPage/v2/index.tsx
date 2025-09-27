@@ -1,6 +1,6 @@
 import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { opportunities } from '../../../data/opportunities';
+import { useOpportunitiesV2 } from '../../../hooks/useOpportunityData';
 import { SearchFilters } from '../../../types';
 import OpportunitiesPageHero from './OpportunitiesPageHero';
 import Breadcrumb, { useBreadcrumbs } from '../../ui/Breadcrumb';
@@ -45,92 +45,12 @@ const OpportunitiesPageV2: React.FC = () => {
   const [filters, setFilters] = useState<V2SearchFilters>({});
   const breadcrumbs = useBreadcrumbs();
   
-  // Smart filtering logic with performance optimization
-  const filteredOpportunities = useMemo(() => {
-    // Early return if no filters
-    if (Object.keys(filters).length === 0) return opportunities;
-    
-    let filtered = opportunities;
-    
-    // Multi-location filtering
-    if (filters.locations && filters.locations.length > 0) {
-      filtered = filtered.filter(opp => 
-        filters.locations!.some(location => 
-          opp.location.country.toLowerCase().includes(location.toLowerCase()) || 
-          opp.location.city.toLowerCase().includes(location.toLowerCase())
-        )
-      );
-    }
-    
-    // Animal type filtering
-    if (filters.animalTypes && filters.animalTypes.length > 0) {
-      filtered = filtered.filter(opp => 
-        filters.animalTypes!.some(type => 
-          opp.animalTypes.some(oppType => 
-            oppType.toLowerCase().includes(type.toLowerCase())
-          )
-        )
-      );
-    }
-    
-    // Cost range filtering
-    if (filters.costRange) {
-      switch (filters.costRange) {
-        case 'free':
-          filtered = filtered.filter(opp => opp.cost.amount === 0);
-          break;
-        case 'under-500':
-          filtered = filtered.filter(opp => 
-            opp.cost.amount === 0 || (opp.cost.amount && opp.cost.amount <= 500)
-          );
-          break;
-        case 'under-1000':
-          filtered = filtered.filter(opp => 
-            opp.cost.amount === 0 || (opp.cost.amount && opp.cost.amount <= 1000)
-          );
-          break;
-        default:
-          // 'any' - no filtering
-          break;
-      }
-    }
-    
-    // Duration filtering
-    if (filters.durationMin !== undefined) {
-      filtered = filtered.filter(opp => opp.duration.min >= filters.durationMin!);
-    }
-    
-    if (filters.durationMax !== undefined) {
-      filtered = filtered.filter(opp => 
-        opp.duration.max === null || opp.duration.max <= filters.durationMax!
-      );
-    }
-    
-    // Search term filtering
-    if (filters.searchTerm) {
-      const searchLower = filters.searchTerm.toLowerCase();
-      filtered = filtered.filter(opp => 
-        opp.title.toLowerCase().includes(searchLower) || 
-        opp.description.toLowerCase().includes(searchLower) ||
-        opp.organization.toLowerCase().includes(searchLower) ||
-        opp.animalTypes.some(animal => animal.toLowerCase().includes(searchLower))
-      );
-    }
-    
-    // Smart sorting: FREE first, then featured, then by date
-    return filtered.sort((a, b) => {
-      // Free opportunities first
-      if (a.cost.amount === 0 && b.cost.amount !== 0) return -1;
-      if (a.cost.amount !== 0 && b.cost.amount === 0) return 1;
-      
-      // Then featured
-      if (a.featured && !b.featured) return -1;
-      if (!a.featured && b.featured) return 1;
-      
-      // Finally by date
-      return new Date(b.datePosted).getTime() - new Date(a.datePosted).getTime();
-    });
-  }, [filters]);
+  // Fetch opportunities from database with filters
+  const { data: opportunitiesData, isLoading, error } = useOpportunitiesV2(filters);
+  
+  // Extract opportunities from the API response
+  const opportunities = opportunitiesData?.data || [];
+  const totalCount = opportunitiesData?.count || 0;
   
   const handleFilterChange = (newFilters: V2SearchFilters) => {
     setFilters(newFilters);
@@ -158,7 +78,7 @@ const OpportunitiesPageV2: React.FC = () => {
   };
   
   const generatePageDescription = () => {
-    const count = filteredOpportunities.length;
+    const count = opportunities.length;
     let description = `Discover ${count} verified wildlife conservation volunteer opportunities worldwide. `;
     
     if (filters.locations && filters.locations.length > 0) {
@@ -205,17 +125,33 @@ const OpportunitiesPageV2: React.FC = () => {
             filters={filters}
             onFilterChange={handleFilterChange}
             onClearFilters={handleClearFilters}
-            resultCount={filteredOpportunities.length}
-            totalCount={opportunities.length}
+            resultCount={opportunities.length}
+            totalCount={totalCount}
           />
         </Suspense>
         
         {/* Results Grid */}
         <Suspense fallback={<GridLoader />}>
-          <OpportunityGrid 
-            opportunities={filteredOpportunities}
-            filters={filters}
-          />
+          {error ? (
+            <div className="container mx-auto px-6 py-8">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                <p className="text-red-700">Error loading opportunities: {error.message}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          ) : isLoading ? (
+            <GridLoader />
+          ) : (
+            <OpportunityGrid 
+              opportunities={opportunities}
+              filters={filters}
+            />
+          )}
         </Suspense>
       </div>
     </>

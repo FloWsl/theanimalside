@@ -1,18 +1,35 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Layout from './components/Layout';
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Lazy load heavy components for better performance
 const HomePage = React.lazy(() => import('./components/HomePage'));
 const OpportunitiesPage = React.lazy(() => import('./components/OpportunitiesPage/v2'));
 const OrganizationDetail = React.lazy(() => import('./components/OrganizationDetail'));
+const ProgramListPage = React.lazy(() => import('./components/OrganizationDetail/ProgramListPage'));
 
 // New SEO-friendly pages
 const CountryLandingPage = React.lazy(() => import('./components/CountryLandingPage'));
 const AnimalLandingPage = React.lazy(() => import('./components/AnimalLandingPage'));
 const CombinedPage = React.lazy(() => import('./components/CombinedPage'));
 const FlatOrganizationPage = React.lazy(() => import('./components/FlatOrganizationPage'));
+
+// Guide pages
+const GuidesPage = React.lazy(() => import('./components/GuidesPage'));
 
 // Lightweight loading component
 const PageLoader: React.FC = () => (
@@ -31,8 +48,9 @@ function App() {
   }, []);
 
   return (
-    <HelmetProvider>
-      <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <HelmetProvider>
+        <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={
@@ -49,6 +67,20 @@ function App() {
             <Route path="organization/:slug" element={
               <Suspense fallback={<PageLoader />}>
                 <OrganizationDetail />
+              </Suspense>
+            } />
+            
+            {/* Individual program routes */}
+            <Route path="organization/:slug/program/:programSlug" element={
+              <Suspense fallback={<PageLoader />}>
+                <OrganizationDetail />
+              </Suspense>
+            } />
+            
+            {/* All programs list for an organization */}
+            <Route path="organization/:slug/programs" element={
+              <Suspense fallback={<PageLoader />}>
+                <ProgramListPage />
               </Suspense>
             } />
             
@@ -221,6 +253,13 @@ function App() {
               </Suspense>
             } />
             
+            {/* Guides routes */}
+            <Route path="guides/:guideSlug" element={
+              <Suspense fallback={<PageLoader />}>
+                <GuidesPage />
+              </Suspense>
+            } />
+            
             {/* Level 3 - Flat organization pages (CATCH-ALL - must be last) */}
             <Route path=":orgSlug" element={
               <Suspense fallback={<PageLoader />}>
@@ -229,8 +268,9 @@ function App() {
             } />
           </Route>
         </Routes>
-      </BrowserRouter>
-    </HelmetProvider>
+        </BrowserRouter>
+      </HelmetProvider>
+    </QueryClientProvider>
   );
 }
 

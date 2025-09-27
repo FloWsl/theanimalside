@@ -4,8 +4,8 @@ import { OrganizationTestimonial } from '../types';
 /**
  * Calculate the average rating from an array of testimonials
  */
-export const calculateAverageRating = (testimonials: OrganizationTestimonial[]): number => {
-  if (testimonials.length === 0) return 0;
+export const calculateAverageRating = (testimonials: OrganizationTestimonial[] | undefined): number => {
+  if (!testimonials || testimonials.length === 0) return 0;
   
   const totalRating = testimonials.reduce((sum, testimonial) => sum + testimonial.rating, 0);
   return Math.round((totalRating / testimonials.length) * 10) / 10; // Round to 1 decimal place
@@ -14,14 +14,15 @@ export const calculateAverageRating = (testimonials: OrganizationTestimonial[]):
 /**
  * Calculate rating distribution (how many 5-star, 4-star, etc. reviews)
  */
-export const calculateRatingDistribution = (testimonials: OrganizationTestimonial[]): Array<{
+export const calculateRatingDistribution = (testimonials: OrganizationTestimonial[] | undefined): Array<{
   stars: number;
   count: number;
   percentage: number;
 }> => {
+  if (!testimonials) testimonials = [];
   const distribution = [5, 4, 3, 2, 1].map(stars => {
-    const count = testimonials.filter(t => t.rating === stars).length;
-    const percentage = testimonials.length > 0 ? Math.round((count / testimonials.length) * 100) : 0;
+    const count = testimonials!.filter(t => t.rating === stars).length;
+    const percentage = testimonials!.length > 0 ? Math.round((count / testimonials!.length) * 100) : 0;
     return { stars, count, percentage };
   });
   
@@ -31,8 +32,8 @@ export const calculateRatingDistribution = (testimonials: OrganizationTestimonia
 /**
  * Calculate percentage of reviewers who would recommend (4+ star ratings)
  */
-export const calculateRecommendationRate = (testimonials: OrganizationTestimonial[]): number => {
-  if (testimonials.length === 0) return 0;
+export const calculateRecommendationRate = (testimonials: OrganizationTestimonial[] | undefined): number => {
+  if (!testimonials || testimonials.length === 0) return 0;
   
   const recommendingReviews = testimonials.filter(t => t.rating >= 4).length;
   return Math.round((recommendingReviews / testimonials.length) * 100);

@@ -564,6 +564,8 @@ export interface OrganizationLocation {
   organization: Pick<Organization, 'id' | 'name' | 'country' | 'region' | 'city' | 'coordinates' | 'timezone' | 'nearest_airport'>;
   transportation: Transportation;
   activities: ProgramActivity[];
+  languages: Language[];
+  primary_program?: Program;
 }
 
 // For Stories Tab - Testimonials + statistics

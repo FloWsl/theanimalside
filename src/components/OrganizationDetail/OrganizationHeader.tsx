@@ -9,10 +9,11 @@ interface OrganizationHeaderProps {
 }
 
 const OrganizationHeader: React.FC<OrganizationHeaderProps> = ({ organization }) => {
-  // Minimal rating calculation
-  const averageRating = calculateAverageRating(organization.testimonials);
+  // Minimal rating calculation with safe defaults
+  const testimonials = organization.testimonials || [];
+  const averageRating = calculateAverageRating(testimonials);
   const starDisplay = generateStarDisplay(averageRating);
-  const reviewCount = organization.testimonials.length;
+  const reviewCount = testimonials.length;
   
   return (
     <div className="relative overflow-hidden min-h-screen flex items-center">

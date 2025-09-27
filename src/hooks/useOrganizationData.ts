@@ -374,3 +374,126 @@ export function getLoadingComponent(props: TabLoadingProps) {
   
   return null;
 }
+
+// ==================== PROGRAM-SPECIFIC HOOKS ====================
+
+/**
+ * Get program-specific overview data
+ * Used for: OverviewTab when specific program is selected
+ */
+export function useProgramOverview(programId: string) {
+  return useQuery({
+    queryKey: ['program', programId, 'overview'],
+    queryFn: () => OrganizationService.getProgramOverview(programId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+    retry: 2,
+    enabled: !!programId
+  });
+}
+
+/**
+ * Get program-specific experience data
+ * Used for: ExperienceTab when specific program is selected
+ */
+export function useProgramExperience(programId: string) {
+  return useQuery({
+    queryKey: ['program', programId, 'experience'],
+    queryFn: () => OrganizationService.getProgramExperience(programId),
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 60 * 60 * 1000, // 1 hour
+    retry: 2,
+    enabled: !!programId
+  });
+}
+
+/**
+ * Get program-specific practical data
+ * Used for: PracticalTab when specific program is selected
+ */
+export function useProgramPractical(programId: string) {
+  return useQuery({
+    queryKey: ['program', programId, 'practical'],
+    queryFn: () => OrganizationService.getProgramPractical(programId),
+    staleTime: 15 * 60 * 1000, // 15 minutes
+    gcTime: 60 * 60 * 1000, // 1 hour
+    retry: 2,
+    enabled: !!programId
+  });
+}
+
+/**
+ * Get program-specific stories data
+ * Used for: StoriesTab when specific program is selected
+ */
+export function useProgramStories(programId: string, filters: TestimonialFilters = {}) {
+  return useQuery({
+    queryKey: ['program', programId, 'stories', filters],
+    queryFn: () => OrganizationService.getProgramStories(programId, filters),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+    retry: 2,
+    enabled: !!programId
+  });
+}
+
+/**
+ * Smart hook that chooses between organization-wide or program-specific data
+ * Used for: All tab components that need to support both modes
+ */
+export function useSmartTabData<T>(
+  tabType: 'overview' | 'experience' | 'practical' | 'stories',
+  organizationId: string,
+  programId?: string,
+  filters?: any
+) {
+  // Choose the appropriate hook based on whether programId is provided
+  const organizationQuery = useQuery({
+    queryKey: organizationKeys[tabType](organizationId, filters),
+    queryFn: () => {
+      switch (tabType) {
+        case 'overview':
+          return OrganizationService.getOverview(organizationId);
+        case 'experience':
+          return OrganizationService.getExperience(organizationId);
+        case 'practical':
+          return OrganizationService.getPractical(organizationId);
+        case 'stories':
+          return OrganizationService.getStories(organizationId, filters);
+        default:
+          throw new Error(`Unknown tab type: ${tabType}`);
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    retry: 2,
+    enabled: !!organizationId && !programId
+  });
+
+  const programQuery = useQuery({
+    queryKey: ['program', programId, tabType, filters],
+    queryFn: () => {
+      if (!programId) throw new Error('Program ID required for program-specific data');
+      
+      switch (tabType) {
+        case 'overview':
+          return OrganizationService.getProgramOverview(programId);
+        case 'experience':
+          return OrganizationService.getProgramExperience(programId);
+        case 'practical':
+          return OrganizationService.getProgramPractical(programId);
+        case 'stories':
+          return OrganizationService.getProgramStories(programId, filters);
+        default:
+          throw new Error(`Unknown tab type: ${tabType}`);
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    retry: 2,
+    enabled: !!programId
+  });
+
+  // Return the appropriate query result
+  return programId ? programQuery : organizationQuery;
+}

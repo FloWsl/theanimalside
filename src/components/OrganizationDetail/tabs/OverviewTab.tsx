@@ -9,6 +9,7 @@ import {
 import { OrganizationDetail } from '../../../types';
 import SimplePhotoModal from '../SimplePhotoModal';
 import { scrollToTabContent } from '../../../lib/scrollUtils';
+import { useOrganizationOverview, useTabDataState } from '../../../hooks/useOrganizationTabData';
 
 interface OverviewTabProps {
   organization: OrganizationDetail;
@@ -56,19 +57,54 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   hideDuplicateInfo = false,
   onTabChange
 }) => {
-  const program = organization.programs[0]; // Get first program for essential info
-
-  // Lightbox state
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
+  // Fetch real database data using proper service method
+  const overviewQuery = useOrganizationOverview(organization.slug);
+  const { data: overviewData, isLoading, error } = useTabDataState(overviewQuery, 'Overview');
+  
+  // Lightbox state - MOVED TO TOP
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
 
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-none space-y-6 lg:space-y-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-warm-beige/40 rounded w-1/3"></div>
+          <div className="h-20 bg-warm-beige/40 rounded"></div>
+          <div className="h-32 bg-warm-beige/40 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="w-full max-w-none space-y-6 lg:space-y-8">
+        <div className="text-center py-8">
+          <p className="text-forest/60 mb-4">Unable to load overview information</p>
+          <button 
+            onClick={() => overviewQuery.refetch()}
+            className="px-4 py-2 bg-rich-earth text-white rounded hover:bg-deep-earth"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const program = overviewData?.primary_program || organization.programs[0]; // Get primary program from database or fallback
 
   // Generate simple context line
   const contextLine = `Protecting ${organization.animalTypes[0]?.animalType || 'wildlife'} in the heart of ${organization.location.country}`;
 
   // Simplified Photo Curation - Admin-friendly approach
   const getCuratedPhotoCollections = () => {
-    const allPhotos = organization.gallery.images || [];
+    // Use database photos if available, otherwise fallback to organization data
+    const allPhotos = overviewData?.featured_photos || organization.gallery.images || [];
     
     // Simple division of photos into logical groups
     const totalPhotos = allPhotos.length;
@@ -84,12 +120,20 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
   const photoCollections = getCuratedPhotoCollections();
 
-  // Create unified photo array for lightbox navigation
+  // Create unified photo array for lightbox navigation with proper mapping
   const allGalleryPhotos = [
     ...photoCollections.emotional,
     ...photoCollections.conservation,
     ...photoCollections.lifestyle
   ];
+
+  // Map database MediaItem objects to Photo interface for modal compatibility
+  const modalPhotos = allGalleryPhotos.map(photo => ({
+    id: photo.id,
+    url: photo.url,
+    caption: photo.caption || '',
+    altText: photo.alt_text || photo.altText || 'Conservation wildlife photo'
+  }));
 
 
   // Simple modal handlers
@@ -208,7 +252,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
               >
                 <img
                   src={photo.url}
-                  alt={photo.altText}
+                  alt={photo.alt_text || photo.altText || 'Conservation wildlife photo'}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                 />
               </div>
@@ -237,7 +281,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                     >
                       <img
                         src={photo.url}
-                        alt={photo.altText}
+                        alt={photo.alt_text || photo.altText || 'Conservation work photo'}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                       />
                     </div>
@@ -269,7 +313,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                     >
                       <img
                         src={photo.url}
-                        alt={photo.altText}
+                        alt={photo.alt_text || photo.altText || 'Conservation work photo'}
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                       />
                     </div>
@@ -282,7 +326,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
           {/* Photo Gallery CTA */}
           <div className="text-center mt-10 pt-8 border-t border-warm-beige/40">
             <p className="text-forest/70 mb-4">
-              <span className="font-semibold text-rich-earth">{organization.gallery.images.length}</span> photos showcase real volunteer experiences
+              <span className="font-semibold text-rich-earth">{allGalleryPhotos.length}</span> photos showcase real volunteer experiences
             </p>
             <p className="text-sm text-forest/60">
               These unfiltered moments capture the authentic conservation work and meaningful connections you'll experience
@@ -332,7 +376,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {/* Simple Photo Modal */}
       <SimplePhotoModal
-        photos={allGalleryPhotos}
+        photos={modalPhotos}
         currentIndex={lightboxInitialIndex}
         isOpen={lightboxOpen}
         onClose={closeModal}

@@ -2,6 +2,7 @@ export interface Opportunity {
   id: string;
   title: string;
   organization: string;
+  organizationSlug?: string; // For routing to organization pages
   location: {
     country: string;
     city: string;
@@ -23,6 +24,10 @@ export interface Opportunity {
   images: string[];
   featured: boolean;
   datePosted: string; // ISO string
+  // Organization metrics from database
+  verified?: boolean;
+  rating?: number | null;
+  reviewCount?: number;
 }
 
 export interface SearchFilters {

@@ -1,7 +1,8 @@
 import { opportunities } from '../data/opportunities';
-import { organizationDetails, getOrganizationBySlug } from '../data/organizationDetails';
+import { OrganizationService } from '../services/organizationService';
 import { animalCategories } from '../data/animals';
-import type { Opportunity, OrganizationDetail } from '../types';
+import type { Opportunity } from '../types';
+import type { Organization } from '../types/database';
 
 /**
  * Route Generation Utilities
@@ -92,11 +93,11 @@ export const generateCombinedRoute = (
 /**
  * Generate organization route
  * @param organization - Organization data or slug
- * @returns Route like "/toucan-rescue-ranch-costa-rica"
+ * @returns Route like "/organization/toucan-rescue-ranch-costa-rica"
  */
-export const generateOrganizationRoute = (organization: OrganizationDetail | string): string => {
+export const generateOrganizationRoute = (organization: Organization | string): string => {
   const slug = typeof organization === 'string' ? organization : organization.slug;
-  return `/${slug}`;
+  return `/organization/${slug}`;
 };
 
 /**
@@ -105,19 +106,13 @@ export const generateOrganizationRoute = (organization: OrganizationDetail | str
  * @returns Most SEO-friendly route for this opportunity
  */
 export const generateOpportunityRoute = (opportunity: Opportunity): string => {
-  // Priority: Find organization first, then fall back to country/animal combination
-  
-  // Try to find the organization for this opportunity
-  const organization = organizationDetails.find(org => 
-    org.name === opportunity.organization ||
-    org.programs.some(program => program.title === opportunity.title)
-  );
-  
-  if (organization) {
-    return generateOrganizationRoute(organization);
+  // If opportunity has organizationSlug from database, use it directly
+  if (opportunity.organizationSlug) {
+    return generateOrganizationRoute(opportunity.organizationSlug);
   }
   
-  // Fall back to combined country/animal route
+  // Legacy fallback for opportunities without organizationSlug
+  // Use combined country/animal route for SEO purposes
   const primaryAnimal = opportunity.animalTypes[0];
   if (primaryAnimal) {
     return generateCombinedRoute(opportunity.location.country, primaryAnimal, 'country-first');
@@ -134,8 +129,13 @@ export const generateOpportunityRoute = (opportunity: Opportunity): string => {
  * @param slug - Potential organization slug
  * @returns True if slug matches a real organization
  */
-export const isValidOrganizationSlug = (slug: string): boolean => {
-  return getOrganizationBySlug(slug) !== undefined;
+export const isValidOrganizationSlug = async (slug: string): Promise<boolean> => {
+  try {
+    await OrganizationService.getBasicInfo(slug);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 /**

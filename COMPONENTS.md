@@ -4,6 +4,24 @@
 
 ---
 
+## 🛣️ **Opportunities Page Navigation - IMPLEMENTED**
+
+### **Navigation Rules from Opportunities Page**
+- **All opportunity cards** route to organization base URL (`/{orgSlug}`)
+- **Single program organizations**: Display program directly (no redirection)
+- **Multiple program organizations**: Auto-redirect to primary program page
+- **Primary program logic**: Uses `isPrimary` flag, falls back to first program
+- **Disabled cards**: Show "Coming Soon" for opportunities without organization pages
+
+### **Routing Patterns**
+```
+/opportunities → Click card → /{orgSlug}
+├── 1 program: Direct display
+└── Multiple programs: → /organization/{slug}/program/{primary-slug}
+```
+
+---
+
 ## 🧭 **Smart Navigation System - IMPLEMENTED**
 
 ### **Overview**
@@ -68,7 +86,7 @@ Single Column:
 - `/opportunities/lions` - Animal-based discovery
 - `/opportunities/costa-rica` - Location-based discovery  
 - `/opportunities/wildlife` - General category
-- All URLs follow SEARCH_STRATEGY.md patterns
+- All URLs follow FEATURES_GUIDE.md search patterns
 
 ---
 

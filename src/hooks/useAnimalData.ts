@@ -85,29 +85,36 @@ export const useAnimalData = (animalSlug: string): AnimalDataResult => {
   }, [animalSlug, animalCategory]);
 
   // Filter opportunities by animal type
-  // Future: This will be a database query with proper indexing and JOIN operations
+  // Future: This will be a database query with proper indexing
   const animalOpportunities = React.useMemo(() => {
     return opportunities.filter(opp => 
-      opp.animalTypes.some(type => {
-        const normalizedType = type.toLowerCase();
-        const normalizedAnimal = animalName.toLowerCase();
+      opp.animalTypes.some(animalType => {
+        // Improved mapping logic for better animal matching
+        const normalizedType = animalType.toLowerCase();
+        const normalizedAnimalName = animalName.toLowerCase();
         
-        // Direct match
-        if (normalizedType === normalizedAnimal) return true;
+        // Direct matches
+        if (normalizedType.includes(normalizedAnimalName) || normalizedAnimalName.includes(normalizedType)) {
+          return true;
+        }
         
-        // Improved partial matches for related terms  
-        if (animalSlug === 'lions' && (normalizedType.includes('lion') || normalizedType.includes('big cat'))) return true;
-        if (animalSlug === 'elephants' && normalizedType.includes('elephant')) return true;
-        if (animalSlug === 'sea-turtles' && (normalizedType.includes('turtle') || normalizedType.includes('marine'))) return true;
-        if (animalSlug === 'orangutans' && (normalizedType.includes('orangutan') || normalizedType.includes('primate'))) return true;
-        if (animalSlug === 'primates' && normalizedType.includes('primate')) return true;
-        if (animalSlug === 'marine' && normalizedType.includes('marine')) return true;
-        if (animalSlug === 'big-cats' && (normalizedType.includes('lion') || normalizedType.includes('leopard') || normalizedType.includes('cheetah') || normalizedType.includes('cat'))) return true;
+        // Special mappings for animal context
+        if (normalizedAnimalName.includes('sea turtles') && normalizedType.includes('marine')) {
+          return true; // Sea Turtles → Marine Life
+        }
+        
+        if (normalizedAnimalName.includes('marine') && normalizedType.includes('sea turtles')) {
+          return true; // Marine Life → Sea Turtles (relevant match)
+        }
+        
+        if (normalizedAnimalName.includes('primates') && (normalizedType.includes('monkey') || normalizedType.includes('orangutan'))) {
+          return true; // Primates → Monkeys, Orangutans
+        }
         
         return false;
       })
     );
-  }, [animalSlug, animalName]);
+  }, [animalName]);
 
   // Get content hub data for conservation information
   // Future: This will query content_hubs table with RLS policies

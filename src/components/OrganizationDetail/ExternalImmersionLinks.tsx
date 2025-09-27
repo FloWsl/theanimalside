@@ -72,7 +72,7 @@ const ExternalImmersionLinks: React.FC<ExternalImmersionLinksProps> = ({
     }
   ];
 
-  const displayContent = volunteerContent.length > 0 ? volunteerContent : defaultVolunteerContent;
+  const displayContent = volunteerContent.length > 0 ? volunteerContent : [];
 
   // Match content creators with testimonials to verify authenticity
   const getContentCreatorTestimonial = (volunteerName: string) => {
@@ -115,7 +115,7 @@ const ExternalImmersionLinks: React.FC<ExternalImmersionLinksProps> = ({
 
       {/* Compact Content Cards */}
       <div className="space-y-3">
-        {displayContent.map((content, index) => {
+        {displayContent.length > 0 ? displayContent.map((content, index) => {
           const platformDetails = getPlatformDetails(content.contentType);
           const IconComponent = platformDetails.icon;
           const testimonial = getContentCreatorTestimonial(content.volunteerName);
@@ -178,9 +178,19 @@ const ExternalImmersionLinks: React.FC<ExternalImmersionLinksProps> = ({
               </button>
             </motion.div>
           );
-        })}
+        }) : (
+          /* No external content available */
+          <div className="bg-white/60 border border-warm-beige/40 rounded-xl p-6 text-center">
+            <ExternalLink className="w-8 h-8 text-forest/30 mx-auto mb-3" />
+            <h4 className="text-sm font-medium text-deep-forest mb-2">
+              No External Content Available
+            </h4>
+            <p className="text-xs text-forest/60">
+              External volunteer content (blogs, videos, social media posts) hasn't been collected for this organization yet.
+            </p>
+          </div>
+        )}
       </div>
-
 
     </div>
   );

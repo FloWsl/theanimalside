@@ -4,6 +4,51 @@
 
 > **Award-winning wildlife volunteer directory platform** connecting passionate volunteers with conservation opportunities worldwide through **discovery-first design** and authentic storytelling.
 
+## 🧭 Quick Navigation for Stakeholders
+
+**Choose your path based on your role:**
+
+### 👨‍💻 **For Developers**
+- 🚀 **Start Here**: [Developer Guide](./CLAUDE.md) - Complete setup, coding standards, and workflow
+- 🗃️ **Backend Work**: [Database Guide](./DATABASE_GUIDE.md) - Architecture, schema, and integration
+- 🧩 **UI Development**: [Components Reference](./COMPONENTS.md) - Component library and patterns
+- 📊 **Current Tasks**: [Project Status](./PROJECT_STATUS.md#active-development-tasks) - See what needs to be done
+
+### 🎨 **For Designers**
+- 🎨 **Start Here**: [Design Guide](./DESIGN_GUIDE.md) - Complete design system and philosophy
+- 📱 **Mobile Patterns**: [Design Guide - Mobile Section](./DESIGN_GUIDE.md#mobile--accessibility) - Touch optimization and accessibility
+- 🧩 **Component Patterns**: [Components Reference](./COMPONENTS.md) - Implementation examples
+
+### 📋 **For Project Managers**
+- 📊 **Start Here**: [Project Status](./PROJECT_STATUS.md) - Complete status dashboard and roadmap
+- 🎯 **Next Steps**: [Project Status - Roadmap](./PROJECT_STATUS.md#implementation-roadmap) - Timeline and priorities
+- 📈 **Quality Metrics**: [Project Status - Quality Assessment](./PROJECT_STATUS.md#quality-assessment) - Technical and UX scores
+
+### 🛠️ **For DevOps/Infrastructure**
+- 🗃️ **Backend Setup**: [Database Guide - Supabase Integration](./DATABASE_GUIDE.md#supabase-integration) - Environment and deployment
+- 🚀 **Performance**: [Features Guide - Performance](./FEATURES_GUIDE.md#performance-optimization) - Optimization patterns
+
+### 🧪 **For QA/Testing**
+- 🧪 **Testing Patterns**: [Developer Guide - Testing](./CLAUDE.md#testing--reliability) - Jest, Playwright, component testing
+- 📊 **Status Tracking**: [Project Status](./PROJECT_STATUS.md) - What's ready for testing
+
+### 📝 **For Content Teams**
+- 🌟 **Content Philosophy**: [Design Guide - Philosophy](./DESIGN_GUIDE.md#design-philosophy) - Discovery-first principles
+- 📸 **Photo Strategy**: [Design Guide - Photo-First](./DESIGN_GUIDE.md#photo-first-strategy) - Visual storytelling approach
+
+### 📚 **Complete Documentation Index**
+| Document | Purpose | Best For |
+|----------|---------|----------|
+| [CLAUDE.md](./CLAUDE.md) | Complete developer workflow and standards | Developers, Setup |
+| [PROJECT_STATUS.md](./PROJECT_STATUS.md) | Status dashboard, roadmap, and metrics | Project Managers, Stakeholders |
+| [DESIGN_GUIDE.md](./DESIGN_GUIDE.md) | Complete design system and philosophy | Designers, Frontend Developers |
+| [DATABASE_GUIDE.md](./DATABASE_GUIDE.md) | Backend architecture and integration | Backend Developers, DevOps |
+| [FEATURES_GUIDE.md](./FEATURES_GUIDE.md) | Navigation, search, and feature patterns | Feature Developers |
+| [COMPONENTS.md](./COMPONENTS.md) | Component library and usage patterns | Frontend Developers, Designers |
+| [API.md](./API.md) | API documentation and endpoints | Backend Developers, Integrators |
+
+---
+
 ## 🏆 **Current Status: Production-Ready Platform (90%+ UI/UX Complete)**
 
 **✅ ORGANIZATION DETAIL SYSTEM - 95% COMPLETE (PRODUCTION READY)**
@@ -209,11 +254,21 @@ Your application will be available at `http://localhost:5173`
 
 ## 📋 **Documentation**
 
-- **[DISCOVERY_FIRST_PHILOSOPHY.md](./DISCOVERY_FIRST_PHILOSOPHY.md)** - Core design philosophy and implementation guidelines
-- **[DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)** - Complete visual guidelines and component patterns
-- **[API.md](./API.md)** - Complete API documentation and database schema
+### **Core Developer Resources**
+- **[CLAUDE.md](./CLAUDE.md)** - Complete developer guide with setup, standards, and workflow
+- **[PROJECT_STATUS.md](./PROJECT_STATUS.md)** - Current status, roadmap, and implementation tracking
+
+### **Implementation Guides**
+- **[DESIGN_GUIDE.md](./DESIGN_GUIDE.md)** - Complete design system, philosophy, and visual guidelines
+- **[DATABASE_GUIDE.md](./DATABASE_GUIDE.md)** - Backend architecture, schema, and integration patterns
+- **[FEATURES_GUIDE.md](./FEATURES_GUIDE.md)** - Navigation, search, and advanced feature implementation
+
+### **Reference Materials**
 - **[COMPONENTS.md](./COMPONENTS.md)** - Component library with discovery-focused patterns
-- **[MOBILE_IMPLEMENTATION.md](./MOBILE_IMPLEMENTATION.md)** - Comprehensive mobile-first architecture and testing
+- **[API.md](./API.md)** - API documentation and endpoints reference
+
+### **Archived Documentation**
+- `/docs-archive/` - Contains completed work documentation and planning materials
 
 ## 🎨 **Design Philosophy**
 

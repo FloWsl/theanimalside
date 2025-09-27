@@ -2,8 +2,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { getOrganizationBySlug } from '../../data/organizationDetails';
-import { OrganizationDetail as OrganizationDetailType, Program } from '../../types';
+import { OrganizationService } from '../../services/organizationService';
+import type { OrganizationDetail as OrganizationDetailType, Program } from '../../types';
+import { generateProgramSlug, findProgramBySlug, getPrimaryProgram } from '../../utils/programUtils';
 
 // Import tab system components
 import TabNavigation, { TabId } from './TabNavigation';
@@ -16,10 +17,13 @@ import {
   ConnectTab 
 } from './tabs';
 
-// Import header and program selector
+// Import header and navigation
 import OrganizationHeader from './OrganizationHeader';
 import SmartNavigation from '../SmartNavigation';
-import ProgramSelector from './ProgramSelector';
+import OtherProgramsSection from './OtherProgramsSection';
+import ProgramBreadcrumb from './ProgramBreadcrumb';
+import ProgramIndicator from './ProgramIndicator';
+import ProgramSwitcher from './ProgramSwitcher';
 
 // Import layout components for responsive architecture
 import { Layout } from '../Layout/Container';
@@ -99,16 +103,112 @@ const useCrossDeviceState = () => {
 };
 
 const OrganizationDetail: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, programSlug } = useParams<{ slug: string; programSlug?: string }>();
   const breadcrumbs = useBreadcrumbs();
   
-  // Get organization data by slug
-  const organization: OrganizationDetailType | undefined = slug ? getOrganizationBySlug(slug) : undefined;
+  // Check if we're viewing a specific program
+  const isSpecificProgramPage = !!programSlug;
   
-  // State for selected program (defaults to first program)
-  const [selectedProgram, setSelectedProgram] = useState<Program | null>(
-    organization?.programs[0] || null
-  );
+  // State for organization data from database
+  const [organization, setOrganization] = useState<OrganizationDetailType | undefined>(undefined);
+  const [isLoadingOrg, setIsLoadingOrg] = useState(true);
+  const [orgError, setOrgError] = useState<string | null>(null);
+
+  // Fetch organization data from database
+  useEffect(() => {
+    if (!slug) return;
+
+    const fetchOrganization = async () => {
+      try {
+        setIsLoadingOrg(true);
+        setOrgError(null);
+        const orgData = await OrganizationService.getOrganizationBySlug(slug);
+        setOrganization(orgData);
+      } catch (error) {
+        console.error('Error fetching organization:', error);
+        setOrgError('Failed to load organization details');
+      } finally {
+        setIsLoadingOrg(false);
+      }
+    };
+
+    fetchOrganization();
+  }, [slug]);
+  
+  // Handle program selection logic
+  const getSelectedProgram = (): Program | null => {
+    if (!organization?.programs) return null;
+    
+    if (isSpecificProgramPage && programSlug) {
+      // Find program by slug using utility
+      return findProgramBySlug(organization.programs, programSlug);
+    }
+    
+    // For base organization page, determine which program to show
+    if (organization.programs.length === 1) {
+      // Single program: show it directly
+      return organization.programs[0];
+    } else {
+      // Multiple programs: get primary program for redirect logic
+      return getPrimaryProgram(organization.programs);
+    }
+  };
+  
+  // State for selected program with loading states
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const [isProgramSwitching, setIsProgramSwitching] = useState(false);
+  const [programSwitchError, setProgramSwitchError] = useState<string | null>(null);
+  
+  // Update selected program when organization or route changes
+  React.useEffect(() => {
+    const program = getSelectedProgram();
+    setSelectedProgram(program);
+    setProgramSwitchError(null);
+  }, [organization, programSlug]);
+  
+  // Handle program switching with loading states
+  const handleProgramSwitch = useCallback(async (newProgram: Program) => {
+    if (!organization || selectedProgram?.id === newProgram.id) return;
+    
+    try {
+      setIsProgramSwitching(true);
+      setProgramSwitchError(null);
+      
+      // Small delay to show loading state for user feedback
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Update URL without redirect if we're on base organization page
+      if (!isSpecificProgramPage) {
+        const newUrl = `${window.location.pathname}?program=${generateProgramSlug(newProgram.title)}`;
+        window.history.pushState({}, '', newUrl);
+      }
+      
+      setSelectedProgram(newProgram);
+    } catch (error) {
+      console.error('Error switching programs:', error);
+      setProgramSwitchError('Failed to switch programs. Please try again.');
+    } finally {
+      setIsProgramSwitching(false);
+    }
+  }, [organization, selectedProgram, isSpecificProgramPage]);
+  
+  // Check URL for program parameter on base organization pages
+  React.useEffect(() => {
+    if (!organization || isSpecificProgramPage) return;
+    
+    const params = new URLSearchParams(window.location.search);
+    const programParam = params.get('program');
+    
+    if (programParam) {
+      const matchingProgram = findProgramBySlug(organization.programs, programParam);
+      if (matchingProgram && matchingProgram.id !== selectedProgram?.id) {
+        setSelectedProgram(matchingProgram);
+      }
+    }
+  }, [organization, isSpecificProgramPage, selectedProgram]);
+  
+  // Show primary program content directly on organization page - no redirects
+  // Users can switch between programs with clear UX feedback
   
   // Enhanced cross-device state management
   const {
@@ -314,12 +414,18 @@ const OrganizationDetail: React.FC = () => {
               </div>
               
               {/* Continue Your Discovery Section - Below tab content, within left column */}
-              <div className="mt-12 pt-8 border-t border-warm-beige/30">
+              <div className="mt-12 pt-8 border-t border-warm-beige/30 space-y-8">
                 <SmartNavigation
                   organization={organization}
                   currentTab={activeTab}
                   variant="inline"
                 />
+                {selectedProgram && (
+                  <OtherProgramsSection
+                    organization={organization}
+                    currentProgram={selectedProgram}
+                  />
+                )}
               </div>
             </main>
           </div>
@@ -379,12 +485,18 @@ const OrganizationDetail: React.FC = () => {
         {renderOptimizedTabContent()}
         
         {/* Continue Your Discovery Section - Below tab content on mobile */}
-        <div className="mt-12 pt-8 border-t border-warm-beige/30">
+        <div className="mt-12 pt-8 border-t border-warm-beige/30 space-y-8">
           <SmartNavigation
             organization={organization}
             currentTab={activeTab}
             variant="inline"
           />
+          {selectedProgram && (
+            <OtherProgramsSection
+              organization={organization}
+              currentProgram={selectedProgram}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -401,13 +513,70 @@ const OrganizationDetail: React.FC = () => {
       </div>
     );
   }
+
+  // Show loading state while fetching organization
+  if (isLoadingOrg) {
+    return (
+      <div className="min-h-screen bg-soft-cream flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-md mx-auto px-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rich-earth mx-auto"></div>
+          <h1 className="text-section text-deep-forest">Loading...</h1>
+          <p className="text-body text-forest/70">Fetching organization details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if there was an error fetching
+  if (orgError) {
+    return (
+      <div className="min-h-screen bg-soft-cream flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-md mx-auto px-4">
+          <h1 className="text-section text-deep-forest">Error Loading Organization</h1>
+          <p className="text-body text-forest/70">{orgError}</p>
+          <div className="space-y-3">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="inline-flex items-center px-6 py-3 bg-rich-earth text-white rounded-lg hover:bg-deep-earth transition-colors"
+            >
+              Try Again
+            </button>
+            <br />
+            <a 
+              href="/opportunities" 
+              className="inline-flex items-center px-6 py-3 border-2 border-rich-earth text-rich-earth rounded-lg hover:bg-rich-earth hover:text-white transition-colors"
+            >
+              Browse All Programs
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   if (!organization) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-section text-forest">Loading...</h1>
-          <p className="text-body text-forest/70">Fetching organization details...</p>
+      <div className="min-h-screen bg-soft-cream flex items-center justify-center">
+        <div className="text-center space-y-6 max-w-md mx-auto px-4">
+          <h1 className="text-section text-deep-forest">Organization Not Found</h1>
+          <p className="text-body text-forest/70">
+            The organization you're looking for doesn't exist or may have been moved.
+          </p>
+          <div className="space-y-3">
+            <a 
+              href="/opportunities" 
+              className="inline-flex items-center px-6 py-3 bg-rich-earth text-white rounded-lg hover:bg-deep-earth transition-colors"
+            >
+              Browse All Programs
+            </a>
+            <br />
+            <a 
+              href="/" 
+              className="inline-flex items-center px-6 py-3 border-2 border-rich-earth text-rich-earth rounded-lg hover:bg-rich-earth hover:text-white transition-colors"
+            >
+              Return Home
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -428,17 +597,54 @@ const OrganizationDetail: React.FC = () => {
     <>
       {/* SEO and Meta Tags */}
       <Helmet>
-        <title>{organization.name} | Wildlife Volunteer Program | The Animal Side</title>
+        <title>
+          {isSpecificProgramPage && selectedProgram 
+            ? `${selectedProgram.title} - ${organization.name} | Programme de Volontariat | The Animal Side`
+            : `${organization.name} | Programme de Volontariat | The Animal Side`
+          }
+        </title>
         <meta 
           name="description" 
-          content={`${organization.tagline} - ${organization.mission.slice(0, 160)}...`} 
+          content={
+            isSpecificProgramPage && selectedProgram
+              ? `${selectedProgram.description} - Programme de volontariat ${selectedProgram.title} avec ${organization.name}. ${organization.tagline}`
+              : `${organization.tagline} - ${organization.mission.slice(0, 160)}...`
+          } 
         />
-        <meta name="keywords" content={organization.tags.join(', ')} />
-        <meta property="og:title" content={`${organization.name} | Wildlife Volunteer Program`} />
-        <meta property="og:description" content={organization.tagline} />
+        <meta 
+          name="keywords" 
+          content={
+            isSpecificProgramPage && selectedProgram
+              ? `${selectedProgram.animalTypes.join(', ')}, ${organization.tags.join(', ')}, volontariat, conservation`
+              : organization.tags.join(', ')
+          } 
+        />
+        <meta 
+          property="og:title" 
+          content={
+            isSpecificProgramPage && selectedProgram
+              ? `${selectedProgram.title} - ${organization.name} | Programme de Volontariat`
+              : `${organization.name} | Programme de Volontariat`
+          } 
+        />
+        <meta 
+          property="og:description" 
+          content={
+            isSpecificProgramPage && selectedProgram
+              ? selectedProgram.description
+              : organization.tagline
+          } 
+        />
         <meta property="og:image" content={organization.heroImage} />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href={`https://theanimalside.com/organization/${organization.slug}`} />
+        <link 
+          rel="canonical" 
+          href={
+            isSpecificProgramPage && selectedProgram
+              ? `https://theanimalside.com/organization/${organization.slug}/program/${generateProgramSlug(selectedProgram.title)}`
+              : `https://theanimalside.com/organization/${organization.slug}`
+          } 
+        />
       </Helmet>
 
       {/* Main Container */}
@@ -450,7 +656,11 @@ const OrganizationDetail: React.FC = () => {
         <div className="bg-soft-cream/80 backdrop-blur-sm border-b border-warm-beige/30">
           <div className="container-nature-wide py-3">
             <div className="max-w-7xl mx-auto px-4">
-              <Breadcrumb items={breadcrumbs} />
+              <ProgramBreadcrumb
+                organization={organization}
+                currentProgram={selectedProgram}
+                isSpecificProgramPage={isSpecificProgramPage}
+              />
             </div>
           </div>
         </div>
@@ -459,15 +669,26 @@ const OrganizationDetail: React.FC = () => {
         <div className="container-nature-wide section-padding-sm">
           <div className="max-w-7xl mx-auto px-4">
             
-            {/* Program Selector (only shows if multiple programs) */}
-            {organization.programs.length > 1 && (
-              <div className="mb-8">
-                <ProgramSelector 
+            {/* Program Switcher - Shows when multiple programs are available */}
+            {organization.programs && organization.programs.length > 1 && (
+              <div className="mb-6">
+                <ProgramSwitcher
                   programs={organization.programs}
                   selectedProgram={selectedProgram}
-                  onProgramChange={setSelectedProgram}
+                  onProgramSwitch={handleProgramSwitch}
+                  isLoading={isProgramSwitching}
+                  error={programSwitchError}
+                  disabled={false}
                 />
               </div>
+            )}
+            
+            {/* Program Indicator (only for specific program pages with multiple programs) */}
+            {isSpecificProgramPage && selectedProgram && (
+              <ProgramIndicator
+                organization={organization}
+                currentProgram={selectedProgram}
+              />
             )}
             
             {/* Responsive Layout - Desktop two-column + Mobile tabs */}

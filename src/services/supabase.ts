@@ -2,11 +2,21 @@
 // This file will be the main Supabase client configuration
 
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from '../types/supabase-generated'; // This will be auto-generated
+// Note: Database types will be auto-generated when connected to live Supabase
+// For now, using any to allow development
+type Database = any;
 
-// Environment variables (to be set up)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+// Environment variables (Vite syntax)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+// Debug environment variables in development
+if (import.meta.env.VITE_ENABLE_DEBUG_MODE === 'true') {
+  console.log('Supabase Config:', {
+    url: supabaseUrl ? `${supabaseUrl.slice(0, 20)}...` : 'NOT SET',
+    key: supabaseAnonKey ? `${supabaseAnonKey.slice(0, 20)}...` : 'NOT SET'
+  });
+}
 
 // Create Supabase client
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
@@ -23,7 +33,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
 });
 
 // Export types for use throughout the app
-export type { Database } from '../types/supabase-generated';
+export type { Database };
 
 // Helper function to handle Supabase errors
 export function handleSupabaseError(error: any): never {

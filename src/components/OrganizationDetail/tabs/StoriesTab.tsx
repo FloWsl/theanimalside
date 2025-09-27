@@ -1,6 +1,8 @@
 // src/components/OrganizationDetail/tabs/StoriesTab.tsx
 import React from 'react';
 import { OrganizationDetail } from '../../../types';
+import { Testimonial } from '../../../types/database';
+import { useOrganizationStories, useTabDataState } from '../../../hooks/useOrganizationTabData';
 
 // Industry-standard components following Airbnb/TripAdvisor patterns
 import RatingOverview from '../RatingOverview';
@@ -14,7 +16,59 @@ interface StoriesTabProps {
 }
 
 const StoriesTab: React.FC<StoriesTabProps> = ({ organization, onTabChange }) => {
-  const program = organization.programs[0];
+  // Fetch real database data using proper service method
+  const storiesQuery = useOrganizationStories(organization.slug);
+  const { data: storiesData, isLoading, error } = useTabDataState(storiesQuery, 'Stories');
+
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-none space-y-6 lg:space-y-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-warm-beige/40 rounded w-1/3"></div>
+          <div className="h-20 bg-warm-beige/40 rounded"></div>
+          <div className="h-32 bg-warm-beige/40 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="w-full max-w-none space-y-6 lg:space-y-8">
+        <div className="text-center py-8">
+          <p className="text-forest/60 mb-4">Unable to load stories information</p>
+          <button 
+            onClick={() => storiesQuery.refetch()}
+            className="px-4 py-2 bg-rich-earth text-white rounded hover:bg-deep-earth"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Use database data if available, otherwise fallback to organization data
+  const testimonials = storiesData?.testimonials || [];
+  const statistics = storiesData?.statistics;
+  
+  // Transform database testimonials to legacy format for compatibility with existing components
+  const transformedTestimonials = testimonials.map((testimonial: Testimonial) => ({
+    id: testimonial.id,
+    volunteerName: testimonial.volunteer_name || 'Anonymous Volunteer',
+    volunteerCountry: testimonial.volunteer_country || 'Unknown',
+    volunteerAge: testimonial.volunteer_age,
+    program: testimonial.program_name || 'Conservation Program',
+    duration: `${testimonial.duration_weeks || 4} week${(testimonial.duration_weeks || 4) !== 1 ? 's' : ''}`,
+    quote: testimonial.quote || 'No testimonial provided',
+    rating: testimonial.rating || 5,
+    date: testimonial.experience_date || testimonial.created_at,
+    avatar: testimonial.avatar_url,
+    verified: testimonial.verified || false
+  }));
+
   return (
     <div className="space-nature-md">
       {/* Level 1: Essential Experience Overview - Always Visible */}
@@ -31,23 +85,47 @@ const StoriesTab: React.FC<StoriesTabProps> = ({ organization, onTabChange }) =>
       </SharedTabSection>
 
     <div className="space-y-8">
-      {/* Social Proof Summary - Industry Standard Rating Overview */}
-      <RatingOverview 
-        testimonials={organization.testimonials}
-        organizationName={organization.name}
-      />
-      
-      {/* External Content Links - Authentic Volunteer-Created Content */}
-      <ExternalImmersionLinks 
-        organizationName={organization.name}
-        testimonials={organization.testimonials}
-      />
-      
-      {/* Detailed Reviews - TripAdvisor-Style Review Cards */}
-      <ReviewCards 
-        testimonials={organization.testimonials}
-        maxInitialReviews={4}
-      />
+      {/* Show content if testimonials exist, otherwise show "no testimonials" message */}
+      {transformedTestimonials && transformedTestimonials.length > 0 ? (
+        <>
+          {/* Social Proof Summary - Industry Standard Rating Overview */}
+          <RatingOverview 
+            testimonials={transformedTestimonials}
+            organizationName={organization.name}
+            totalVolunteersHosted={statistics?.volunteers_hosted}
+          />
+          
+          {/* External Content Links - Authentic Volunteer-Created Content */}
+          <ExternalImmersionLinks 
+            organizationName={organization.name}
+            testimonials={transformedTestimonials}
+          />
+          
+          {/* Detailed Reviews - TripAdvisor-Style Review Cards */}
+          <ReviewCards 
+            testimonials={transformedTestimonials}
+            maxInitialReviews={8}
+          />
+        </>
+      ) : (
+        /* No testimonials available */
+        <div className="bg-gradient-to-br from-soft-cream via-warm-beige/20 to-gentle-lemon/10 rounded-2xl p-8 lg:p-12 border border-warm-beige/40 shadow-nature text-center">
+          <div className="w-16 h-16 bg-forest/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Zap className="w-8 h-8 text-forest/30" />
+          </div>
+          <h3 className="text-xl lg:text-2xl font-semibold text-deep-forest mb-4">
+            No Volunteer Stories Available
+          </h3>
+          <p className="text-base lg:text-lg text-forest/70 leading-relaxed max-w-2xl mx-auto mb-6">
+            Volunteer testimonials for this organization are not currently available. Check back soon as we continue to add authentic volunteer experiences.
+          </p>
+          <div className="bg-white/60 rounded-xl p-4 border border-warm-beige/40">
+            <p className="text-sm text-forest/60 italic">
+              Contact the organization directly to learn more about volunteer experiences and to inquire about their programs.
+            </p>
+          </div>
+        </div>
+      )}
       
       {/* Simple Call-to-Action - Industry Standard Single Action */}
       {onTabChange && (

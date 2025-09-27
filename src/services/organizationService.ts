@@ -40,15 +40,201 @@ export class OrganizationService {
   }
 
   /**
+   * Helper method to get organization UUID from slug
+   * Used internally to convert slugs to UUIDs for database operations
+   */
+  private static async getOrganizationUUIDFromSlug(slug: string): Promise<string> {
+    const { data, error } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('slug', slug)
+      .eq('status', 'active')
+      .single();
+
+    if (error) handleSupabaseError(error);
+    return data.id;
+  }
+
+  /**
+   * Get organization details by slug for organization detail page
+   * Used for: Organization detail page component
+   */
+  static async getOrganizationBySlug(slug: string): Promise<any> {
+    try {
+      // Get organization basic info
+      const { data: organization, error: orgError } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('slug', slug)
+        .eq('status', 'active')
+        .single();
+
+      if (orgError) throw orgError;
+      if (!organization) return null;
+
+      // Get programs for this organization
+      const { data: programs, error: programError } = await supabase
+        .from('programs')
+        .select('*')
+        .eq('organization_id', organization.id)
+        .eq('status', 'active');
+
+      if (programError) throw programError;
+
+      // Transform to match legacy OrganizationDetail interface
+      return {
+        id: organization.slug,
+        name: organization.name,
+        slug: organization.slug,
+        tagline: organization.tagline || 'Mission statement not provided',
+        mission: organization.mission || 'Organization mission details not provided by the administrator.',
+        logo: organization.logo,
+        heroImage: organization.hero_image,
+        website: organization.website,
+        email: organization.email,
+        phone: organization.phone,
+        yearFounded: organization.year_founded || organization.establishment_year,
+        verified: organization.verified,
+        certifications: [],
+        location: {
+          country: organization.country,
+          region: organization.region || organization.city || 'Region not specified',
+          city: organization.city,
+          address: organization.address,
+          coordinates: organization.coordinates,
+          timezone: organization.timezone || 'Local Time',
+          nearestAirport: organization.nearest_airport || 'Airport information not provided'
+        },
+        programs: programs?.map(program => ({
+          id: program.id,
+          title: program.title,
+          description: program.description,
+          animalTypes: program.animal_types || [],
+          isPrimary: program.is_primary || false,
+          duration: program.duration || { min: 2, max: 12 },
+          schedule: {
+            daysPerWeek: program.days_per_week || 5,
+            hoursPerDay: program.hours_per_day || 6,
+            startTime: program.start_time || '08:00',
+            endTime: program.end_time || '16:00',
+            flexibility: program.schedule_flexibility || 'Schedule flexibility not specified'
+          },
+          typicalDay: program.typical_day || [
+            'Daily schedule details not provided by organization'
+          ],
+          accomplishments: program.accomplishments || [],
+          learningOutcomes: program.learning_outcomes || [],
+          packingList: {
+            essential: program.packing_essential || [],
+            workGear: program.packing_work_gear || [],
+            optional: program.packing_optional || []
+          },
+          requirements: program.requirements || ['Specific requirements not provided by organization'],
+          included: program.included || [],
+          notIncluded: program.not_included || [],
+          cost: {
+            amount: program.cost_amount || 0,
+            currency: program.cost_currency || 'USD',
+            period: program.cost_period || 'week',
+            includes: program.included || ['Details of included items not provided by organization'],
+            excludes: program.not_included || ['Details of excluded items not provided by organization']
+          },
+          costBreakdown: {
+            programFee: program.cost_amount || 0,
+            currency: program.cost_currency || 'USD',
+            accommodation: 0,
+            meals: 0,
+            materials: 0,
+            transport: 0
+          }
+        })) || [],
+        animalTypes: programs?.length > 0 && programs[0].animal_types ? 
+          programs[0].animal_types.map(type => ({ animalType: type })) : 
+          [{ animalType: 'Wildlife' }],
+        tags: [],
+        socialMedia: {},
+        gallery: {
+          images: [] // No photos provided by organization
+        },
+        statistics: {
+          animalsRescued: organization.total_volunteers_hosted || 0,
+          yearsOperating: organization.establishment_year ? new Date().getFullYear() - organization.establishment_year : 0,
+          volunteersHosted: organization.total_volunteers_hosted || 0,
+          successStories: 0
+        },
+        ageRequirement: {
+          min: 18,
+          max: null
+        },
+        fitnessLevel: {
+          level: 'not_specified',
+          description: 'Fitness level requirements not provided by organization'
+        },
+        skillRequirements: {
+          required: ['Skill requirements not specified by organization'],
+          preferred: []
+        },
+        languages: ['Language requirements not specified by organization'],
+        accommodation: {
+          type: 'Accommodation details not provided by organization',
+          amenities: ['Accommodation amenities not specified by organization'],
+          rules: [],
+          provided: true,
+          description: 'Accommodation details not provided by organization'
+        },
+        mealPlan: {
+          type: 'Three meals daily',
+          details: []
+        },
+        meals: {
+          provided: true,
+          type: 'meal_details_not_provided',
+          description: 'Meal details not provided by organization',
+          dietaryOptions: ['Dietary options not specified by organization']
+        },
+        transportation: {
+          airportPickup: true,
+          localTransport: true,
+          description: 'Transportation details not provided by organization'
+        },
+        internetAccess: {
+          available: true,
+          quality: 'Internet details not provided by organization',
+          description: 'Internet access details not provided by organization'
+        },
+        climate: {
+          type: 'Climate information not provided by organization',
+          temperature: 'Temperature range not specified by organization',
+          rainfall: 'Rainfall patterns not provided by organization',
+          description: 'Climate details not provided by organization'
+        },
+        reviews: [], // Empty array for now
+        testimonials: [], // No testimonials provided by organization 
+        safetyInfo: {
+          emergencyContact: organization.phone || '',
+          medicalFacilities: [],
+          safetyProtocols: []
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching organization by slug:', error);
+      return null;
+    }
+  }
+
+  /**
    * Get complete overview data for a tab
    * Used for: OverviewTab component
    */
-  static async getOverview(organizationId: string): Promise<OrganizationOverview> {
+  static async getOverview(organizationSlug: string): Promise<OrganizationOverview> {
+    // Convert slug to UUID for database operations
+    const organizationUUID = await this.getOrganizationUUIDFromSlug(organizationSlug);
+    
     const [organization, primaryProgram, featuredPhotos, statistics] = await Promise.all([
-      this.getBasicInfo(organizationId),
-      this.getPrimaryProgram(organizationId),
-      this.getFeaturedPhotos(organizationId),
-      this.getStatistics(organizationId)
+      this.getBasicInfo(organizationSlug), // This method already handles slugs
+      this.getPrimaryProgram(organizationUUID),
+      this.getFeaturedPhotos(organizationUUID),
+      this.getStatistics(organizationUUID)
     ]);
 
     return {
@@ -63,15 +249,19 @@ export class OrganizationService {
    * Get experience data for a tab
    * Used for: ExperienceTab component
    */
-  static async getExperience(organizationId: string): Promise<OrganizationExperience> {
+  static async getExperience(organizationSlug: string): Promise<OrganizationExperience> {
+    // Convert slug to UUID for database operations
+    const organizationUUID = await this.getOrganizationUUIDFromSlug(organizationSlug);
+    
     const { data: programs, error: programsError } = await supabase
       .from('programs')
       .select(`
         *,
         program_activities(*),
-        program_schedule_items(*)
+        program_schedule_items(*),
+        program_learning_outcomes(*)
       `)
-      .eq('organization_id', organizationId)
+      .eq('organization_id', organizationUUID)
       .eq('status', 'active')
       .order('is_primary', { ascending: false });
 
@@ -85,7 +275,7 @@ export class OrganizationService {
         animal_care_activities(*),
         animal_success_stories(*)
       `)
-      .eq('organization_id', organizationId)
+      .eq('organization_id', organizationUUID)
       .order('order_index');
 
     if (animalsError) handleSupabaseError(animalsError);
@@ -106,7 +296,10 @@ export class OrganizationService {
    * Get practical information for a tab
    * Used for: PracticalTab component, EssentialInfoSidebar
    */
-  static async getPractical(organizationId: string): Promise<OrganizationPractical> {
+  static async getPractical(organizationSlug: string): Promise<OrganizationPractical> {
+    // Convert slug to UUID for database operations
+    const organizationUUID = await this.getOrganizationUUIDFromSlug(organizationSlug);
+    
     const [
       accommodation,
       mealPlan,
@@ -115,21 +308,26 @@ export class OrganizationService {
       ageRequirement,
       skillRequirements,
       healthRequirements,
-      languages
+      languages,
+      primaryProgram,
+      programInclusions
     ] = await Promise.all([
-      this.getAccommodation(organizationId),
-      this.getMealPlan(organizationId),
-      this.getTransportation(organizationId),
-      this.getInternetAccess(organizationId),
-      this.getAgeRequirement(organizationId),
-      this.getSkillRequirements(organizationId),
-      this.getHealthRequirements(organizationId),
-      this.getLanguages(organizationId)
+      this.getAccommodation(organizationUUID),
+      this.getMealPlan(organizationUUID),
+      this.getTransportation(organizationUUID),
+      this.getInternetAccess(organizationUUID),
+      this.getAgeRequirement(organizationUUID),
+      this.getSkillRequirements(organizationUUID),
+      this.getHealthRequirements(organizationUUID),
+      this.getLanguages(organizationUUID),
+      this.getPrimaryProgram(organizationUUID),
+      this.getProgramInclusions(organizationUUID)
     ]);
 
     return {
       accommodation: accommodation.accommodation,
       amenities: accommodation.amenities,
+      accommodation_photos: accommodation.photos,
       meal_plan: mealPlan.mealPlan,
       dietary_options: mealPlan.dietaryOptions,
       transportation,
@@ -137,7 +335,9 @@ export class OrganizationService {
       age_requirement: ageRequirement,
       skill_requirements: skillRequirements,
       health_requirements: healthRequirements,
-      languages
+      languages,
+      primary_program: primaryProgram,
+      program_inclusions: programInclusions
     };
   }
 
@@ -145,11 +345,16 @@ export class OrganizationService {
    * Get location data for a tab
    * Used for: LocationTab component
    */
-  static async getLocation(organizationId: string): Promise<OrganizationLocation> {
-    const [organization, transportation, activities] = await Promise.all([
-      this.getBasicInfo(organizationId),
-      this.getTransportation(organizationId),
-      this.getActivities(organizationId)
+  static async getLocation(organizationSlug: string): Promise<OrganizationLocation> {
+    // Convert slug to UUID for database operations
+    const organizationUUID = await this.getOrganizationUUIDFromSlug(organizationSlug);
+    
+    const [organization, transportation, activities, languages, primaryProgram] = await Promise.all([
+      this.getBasicInfo(organizationSlug), // This method already handles slugs
+      this.getTransportation(organizationUUID),
+      this.getActivities(organizationUUID),
+      this.getLanguages(organizationUUID),
+      this.getPrimaryProgram(organizationUUID)
     ]);
 
     return {
@@ -164,7 +369,9 @@ export class OrganizationService {
         nearest_airport: organization.nearest_airport
       },
       transportation,
-      activities
+      activities,
+      languages,
+      primary_program: primaryProgram
     };
   }
 
@@ -172,11 +379,14 @@ export class OrganizationService {
    * Get stories data for a tab
    * Used for: StoriesTab component
    */
-  static async getStories(organizationId: string, options: TestimonialFilters = {}): Promise<OrganizationStories> {
+  static async getStories(organizationSlug: string, options: TestimonialFilters = {}): Promise<OrganizationStories> {
+    // Convert slug to UUID for database operations
+    const organizationUUID = await this.getOrganizationUUIDFromSlug(organizationSlug);
+    
     const [testimonials, statistics, totalCount] = await Promise.all([
-      this.getTestimonials(organizationId, { ...options, limit: options.limit || 4 }),
-      this.getStatistics(organizationId),
-      this.getTestimonialCount(organizationId)
+      this.getTestimonials(organizationUUID, { ...options, limit: options.limit || 20 }),
+      this.getStatistics(organizationUUID),
+      this.getTestimonialCount(organizationUUID)
     ]);
 
     return {
@@ -191,7 +401,10 @@ export class OrganizationService {
    * Get essential info for sidebar
    * Used for: EssentialInfoSidebar component
    */
-  static async getEssentials(organizationId: string): Promise<OrganizationEssentials> {
+  static async getEssentials(organizationSlug: string): Promise<OrganizationEssentials> {
+    // Convert slug to UUID for database operations
+    const organizationUUID = await this.getOrganizationUUIDFromSlug(organizationSlug);
+    
     const [
       organization,
       primaryProgram,
@@ -203,15 +416,15 @@ export class OrganizationService {
       keyRequirements,
       languages
     ] = await Promise.all([
-      this.getBasicInfo(organizationId),
-      this.getPrimaryProgram(organizationId),
-      this.getAccommodation(organizationId),
-      this.getMealPlan(organizationId),
-      this.getTransportation(organizationId),
-      this.getInternetAccess(organizationId),
-      this.getAgeRequirement(organizationId),
-      this.getKeyRequirements(organizationId),
-      this.getLanguages(organizationId)
+      this.getBasicInfo(organizationSlug), // This method already handles slugs
+      this.getPrimaryProgram(organizationUUID),
+      this.getAccommodation(organizationUUID),
+      this.getMealPlan(organizationUUID),
+      this.getTransportation(organizationUUID),
+      this.getInternetAccess(organizationUUID),
+      this.getAgeRequirement(organizationUUID),
+      this.getKeyRequirements(organizationUUID),
+      this.getLanguages(organizationUUID)
     ]);
 
     return {
@@ -238,7 +451,7 @@ export class OrganizationService {
   /**
    * Get primary program (replaces programs[0] assumption)
    */
-  private static async getPrimaryProgram(organizationId: string): Promise<Program> {
+  private static async getPrimaryProgram(organizationId: string): Promise<Program | null> {
     const { data, error } = await supabase
       .from('programs')
       .select('*')
@@ -247,7 +460,29 @@ export class OrganizationService {
       .eq('status', 'active')
       .single();
 
-    if (error) handleSupabaseError(error);
+    // Handle case where no primary program exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - try to get first available program
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('programs')
+          .select('*')
+          .eq('organization_id', organizationId)
+          .eq('status', 'active')
+          .limit(1)
+          .single();
+        
+        if (fallbackError) {
+          if (fallbackError.code === 'PGRST116') {
+            // No programs at all - return null
+            return null;
+          }
+          handleSupabaseError(fallbackError);
+        }
+        return fallbackData;
+      }
+      handleSupabaseError(error);
+    }
     return data;
   }
 
@@ -264,12 +499,19 @@ export class OrganizationService {
       .order('order_index')
       .limit(limit);
 
-    if (error) handleSupabaseError(error);
+    // Handle case where no featured photos exist
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return empty array
+        return [];
+      }
+      handleSupabaseError(error);
+    }
     return data || [];
   }
 
   /**
-   * Get accommodation with amenities
+   * Get accommodation with amenities and photos
    */
   private static async getAccommodation(organizationId: string) {
     const { data: accommodation, error: accError } = await supabase
@@ -278,17 +520,50 @@ export class OrganizationService {
       .eq('organization_id', organizationId)
       .single();
 
-    if (accError) handleSupabaseError(accError);
+    // Handle case where no accommodation data exists
+    if (accError) {
+      if (accError.code === 'PGRST116') {
+        // No rows returned - return null accommodation
+        return { accommodation: null, amenities: [], photos: [] };
+      }
+      handleSupabaseError(accError);
+    }
 
-    const { data: amenities, error: amenitiesError } = await supabase
-      .from('accommodation_amenities')
-      .select('*')
-      .eq('accommodation_id', accommodation.id)
-      .order('order_index');
+    if (!accommodation) {
+      return { accommodation: null, amenities: [], photos: [] };
+    }
 
-    if (amenitiesError) handleSupabaseError(amenitiesError);
+    const [amenitiesResult, photosResult] = await Promise.all([
+      supabase
+        .from('accommodation_amenities')
+        .select('*')
+        .eq('accommodation_id', accommodation.id)
+        .order('order_index'),
+      supabase
+        .from('media_items')
+        .select('*')
+        .eq('organization_id', organizationId)
+        .eq('category', 'accommodation')
+        .order('order_index')
+    ]);
 
-    return { accommodation, amenities: amenities || [] };
+    // Handle amenities
+    const { data: amenities, error: amenitiesError } = amenitiesResult;
+    if (amenitiesError && amenitiesError.code !== 'PGRST116') {
+      handleSupabaseError(amenitiesError);
+    }
+
+    // Handle photos
+    const { data: photos, error: photosError } = photosResult;
+    if (photosError && photosError.code !== 'PGRST116') {
+      handleSupabaseError(photosError);
+    }
+
+    return { 
+      accommodation, 
+      amenities: amenities || [], 
+      photos: photos || [] 
+    };
   }
 
   /**
@@ -301,7 +576,18 @@ export class OrganizationService {
       .eq('organization_id', organizationId)
       .single();
 
-    if (mealError) handleSupabaseError(mealError);
+    // Handle case where no meal plan data exists
+    if (mealError) {
+      if (mealError.code === 'PGRST116') {
+        // No rows returned - return null meal plan
+        return { mealPlan: null, dietaryOptions: [] };
+      }
+      handleSupabaseError(mealError);
+    }
+
+    if (!mealPlan) {
+      return { mealPlan: null, dietaryOptions: [] };
+    }
 
     const { data: dietaryOptions, error: dietaryError } = await supabase
       .from('dietary_options')
@@ -309,7 +595,14 @@ export class OrganizationService {
       .eq('meal_plan_id', mealPlan.id)
       .order('order_index');
 
-    if (dietaryError) handleSupabaseError(dietaryError);
+    // Handle case where no dietary options exist - this is normal
+    if (dietaryError) {
+      if (dietaryError.code === 'PGRST116') {
+        // No rows returned - return empty dietary options array
+        return { mealPlan, dietaryOptions: [] };
+      }
+      handleSupabaseError(dietaryError);
+    }
 
     return { mealPlan, dietaryOptions: dietaryOptions || [] };
   }
@@ -324,7 +617,14 @@ export class OrganizationService {
       .eq('organization_id', organizationId)
       .single();
 
-    if (error) handleSupabaseError(error);
+    // Handle case where no transportation data exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return null
+        return null;
+      }
+      handleSupabaseError(error);
+    }
     return data;
   }
 
@@ -338,7 +638,14 @@ export class OrganizationService {
       .eq('organization_id', organizationId)
       .single();
 
-    if (error) handleSupabaseError(error);
+    // Handle case where no internet access data exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return null
+        return null;
+      }
+      handleSupabaseError(error);
+    }
     return data;
   }
 
@@ -352,7 +659,14 @@ export class OrganizationService {
       .eq('organization_id', organizationId)
       .single();
 
-    if (error) handleSupabaseError(error);
+    // Handle case where no age requirements data exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return null
+        return null;
+      }
+      handleSupabaseError(error);
+    }
     return data;
   }
 
@@ -366,7 +680,14 @@ export class OrganizationService {
       .eq('organization_id', organizationId)
       .order('order_index');
 
-    if (error) handleSupabaseError(error);
+    // Handle case where no skill requirements data exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return empty array
+        return [];
+      }
+      handleSupabaseError(error);
+    }
     return data || [];
   }
 
@@ -382,7 +703,14 @@ export class OrganizationService {
       .order('order_index')
       .limit(3);
 
-    if (error) handleSupabaseError(error);
+    // Handle case where no key requirements data exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return empty array
+        return [];
+      }
+      handleSupabaseError(error);
+    }
     return data || [];
   }
 
@@ -396,7 +724,14 @@ export class OrganizationService {
       .eq('organization_id', organizationId)
       .order('order_index');
 
-    if (error) handleSupabaseError(error);
+    // Handle case where no health requirements data exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return empty array
+        return [];
+      }
+      handleSupabaseError(error);
+    }
     return data || [];
   }
 
@@ -410,7 +745,14 @@ export class OrganizationService {
       .eq('organization_id', organizationId)
       .order('order_index');
 
-    if (error) handleSupabaseError(error);
+    // Handle case where no languages data exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return empty array
+        return [];
+      }
+      handleSupabaseError(error);
+    }
     return data || [];
   }
 
@@ -427,7 +769,38 @@ export class OrganizationService {
       .eq('programs.organization_id', organizationId)
       .order('order_index');
 
-    if (error) handleSupabaseError(error);
+    // Handle case where no activities data exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return empty array
+        return [];
+      }
+      handleSupabaseError(error);
+    }
+    return data || [];
+  }
+
+  /**
+   * Get program inclusions (support details)
+   */
+  private static async getProgramInclusions(organizationId: string) {
+    const { data, error } = await supabase
+      .from('program_inclusions')
+      .select(`
+        *,
+        programs!inner(organization_id)
+      `)
+      .eq('programs.organization_id', organizationId)
+      .order('order_index');
+
+    // Handle case where no inclusions data exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return empty array
+        return [];
+      }
+      handleSupabaseError(error);
+    }
     return data || [];
   }
 
@@ -441,7 +814,14 @@ export class OrganizationService {
       .eq('organization_id', organizationId)
       .single();
 
-    if (error) handleSupabaseError(error);
+    // Handle case where no statistics data exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return null
+        return null;
+      }
+      handleSupabaseError(error);
+    }
     return data;
   }
 
@@ -598,5 +978,286 @@ export class OrganizationService {
       limit: pagination.limit,
       has_more: (count || 0) > to + 1
     };
+  }
+
+  // ==================== PROGRAM-SPECIFIC CONTENT METHODS ====================
+
+  /**
+   * Get program-specific overview data
+   * Used for: OverviewTab when specific program is selected
+   */
+  static async getProgramOverview(programId: string): Promise<OrganizationOverview> {
+    // Get program-specific data
+    const { data: program, error: programError } = await supabase
+      .from('programs')
+      .select(`
+        *,
+        animal_types(*),
+        program_activities(*),
+        media_items(*)
+      `)
+      .eq('id', programId)
+      .single();
+
+    if (programError) handleSupabaseError(programError);
+
+    // Get organization info for context
+    const { data: organization, error: orgError } = await supabase
+      .from('organizations')
+      .select('*')
+      .eq('id', program.organization_id)
+      .single();
+
+    if (orgError) handleSupabaseError(orgError);
+
+    return {
+      organization,
+      programs: [program], // Single program focus
+      animal_types: program.animal_types || [],
+      program_activities: program.program_activities || [],
+      schedule_items: [] // Will be fetched separately if needed
+    };
+  }
+
+  /**
+   * Get program-specific experience data
+   * Used for: ExperienceTab when specific program is selected
+   */
+  static async getProgramExperience(programId: string): Promise<OrganizationExperience> {
+    const { data: program, error } = await supabase
+      .from('programs')
+      .select(`
+        *,
+        program_activities(*),
+        program_schedule_items(*),
+        program_inclusions(*),
+        program_requirements(*)
+      `)
+      .eq('id', programId)
+      .single();
+
+    if (error) handleSupabaseError(error);
+
+    return {
+      programs: [program],
+      animal_types: [], // Will be filled if needed
+      program_activities: program.program_activities || [],
+      schedule_items: program.program_schedule_items || []
+    };
+  }
+
+  /**
+   * Get program-specific practical data
+   * Used for: PracticalTab when specific program is selected
+   */
+  static async getProgramPractical(programId: string): Promise<OrganizationPractical> {
+    // Get program data
+    const { data: program, error: programError } = await supabase
+      .from('programs')
+      .select('*')
+      .eq('id', programId)
+      .single();
+
+    if (programError) handleSupabaseError(programError);
+
+    // Get organization-level practical info (accommodation, etc.)
+    const organizationId = program.organization_id;
+    
+    const [
+      accommodation,
+      mealPlan,
+      transportation,
+      internetAccess,
+      ageRequirement,
+      skillRequirements,
+      healthRequirements,
+      languages
+    ] = await Promise.all([
+      this.getAccommodation(organizationId),
+      this.getMealPlan(organizationId),
+      this.getTransportation(organizationId),
+      this.getInternetAccess(organizationId),
+      this.getAgeRequirement(organizationId),
+      this.getSkillRequirements(organizationId),
+      this.getHealthRequirements(organizationId),
+      this.getLanguages(organizationId)
+    ]);
+
+    return {
+      accommodation: accommodation.accommodation,
+      amenities: accommodation.amenities,
+      meal_plan: mealPlan.mealPlan,
+      dietary_options: mealPlan.dietaryOptions,
+      transportation,
+      internet_access: internetAccess,
+      age_requirement: ageRequirement,
+      skill_requirements: skillRequirements,
+      health_requirements: healthRequirements,
+      languages
+    };
+  }
+
+  /**
+   * Get program-specific stories data
+   * Used for: StoriesTab when specific program is selected
+   */
+  static async getProgramStories(programId: string, options: TestimonialFilters = {}): Promise<OrganizationStories> {
+    // Get program-specific testimonials
+    const { data: testimonials, error: testimonialsError } = await supabase
+      .from('testimonials')
+      .select('*')
+      .eq('program_id', programId)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(options.limit || 4);
+
+    if (testimonialsError) handleSupabaseError(testimonialsError);
+
+    // Get organization statistics
+    const { data: program, error: programError } = await supabase
+      .from('programs')
+      .select('organization_id')
+      .eq('id', programId)
+      .single();
+
+    if (programError) handleSupabaseError(programError);
+
+    const statistics = await this.getStatistics(program.organization_id);
+    
+    const totalCount = testimonials?.length || 0;
+
+    return {
+      testimonials: testimonials || [],
+      statistics,
+      total_testimonials: totalCount,
+      has_more: false // Simple implementation for now
+    };
+  }
+
+  // ==================== CONNECT TAB DATA ====================
+
+  /**
+   * Get connect data for a tab
+   * Used for: ConnectTab component
+   */
+  static async getConnect(organizationSlug: string): Promise<any> {
+    // Convert slug to UUID for database operations
+    const organizationUUID = await this.getOrganizationUUIDFromSlug(organizationSlug);
+    
+    const [organization, applicationProcess, applicationSteps] = await Promise.all([
+      this.getBasicInfo(organizationSlug), // This method already handles slugs
+      this.getApplicationProcess(organizationUUID),
+      this.getApplicationSteps(organizationUUID)
+    ]);
+
+    return {
+      organization: {
+        id: organization.id,
+        name: organization.name,
+        email: organization.email,
+        phone: organization.phone,
+        website: organization.website
+      },
+      application_process: applicationProcess,
+      application_steps: applicationSteps
+    };
+  }
+
+  /**
+   * Get application process information
+   */
+  private static async getApplicationProcess(organizationId: string) {
+    const { data, error } = await supabase
+      .from('application_processes')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .single();
+
+    // Handle case where no application process data exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return null
+        return null;
+      }
+      handleSupabaseError(error);
+    }
+    return data;
+  }
+
+  /**
+   * Get application steps
+   */
+  private static async getApplicationSteps(organizationId: string) {
+    // First get the application process ID
+    const applicationProcess = await this.getApplicationProcess(organizationId);
+    
+    if (!applicationProcess) {
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('application_steps')
+      .select('*')
+      .eq('application_process_id', applicationProcess.id)
+      .order('step_number');
+
+    // Handle case where no application steps data exists
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - return empty array
+        return [];
+      }
+      handleSupabaseError(error);
+    }
+    return data || [];
+  }
+
+  // ==================== CONTACT SUBMISSION ====================
+
+  /**
+   * Submit contact form
+   */
+  static async submitContactForm(data: {
+    organizationSlug: string;
+    programId?: string;
+    name: string;
+    email: string;
+    country?: string;
+    phone?: string;
+    preferredProgram?: string;
+    durationWeeks?: number;
+    preferredStartDate?: string;
+    message: string;
+    source: 'questions' | 'application';
+  }) {
+    try {
+      // Convert slug to UUID
+      const organizationUUID = await this.getOrganizationUUIDFromSlug(data.organizationSlug);
+      
+      const { data: submission, error } = await supabase
+        .from('contact_submissions')
+        .insert({
+          organization_id: organizationUUID,
+          program_id: data.programId || null,
+          name: data.name,
+          email: data.email,
+          country: data.country || null,
+          phone: data.phone || null,
+          preferred_program: data.preferredProgram || null,
+          duration_weeks: data.durationWeeks || null,
+          preferred_start_date: data.preferredStartDate || null,
+          message: data.message,
+          source: data.source,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) handleSupabaseError(error);
+      return submission;
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      throw error;
+    }
   }
 }

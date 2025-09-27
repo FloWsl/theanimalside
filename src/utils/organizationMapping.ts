@@ -1,49 +1,39 @@
-import { opportunities } from '../data/opportunities';
-import { organizationDetails } from '../data/organizationDetails';
+// No more hardcoded mappings - everything is database-driven
 import { generateOpportunityRoute } from './routeUtils';
-
-// Mapping from opportunity ID to organization slug
-const opportunityToOrganizationSlug: { [opportunityId: string]: string } = {
-  // Map opportunity IDs to organization slugs
-  'toucan-rescue-ranch': 'toucan-rescue-ranch-costa-rica',
-  'opp-1': 'marine-life-protection-costa-rica', // Sea Turtle Conservation
-  'opp-2': 'elephant-nature-preserve-thailand',  // Elephant Sanctuary
-  'opp-3': 'big-cat-sanctuary-south-africa',    // Lion Conservation
-  'opp-4': 'kangaroo-sanctuary-australia',      // Kangaroo Rescue
-  'opp-5': 'elephant-orphanage-kenya',          // Elephant Orphanage Kenya
-  'opp-6': 'orangutan-care-center-indonesia',   // Orangutan Care
-  'opp-7': 'jaguar-rescue-brazil',              // Jaguar Rescue
-  'opp-8': 'galapagos-conservancy-ecuador',     // Marine Conservation Ecuador
-  'opp-9': 'amazon-wildlife-peru',             // Amazon Wildlife Peru
-  'opp-10': 'serengeti-research-tanzania',     // Serengeti Research
-  'opp-11': 'desert-elephant-namibia',         // Desert Elephant Namibia
-  'opp-12': 'lemur-conservation-madagascar'    // Lemur Conservation Madagascar
-};
 
 /**
  * Get organization slug for a given opportunity ID
  * @param opportunityId The ID of the opportunity
+ * @param organizationSlug Optional organization slug from database
  * @returns The organization slug or undefined if not found
  */
-export const getOrganizationSlugByOpportunityId = (opportunityId: string): string | undefined => {
-  return opportunityToOrganizationSlug[opportunityId];
+export const getOrganizationSlugByOpportunityId = (
+  opportunityId: string, 
+  organizationSlug?: string
+): string | undefined => {
+  // Always use the database organizationSlug - no more hardcoded mappings
+  return organizationSlug;
 };
 
 /**
- * Get the route path for an opportunity using new SEO-friendly routes
+ * Get the route path for an opportunity - routes to organization detail page
  * @param opportunityId The ID of the opportunity
- * @returns The route path or null if no opportunity found
+ * @param organizationSlug Optional organization slug from database
+ * @returns The route path or null if no organization found
  */
-export const getOpportunityRoute = (opportunityId: string): string | null => {
-  // Find the opportunity by ID
-  const opportunity = opportunities.find(opp => opp.id === opportunityId);
+export const getOpportunityRoute = (
+  opportunityId: string, 
+  organizationSlug?: string
+): string | null => {
+  // Get the organization slug for this opportunity
+  const orgSlug = getOrganizationSlugByOpportunityId(opportunityId, organizationSlug);
   
-  if (!opportunity) {
+  if (!orgSlug) {
     return null;
   }
   
-  // Use the new route generation utility to get the best SEO route
-  return generateOpportunityRoute(opportunity);
+  // Route to the structured organization page - no more mock data validation
+  return `/organization/${orgSlug}`;
 };
 
 /**
@@ -52,14 +42,28 @@ export const getOpportunityRoute = (opportunityId: string): string | null => {
  * @returns The route path
  */
 export const getOpportunityRouteFromObject = (opportunity: any): string => {
+  // Use organizationSlug from database if available
+  if (opportunity.organizationSlug) {
+    return `/organization/${opportunity.organizationSlug}`;
+  }
+  
+  // If no organizationSlug, fall back to generateOpportunityRoute
   return generateOpportunityRoute(opportunity);
 };
 
 /**
- * Check if an opportunity has a valid route
+ * Check if an opportunity has a valid organization detail page
  * @param opportunityId The ID of the opportunity
- * @returns True if the opportunity has a valid route
+ * @param organizationSlug Optional organization slug from database
+ * @returns True if the opportunity has a corresponding organization page
  */
-export const hasValidOpportunityRoute = (opportunityId: string): boolean => {
-  return getOpportunityRoute(opportunityId) !== null;
+export const hasValidOpportunityRoute = (
+  opportunityId: string, 
+  organizationSlug?: string
+): boolean => {
+  // Get the organization slug for this opportunity
+  const orgSlug = getOrganizationSlugByOpportunityId(opportunityId, organizationSlug);
+  
+  // If we have a slug from the database, it's valid - no more mock data validation
+  return !!orgSlug;
 };

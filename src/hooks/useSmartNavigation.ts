@@ -101,11 +101,12 @@ const generateStaticRecommendations = (context: NavigationContext): NavigationRe
   const { organization, currentTab } = context;
   const recommendations: NavigationRecommendation[] = [];
 
-  // Extract rich data from organization
-  const primaryAnimal = organization.animalTypes[0];
-  const secondaryAnimals = organization.animalTypes.slice(1, 3);
-  const totalAnimalsRescued = organization.statistics.animalsRescued;
-  const yearsOperating = organization.statistics.yearsOperating;
+  // Extract rich data from organization with safe fallbacks
+  const animalTypes = organization.animalTypes || organization.programs?.[0]?.animalTypes || [];
+  const primaryAnimal = animalTypes[0] || 'Wildlife';
+  const secondaryAnimals = animalTypes.slice(1, 3);
+  const totalAnimalsRescued = organization.statistics?.animalsRescued || 0;
+  const yearsOperating = organization.statistics?.yearsOperating || 0;
 
   // 1. Similar animal type (SEO-friendly URL)
   if (primaryAnimal) {

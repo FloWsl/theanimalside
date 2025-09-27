@@ -98,205 +98,154 @@ const ReviewCards: React.FC<ReviewCardsProps> = ({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with sorting */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h3 className="text-card-title font-semibold text-deep-forest">
-            Volunteer Reviews
-          </h3>
-          <p className="text-body-small text-forest/70">
-            {testimonials.length} verified volunteer experience{testimonials.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-        
-        {/* Sort Options */}
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-forest/60" />
+    <div className="space-y-4">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-deep-forest">
+          Reviews ({testimonials.length})
+        </h3>
+        {testimonials.length > 1 && (
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="bg-white border border-beige/60 rounded-lg px-3 py-2 text-sm text-forest focus:outline-none focus:ring-2 focus:ring-rich-earth/50"
+            className="bg-white border border-beige/60 rounded-md px-2 py-1 text-xs text-forest focus:outline-none focus:ring-1 focus:ring-rich-earth/50"
             aria-label="Sort reviews"
           >
-            <option value="recent">Most Recent</option>
-            <option value="highest">Highest Rated</option>
-            <option value="verified">Verified First</option>
+            <option value="recent">Recent</option>
+            <option value="highest">Highest</option>
+            <option value="verified">Verified</option>
           </select>
-        </div>
+        )}
       </div>
 
-      {/* Review Cards */}
-      <div className="space-y-4">
+      {/* Compact Review Cards */}
+      <div className="space-y-2">
         {displayedReviews.map((testimonial) => {
           const isExpanded = expandedReviews.has(testimonial.id);
-          const shouldTruncate = testimonial.quote.length > 150;
+          const shouldTruncate = testimonial.quote.length > 120;
           const displayText = isExpanded || !shouldTruncate 
             ? testimonial.quote 
-            : truncateText(testimonial.quote);
+            : truncateText(testimonial.quote, 120);
 
           return (
             <div
               key={testimonial.id}
-              className="bg-white rounded-xl p-6 shadow-nature border border-beige/60 hover:shadow-nature-xl transition-all duration-300"
+              className="bg-white rounded-lg p-3 border border-beige/40 hover:border-beige/60 transition-colors"
             >
-              {/* Review Header */}
-              <div className="flex items-start gap-4 mb-4">
-                {/* Avatar */}
+              {/* Compact Header */}
+              <div className="flex items-center gap-3 mb-2">
+                {/* Small Avatar */}
                 <div className="relative flex-shrink-0">
                   {testimonial.avatar ? (
                     <img
                       src={testimonial.avatar}
                       alt={testimonial.volunteerName}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                      className="w-8 h-8 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-12 h-12 bg-sage-green/20 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                      <User className="w-6 h-6 text-sage-green" />
+                    <div className="w-8 h-8 bg-sage-green/20 rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4 text-sage-green" />
                     </div>
                   )}
-                  
-                  {/* Verification Badge */}
                   {testimonial.verified && (
-                    <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1 shadow-sm">
-                      <Verified className="w-3 h-3 text-white" />
+                    <div className="absolute -bottom-0.5 -right-0.5 bg-green-500 rounded-full p-0.5">
+                      <Verified className="w-2 h-2 text-white" />
                     </div>
                   )}
                 </div>
 
-                {/* Review Info */}
+                {/* Name and Rating */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div>
-                      <h4 className="font-semibold text-deep-forest truncate">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-medium text-deep-forest text-sm truncate">
                         {testimonial.volunteerName}
-                        {testimonial.volunteerAge && (
-                          <span className="text-forest/60 font-normal ml-2">
-                            ({testimonial.volunteerAge})
-                          </span>
-                        )}
-                      </h4>
-                      <div className="flex items-center gap-3 text-sm text-forest/70">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {testimonial.volunteerCountry}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {new Date(testimonial.date).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short'
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Rating */}
-                    <div className="flex items-center gap-2">
-                      {renderStars(testimonial.rating)}
-                      <span className="text-sm font-medium text-deep-forest">
-                        {testimonial.rating}/5
+                      </span>
+                      <span className="text-xs text-forest/60 truncate">
+                        {testimonial.volunteerCountry}
                       </span>
                     </div>
-                  </div>
-                  
-                  {/* Program Info */}
-                  <div className="mt-2">
-                    <span className="inline-flex items-center px-2 py-1 bg-rich-earth/10 text-rich-earth rounded-full text-xs font-medium">
-                      {testimonial.program} • {testimonial.duration}
-                    </span>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {renderStars(testimonial.rating)}
+                      <span className="text-xs font-medium text-deep-forest ml-1">
+                        {testimonial.rating}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Review Content */}
-              <div className="space-y-3">
-                <blockquote className="text-forest leading-relaxed">
-                  "{displayText}"
-                </blockquote>
-                
-                {/* Read More/Less Button */}
-                {shouldTruncate && (
-                  <button
-                    onClick={() => toggleExpanded(testimonial.id)}
-                    className="inline-flex items-center gap-1 text-sm text-rich-earth hover:text-sunset transition-colors focus:outline-none focus:ring-2 focus:ring-rich-earth/50 rounded"
-                    aria-expanded={isExpanded}
-                    aria-label={isExpanded ? 'Show less of review' : 'Show more of review'}
-                  >
-                    {isExpanded ? (
-                      <>
-                        Show less
-                        <ChevronUp className="w-4 h-4" />
-                      </>
-                    ) : (
-                      <>
-                        Read more
-                        <ChevronDown className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                )}
+              {/* Quote */}
+              <blockquote className="text-sm text-forest/80 leading-relaxed mb-2">
+                "{displayText}"
+              </blockquote>
 
-                {/* Review Footer */}
-                <div className="flex items-center justify-between pt-3 border-t border-beige/60">
-                  <div className="flex items-center gap-2 text-xs text-forest/60">
-                    {testimonial.verified && (
-                      <span className="flex items-center gap-1 text-green-600">
-                        <Verified className="w-3 h-3" />
-                        Verified Experience
-                      </span>
-                    )}
-                  </div>
-                  
-                  {/* Helpful indicator (placeholder for future functionality) */}
-                  <div className="flex items-center gap-1 text-xs text-forest/60">
-                    <ThumbsUp className="w-3 h-3" />
-                    <span>Helpful review</span>
-                  </div>
-                </div>
+              {/* Expand/Collapse Button */}
+              {shouldTruncate && (
+                <button
+                  onClick={() => toggleExpanded(testimonial.id)}
+                  className="inline-flex items-center gap-1 text-xs text-rich-earth hover:text-sunset transition-colors focus:outline-none mb-2"
+                  aria-expanded={isExpanded}
+                >
+                  {isExpanded ? (
+                    <>
+                      Show less
+                      <ChevronUp className="w-3 h-3" />
+                    </>
+                  ) : (
+                    <>
+                      Read more
+                      <ChevronDown className="w-3 h-3" />
+                    </>
+                  )}
+                </button>
+              )}
+
+              {/* Program and Date */}
+              <div className="flex items-center justify-between text-xs text-forest/60">
+                <span className="px-2 py-0.5 bg-rich-earth/10 text-rich-earth rounded-full">
+                  {testimonial.program}
+                </span>
+                <span>
+                  {new Date(testimonial.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    year: 'numeric'
+                  })}
+                </span>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Show All/Less Button */}
+      {/* Compact Show More Button */}
       {testimonials.length > maxInitialReviews && (
-        <div className="text-center pt-4">
+        <div className="text-center pt-2">
           <button
             onClick={() => setShowAll(!showAll)}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-rich-earth text-rich-earth rounded-full font-medium hover:bg-rich-earth hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-rich-earth/50"
+            className="inline-flex items-center gap-1 px-3 py-1 text-sm text-rich-earth hover:text-sunset transition-colors focus:outline-none"
             aria-expanded={showAll}
           >
             {showAll ? (
               <>
-                Show fewer reviews
-                <ChevronUp className="w-4 h-4" />
+                Show less
+                <ChevronUp className="w-3 h-3" />
               </>
             ) : (
               <>
-                Show all {testimonials.length} reviews
-                <ChevronDown className="w-4 h-4" />
+                Show all {testimonials.length}
+                <ChevronDown className="w-3 h-3" />
               </>
             )}
           </button>
         </div>
       )}
 
-      {/* Trust Indicator */}
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 border border-green-200/60">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-500/10 rounded-lg">
-            <Verified className="w-5 h-5 text-green-600" />
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-deep-forest">
-              100% Verified Reviews
-            </h4>
-            <p className="text-xs text-forest/70">
-              All reviews are from volunteers who completed programs with identity verification
-            </p>
-          </div>
+      {/* Compact Trust Indicator */}
+      <div className="bg-green-50/50 rounded-lg p-2 border border-green-200/40">
+        <div className="flex items-center gap-2">
+          <Verified className="w-3 h-3 text-green-600" />
+          <span className="text-xs text-green-600 font-medium">Verified Reviews</span>
         </div>
       </div>
     </div>

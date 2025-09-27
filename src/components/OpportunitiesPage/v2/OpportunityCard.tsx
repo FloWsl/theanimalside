@@ -92,27 +92,11 @@ const formatCost = (cost: Opportunity['cost']): { display: string; color: string
 
 const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, index }) => {
   const costInfo = formatCost(opportunity.cost);
-  const opportunityRoute = getOpportunityRoute(opportunity.id);
-  const hasValidRoute = hasValidOpportunityRoute(opportunity.id);
+  const opportunityRoute = getOpportunityRoute(opportunity.id, opportunity.organizationSlug);
+  const hasValidRoute = hasValidOpportunityRoute(opportunity.id, opportunity.organizationSlug);
   
-  // If no valid route, render as non-clickable card
-  if (!hasValidRoute || !opportunityRoute) {
-    return (
-      <motion.article 
-        className="group card-nature overflow-hidden"
-        initial={{ opacity: 0, y: 30, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ 
-          duration: 0.6, 
-          delay: index * 0.08,
-          type: "spring",
-          stiffness: 100
-        }}
-      >
-        <CardContent opportunity={opportunity} costInfo={costInfo} disabled={true} index={index} />
-      </motion.article>
-    );
-  }
+  // This component should only receive opportunities with valid routes
+  // Filtering should happen at the data level, not component level
   
   return (
     <motion.article 
@@ -240,10 +224,12 @@ const CardContent: React.FC<CardContentProps> = ({ opportunity, costInfo, disabl
           <div className="text-sage-green text-xs font-semibold tracking-wide uppercase truncate">
             {opportunity.organization}
           </div>
-          <div className="flex items-center gap-1 text-golden-hour flex-shrink-0">
-            <Shield className="w-3.5 h-3.5" />
-            <span className="text-xs font-medium">Verified</span>
-          </div>
+          {opportunity.verified && (
+            <div className="flex items-center gap-1 text-golden-hour flex-shrink-0">
+              <Shield className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium">Verified</span>
+            </div>
+          )}
         </div>
         
         {/* Optimized title - Award-winning sizing */}
@@ -322,10 +308,16 @@ const CardContent: React.FC<CardContentProps> = ({ opportunity, costInfo, disabl
               day: 'numeric'
             })}
           </span>
-          <div className="flex items-center gap-1 text-golden-hour flex-shrink-0">
-            <span className="text-xs font-medium whitespace-nowrap">4.9★</span>
-            <span className="text-xs text-forest/60 hidden sm:inline whitespace-nowrap">156 reviews</span>
-          </div>
+          {opportunity.rating && opportunity.reviewCount && opportunity.reviewCount > 0 && (
+            <div className="flex items-center gap-1 text-golden-hour flex-shrink-0">
+              <span className="text-xs font-medium whitespace-nowrap">
+                {opportunity.rating.toFixed(1)}★
+              </span>
+              <span className="text-xs text-forest/60 hidden sm:inline whitespace-nowrap">
+                {opportunity.reviewCount} review{opportunity.reviewCount !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </>

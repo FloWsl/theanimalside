@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MapPin, Clock, ArrowRight, Sparkles, Navigation } from 'lucide-react';
 import type { Opportunity } from '@/types';
+import { getOpportunityRoute } from '../../utils/organizationMapping';
 
 /**
  * OpportunityPortalCard - A Modular Living Portal Component
@@ -42,15 +43,21 @@ const OpportunityPortalCard: React.FC<OpportunityPortalCardProps> = ({
 }) => {
   const [localActive, setLocalActive] = useState(false);
   const [localExplored, setLocalExplored] = useState(false);
+  const navigate = useNavigate();
   
   // Use props or local state for flexibility
   const cardIsActive = isActive || localActive;
   const cardIsExplored = isExplored || localExplored;
 
-
   const handleCardExplore = () => {
     setLocalExplored(true);
     onExplore?.(opportunity);
+    
+    // Navigate to the opportunity
+    const route = getOpportunityRoute(opportunity.id);
+    if (route) {
+      navigate(route);
+    }
   };
 
   const handleMouseEnter = () => {
