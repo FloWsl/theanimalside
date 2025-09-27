@@ -111,7 +111,10 @@ export class OrganizationService {
           description: program.description,
           animalTypes: program.animal_types || [],
           isPrimary: program.is_primary || false,
-          duration: program.duration || { min: 2, max: 12 },
+          duration: {
+            min: program.duration_min_weeks || 2,
+            max: program.duration_max_weeks || 12
+          },
           schedule: {
             daysPerWeek: program.days_per_week || 5,
             hoursPerDay: program.hours_per_day || 6,

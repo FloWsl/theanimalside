@@ -96,7 +96,13 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
     );
   }
 
-  const program = overviewData?.primary_program || organization.programs[0]; // Get primary program from database or fallback
+  const program = overviewData?.primary_program || organization.programs?.[0]; // Get primary program from database or fallback
+
+  // Ensure safe access to program duration with fallback
+  const safeDuration = program?.duration || { min: 2, max: 12 };
+
+  // Ensure safe access to program cost with fallback
+  const safeCost = program?.cost || { amount: 0, currency: 'USD' };
 
   // Generate simple context line
   const contextLine = `Protecting ${organization.animalTypes[0]?.animalType || 'wildlife'} in the heart of ${organization.location.country}`;
@@ -199,7 +205,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
             <h3 className="font-medium text-deep-forest mb-1 text-sm">Duration</h3>
             <p className="text-lg font-bold text-rich-earth">
-              {program.duration.min}-{program.duration.max || '∞'} weeks
+              {safeDuration.min}-{safeDuration.max || '∞'} weeks
             </p>
           </div>
 
@@ -210,7 +216,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
             <h3 className="font-medium text-deep-forest mb-1 text-sm">From</h3>
             <p className="text-lg font-bold text-rich-earth">
-              {program.cost.amount ? `${program.cost.currency}${program.cost.amount.toLocaleString()}` : 'Free'}
+              {safeCost.amount ? `${safeCost.currency}${safeCost.amount.toLocaleString()}` : 'Free'}
             </p>
           </div>
         </div>
