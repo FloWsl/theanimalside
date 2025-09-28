@@ -1,10 +1,14 @@
-// C:\Users\USER\Downloads\theanimalside_v0.1\project\src\components\Layout\index.tsx
+// Layout component for app-wide structure
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 
-const Layout: React.FC = () => {
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
 
@@ -12,7 +16,7 @@ const Layout: React.FC = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className={`flex-grow ${isHomePage ? '' : 'pt-24'}`}>
-        <Outlet />
+        {children}
       </main>
       <Footer />
     </div>

@@ -5,6 +5,7 @@ export const opportunities: Opportunity[] = [
     id: 'toucan-rescue-ranch',
     title: 'Wildlife Care Volunteer',
     organization: 'Toucan Rescue Ranch',
+    organizationSlug: 'toucan-rescue-ranch-costa-rica',
     location: {
       country: 'Costa Rica',
       city: 'San Isidro de Heredia',
@@ -39,6 +40,7 @@ export const opportunities: Opportunity[] = [
     id: 'opp-1',
     title: 'Sea Turtle Conservation Volunteer',
     organization: 'Marine Life Protection',
+    organizationSlug: 'marine-life-protection-costa-rica',
     location: {
       country: 'Costa Rica',
       city: 'Tortuguero',
@@ -73,6 +75,7 @@ export const opportunities: Opportunity[] = [
     id: 'opp-2',
     title: 'Elephant Sanctuary Assistant',
     organization: 'Elephant Nature Preserve',
+    organizationSlug: 'elephant-nature-preserve-thailand',
     location: {
       country: 'Thailand',
       city: 'Chiang Mai',
@@ -107,6 +110,7 @@ export const opportunities: Opportunity[] = [
     id: 'opp-3',
     title: 'Wildlife Rehabilitation Intern',
     organization: 'Australian Wildlife Rescue',
+    organizationSlug: 'australian-wildlife-rescue-australia',
     location: {
       country: 'Australia',
       city: 'Brisbane',
@@ -141,6 +145,7 @@ export const opportunities: Opportunity[] = [
     id: 'opp-4',
     title: 'Big Cat Sanctuary Volunteer',
     organization: 'African Predator Conservation',
+    organizationSlug: 'african-predator-conservation-south-africa',
     location: {
       country: 'South Africa',
       city: 'Johannesburg',
@@ -175,6 +180,7 @@ export const opportunities: Opportunity[] = [
     id: 'opp-5',
     title: 'Orangutan Research Assistant',
     organization: 'Borneo Primate Conservation',
+    organizationSlug: 'borneo-primate-conservation-indonesia',
     location: {
       country: 'Indonesia',
       city: 'Kalimantan',
@@ -209,6 +215,7 @@ export const opportunities: Opportunity[] = [
     id: 'elephant-sanctuary-thailand',
     title: 'Elephant Sanctuary Volunteer',
     organization: 'Thai Elephant Conservation Center',
+    organizationSlug: 'thai-elephant-conservation-center-thailand',
     location: {
       country: 'Thailand',
       city: 'Chiang Mai',
@@ -243,6 +250,7 @@ export const opportunities: Opportunity[] = [
     id: 'african-elephant-kenya',
     title: 'African Elephant Research Volunteer',
     organization: 'Kenya Wildlife Service',
+    organizationSlug: 'kenya-wildlife-service-kenya',
     location: {
       country: 'Kenya',
       city: 'Amboseli',
@@ -277,6 +285,7 @@ export const opportunities: Opportunity[] = [
     id: 'sea-turtle-greece',
     title: 'Sea Turtle Conservation Volunteer',
     organization: 'Mediterranean Turtle Project',
+    organizationSlug: 'mediterranean-turtle-project-greece',
     location: {
       country: 'Greece',
       city: 'Crete',
@@ -311,6 +320,7 @@ export const opportunities: Opportunity[] = [
     id: 'sea-turtle-mexico',
     title: 'Pacific Sea Turtle Protection',
     organization: 'Turtle Conservation Mexico',
+    organizationSlug: 'turtle-conservation-mexico-mexico',
     location: {
       country: 'Mexico',
       city: 'Puerto Vallarta',
@@ -345,6 +355,7 @@ export const opportunities: Opportunity[] = [
     id: 'orangutan-rescue-sumatra',
     title: 'Orangutan Rescue and Rehabilitation',
     organization: 'Sumatran Orangutan Society',
+    organizationSlug: 'sumatran-orangutan-society-indonesia',
     location: {
       country: 'Indonesia',
       city: 'Medan',
@@ -379,6 +390,7 @@ export const opportunities: Opportunity[] = [
     id: 'elephant-orphanage-sri-lanka',
     title: 'Elephant Orphanage Volunteer',
     organization: 'Sri Lankan Elephant Foundation',
+    organizationSlug: 'sri-lankan-elephant-foundation-sri-lanka',
     location: {
       country: 'Sri Lanka',
       city: 'Kandy',

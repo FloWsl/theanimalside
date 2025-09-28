@@ -54,7 +54,7 @@ const OpportunityPortalCard: React.FC<OpportunityPortalCardProps> = ({
     onExplore?.(opportunity);
     
     // Navigate to the opportunity
-    const route = getOpportunityRoute(opportunity.id);
+    const route = getOpportunityRoute(opportunity.id, opportunity.organizationSlug);
     if (route) {
       navigate(route);
     }

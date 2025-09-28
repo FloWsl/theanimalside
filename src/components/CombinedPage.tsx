@@ -16,25 +16,37 @@ interface CombinedPageProps {
 }
 
 const CombinedPage: React.FC<CombinedPageProps> = ({ type }) => {
-  const params = useParams<{ country?: string; animal?: string }>();
   const breadcrumbs = useBreadcrumbs();
 
   // Parse country and animal based on route type
   const { countrySlug, animalSlug } = React.useMemo(() => {
-    if (type === 'country-animal') {
-      // Route: volunteer-:country/:animal → params: { country: "costa-rica", animal: "lions" }
-      return {
-        countrySlug: params.country || '',
-        animalSlug: params.animal || ''
-      };
-    } else {
-      // Route: :animal-volunteer/:country → params: { animal: "lions", country: "costa-rica" }
-      return {
-        countrySlug: params.country || '',
-        animalSlug: params.animal || ''
-      };
+    // Since we're using catch-all routing, extract from URL path directly
+    const pathname = window.location.pathname;
+    const segments = pathname.split('/').filter(Boolean);
+
+
+    if (segments.length === 2) {
+      const [first, second] = segments;
+
+      if (type === 'country-animal') {
+        // Route: volunteer-{country}/{animal}
+        if (first.startsWith('volunteer-')) {
+          const countrySlug = first.replace('volunteer-', '');
+          const animalSlug = second;
+          return { countrySlug, animalSlug };
+        }
+      } else if (type === 'animal-country') {
+        // Route: {animal}-volunteer/{country}
+        if (first.endsWith('-volunteer')) {
+          const animalSlug = first.replace('-volunteer', '');
+          const countrySlug = second;
+          return { countrySlug, animalSlug };
+        }
+      }
     }
-  }, [type, params]);
+
+    return { countrySlug: '', animalSlug: '' };
+  }, [type]);
 
   // Format names
   const countryName = React.useMemo(() => {

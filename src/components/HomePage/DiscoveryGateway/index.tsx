@@ -21,15 +21,20 @@ interface DiscoveryGatewayProps {
   onLocationSelect?: (location: AnimalLocation) => void;
 }
 
-const DiscoveryGateway: React.FC<DiscoveryGatewayProps> = ({ 
+const DiscoveryGateway: React.FC<DiscoveryGatewayProps> = ({
   className = '',
   onLocationSelect
 }) => {
   // State for inter-component communication
-  const [selectedAnimal] = useState<string | null>(null);
-  
+  const [selectedAnimal, setSelectedAnimal] = useState<string | null>(null);
+
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
+
+  // Handler for animal selection
+  const handleAnimalSelect = (animal: string | null) => {
+    setSelectedAnimal(animal);
+  };
 
   // Simple motion patterns
   const containerVariants = {

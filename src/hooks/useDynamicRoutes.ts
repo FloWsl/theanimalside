@@ -42,6 +42,7 @@ export const useDynamicRoutes = () => {
     const animals = Array.from(animalsSet);
     const countries = Array.from(countriesSet);
 
+
     // Generate valid combinations based on actual data
     const combinations: Array<{animal: string, country: string}> = [];
     animals.forEach(animal => {

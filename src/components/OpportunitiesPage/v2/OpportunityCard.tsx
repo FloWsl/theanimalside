@@ -8,6 +8,7 @@ import { getOpportunityRoute } from '../../../utils/organizationMapping';
 interface OpportunityCardProps {
   opportunity: Opportunity;
   index: number;
+  customRoute?: string; // Optional custom route for contextual navigation
 }
 
 // Get country flag emoji
@@ -90,9 +91,10 @@ const formatCost = (cost: Opportunity['cost']): { display: string; color: string
   };
 };
 
-const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, index }) => {
+const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity, index, customRoute }) => {
   const costInfo = formatCost(opportunity.cost);
-  const opportunityRoute = getOpportunityRoute(opportunity.id, opportunity.organizationSlug);
+  const defaultRoute = getOpportunityRoute(opportunity.id, opportunity.organizationSlug);
+  const opportunityRoute = customRoute || defaultRoute;
   
   // This component should only receive opportunities with valid routes
   // Filtering should happen at the data level, not component level

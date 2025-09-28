@@ -22,8 +22,8 @@ const AnimalLandingPage: React.FC<AnimalLandingPageProps> = () => {
   const animalSlug = React.useMemo(() => {
     const pathname = location.pathname;
 
-    // Parse from explicit animal routes like /lions-volunteer
-    if (pathname.includes('-volunteer')) {
+    // Parse from explicit animal routes like /lions-volunteer (NOT /volunteer-country)
+    if (pathname.includes('-volunteer') && !pathname.startsWith('/volunteer-')) {
       return pathname.replace('/', '').replace('-volunteer', '');
     }
 

@@ -16,6 +16,7 @@ const CountryLandingPage: React.FC = () => {
   const location = useLocation();
   const breadcrumbs = useBreadcrumbs();
 
+
   // Utility function to scroll to top on navigation
   const handleNavigation = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

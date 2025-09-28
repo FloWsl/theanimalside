@@ -8,24 +8,22 @@ import AnimalLandingPage from './AnimalLandingPage';
  * Validates animal routes against opportunities data and renders appropriate content
  */
 const DynamicAnimalLandingPage: React.FC = () => {
-  const params = useParams<{ animal: string }>();
+  const params = useParams<{ animalName: string }>();
   const { isValidAnimalRoute } = useDynamicRoutes();
+
+  console.log('🦁 DynamicAnimalLandingPage rendered with params:', params);
 
   // Extract animal slug from route parameters
   const animalSlug = useMemo(() => {
-    // Handle both :animal-volunteer and explicit routes
-    if (params.animal) {
-      return params.animal;
-    }
-
-    // Fallback: extract from URL path for backward compatibility
-    const pathname = window.location.pathname;
-    if (pathname.includes('-volunteer')) {
-      return pathname.replace('/', '').replace('-volunteer', '');
+    if (params.animalName) {
+      // Verify this actually ends with "-volunteer" and extract animal name
+      if (params.animalName.endsWith('-volunteer')) {
+        return params.animalName.replace('-volunteer', '');
+      }
     }
 
     return '';
-  }, [params.animal]);
+  }, [params.animalName]);
 
   // Validate the animal route
   const isValid = useMemo(() => {

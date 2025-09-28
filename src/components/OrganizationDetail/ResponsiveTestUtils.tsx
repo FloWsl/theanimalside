@@ -1,7 +1,7 @@
 // src/components/OrganizationDetail/ResponsiveTestUtils.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Monitor, Smartphone, Tablet, Eye, AlertCircle, CheckCircle, Info } from 'lucide-react';
+import { Monitor, Smartphone, Tablet, Eye, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface DeviceSpecs {
   name: string;

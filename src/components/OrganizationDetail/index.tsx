@@ -211,7 +211,11 @@ const OrganizationDetail: React.FC = () => {
   // Enhanced cross-device state management
   const {
     activeTab,
-    handleTabChange
+    handleTabChange,
+    sidebarExpanded,
+    setSidebarExpanded,
+    viewMode,
+    setViewMode
   } = useCrossDeviceState();
   
   // Enhanced responsive state management with smooth transitions

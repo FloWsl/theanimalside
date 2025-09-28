@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { TrendingUp, MapPin, Users, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AnimalIllustration from './illustrations/AnimalIllustration';
+import { generateAnimalRoute } from '../utils/routeUtils';
 import type { AnimalCategory } from '@/data/animals';
 
 interface AnimalCardProps {
@@ -51,7 +52,7 @@ const AnimalCard: React.FC<AnimalCardProps> = ({
         onMouseEnter={() => onHover(animal.id)}
         onMouseLeave={() => onHover(null)}
       >
-        <Link to={`/opportunities?animal=${animal.id}`}>
+        <Link to={generateAnimalRoute(animal.name)}>
           <div className="relative h-80 bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg border border-white/20 transition-all duration-500 group-hover:shadow-2xl group-hover:transform group-hover:scale-[1.02]">
             {/* Illustration Header */}
             <div className="relative h-32 flex items-center justify-center" style={{ backgroundColor: animal.bgColor }}>
