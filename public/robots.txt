@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://theanimalside.com/sitemap.xml

@@ -1,0 +1,17 @@
+{
+  "name": "The Animal Side - Wildlife Volunteer Opportunities",
+  "short_name": "The Animal Side",
+  "description": "Find volunteer opportunities worldwide to work with wildlife in animal rescue, rehabilitation and care centers.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F5F3",
+  "theme_color": "#2D5A27",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
